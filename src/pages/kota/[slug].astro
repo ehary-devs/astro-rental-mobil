@@ -1,0 +1,17 @@
+---
+import type { GetStaticPaths } from 'astro';
+import InfoPage from '../../components/InfoPage.astro';
+import { kota, type InfoPage as Page } from '../../data/halaman';
+import { site } from '../../config/site';
+
+export const getStaticPaths = (() => kota.map((page) => ({ params: { slug: page.slug }, props: { page } }))) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page;
+}
+
+const { page } = Astro.props;
+const siblings = kota.filter((p) => p.slug !== page.slug).map((p) => ({ href: `/kota/${p.slug}/`, nama: p.nama }));
+---
+
+<InfoPage {page} parent="Kota layanan" title={`Rental Mobil ${page.nama} Lepas Kunci & Dengan Sopir | ${site.name}`} {siblings} />

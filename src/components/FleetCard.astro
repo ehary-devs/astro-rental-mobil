@@ -1,0 +1,239 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import IconUsers from '@tabler/icons/outline/users.svg';
+import IconGear from '@tabler/icons/outline/manual-gearbox.svg';
+import IconFuel from '@tabler/icons/outline/gas-station.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import { KATEGORI } from '../content.config';
+import { formatHargaLengkap, formatHargaSingkat, site, WA_SOURCE_TAG, waLink } from '../config/site';
+
+interface Props {
+  car: CollectionEntry<'armada'>;
+  highlight?: boolean;
+}
+
+const { car, highlight = false } = Astro.props;
+const { nama, kategori, gambar, alt, kapasitas, transmisi, bbm, harga } = car.data;
+
+// Tampilkan harga termurah yang tersedia.
+const opsi = [
+  harga.lepasKunci ? { nilai: harga.lepasKunci, label: 'lepas kunci' } : null,
+  harga.denganSopir ? { nilai: harga.denganSopir, label: 'dengan sopir' } : null,
+].filter((o): o is { nilai: number; label: string } => o !== null);
+const termurah = opsi.reduce((a, b) => (b.nilai < a.nilai ? b : a));
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const pesan = `Halo Admin ${site.name}, saya mau tanya ketersediaan ${nama}. ${WA_SOURCE_TAG}`;
+---
+
+<article class:list={['card', { highlight }]}>
+  <div class="media">
+    <Image
+      src={gambar}
+      alt={alt}
+      widths={[360, 540, 760]}
+      sizes="(max-width: 560px) 85vw, (max-width: 1024px) 45vw, 380px"
+      class="photo"
+    />
+  </div>
+
+  <div class="body">
+    <p class="cat">{KATEGORI[kategori]}</p>
+    <h3><a class="stretch" href={`/armada/${car.id}/`}>{nama}</a></h3>
+
+    <ul class="specs" aria-label="Spesifikasi">
+      <li><IconUsers aria-hidden="true" />{kapasitas} kursi</li>
+      <li><IconGear aria-hidden="true" />{cap(transmisi)}</li>
+      <li><IconFuel aria-hidden="true" />{cap(bbm)}</li>
+    </ul>
+
+    <div class="foot">
+      <div class="price">
+        <span class="visually-hidden">Mulai {formatHargaLengkap(termurah.nilai)} per hari, {termurah.label}</span>
+        <div class="price-vis" aria-hidden="true">
+          <span class="amount"><strong>{formatHargaSingkat(termurah.nilai)}</strong><small>/hari</small></span>
+          <span class="type-tag">{cap(termurah.label)}</span>
+        </div>
+      </div>
+      <a class="btn btn-ink book" href={waLink(pesan)} target="_blank" rel="noopener noreferrer">
+        <IconWa aria-hidden="true" />
+        <span>Pesan</span>
+        <span class="visually-hidden"> {nama} lewat WhatsApp</span>
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
+    transition:
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      transform 0.2s var(--ease);
+  }
+
+  .card:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .media {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--bg-2);
+  }
+
+  .media :global(.photo) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .card:hover .media :global(.photo) {
+    transform: scale(1.04);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 16px 18px 18px;
+  }
+
+  .cat {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  h3 {
+    margin-top: 2px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    font-stretch: 105%;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+  }
+
+  .stretch {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .stretch::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .stretch:focus-visible {
+    outline: none;
+  }
+
+  .stretch:focus-visible::after {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+
+  .card:hover .stretch {
+    color: var(--accent);
+  }
+
+  .book {
+    position: relative;
+    z-index: 2;
+    min-height: 38px;
+    padding: 0 14px;
+    font-size: 0.8438rem;
+  }
+
+  .book svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .specs {
+    list-style: none;
+    margin: 10px 0 16px;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .specs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-2);
+    white-space: nowrap;
+  }
+
+  .specs svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-2);
+  }
+
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .price-vis {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .amount {
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .amount strong {
+    font-size: 1.1875rem;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .amount small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  .type-tag {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  .highlight {
+    border-color: var(--accent);
+  }
+</style>

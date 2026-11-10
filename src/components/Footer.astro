@@ -1,0 +1,262 @@
+---
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconPin from '@tabler/icons/outline/map-pin.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconPhone from '@tabler/icons/outline/phone.svg';
+import IconMail from '@tabler/icons/outline/mail.svg';
+import IconInstagram from '@tabler/icons/outline/brand-instagram.svg';
+import IconFacebook from '@tabler/icons/outline/brand-facebook.svg';
+import IconTiktok from '@tabler/icons/outline/brand-tiktok.svg';
+import IconYoutube from '@tabler/icons/outline/brand-youtube.svg';
+import Logo from './Logo.astro';
+import { site, waGreeting, waLink } from '../config/site';
+import { kota, layanan, rute } from '../data/halaman';
+
+const socialIcons = { instagram: IconInstagram, facebook: IconFacebook, tiktok: IconTiktok, youtube: IconYoutube };
+const year = new Date().getFullYear();
+
+const toLinks = (base: string, list: { slug: string; nama: string }[]) =>
+  list.map((p) => ({ href: `/${base}/${p.slug}/`, label: p.nama }));
+
+const columns = [
+  { title: 'Kota layanan', items: toLinks('kota', kota) },
+  { title: 'Layanan', items: toLinks('layanan', layanan) },
+  { title: 'Rute populer', items: toLinks('rute', rute) },
+  {
+    title: 'Lainnya',
+    items: [
+      { href: '/armada/', label: 'Semua armada' },
+      { href: '/kontak/', label: 'Kontak' },
+      { href: '/#faq', label: 'FAQ' },
+      { href: '/syarat-ketentuan/', label: 'Syarat & ketentuan' },
+      { href: '/kebijakan-privasi/', label: 'Kebijakan privasi' },
+    ],
+  },
+];
+---
+
+<footer class="footer" id="kontak">
+  <div class="container top">
+    <div class="brand">
+      <Logo />
+      <p>Belum yakin mobil mana yang pas? Tanya admin dulu, gratis.</p>
+      <a class="btn btn-wa" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
+        <IconWa aria-hidden="true" />
+        Chat admin
+      </a>
+      <ul class="contact">
+        <li>
+          <IconPin aria-hidden="true" />
+          <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer">{site.address}</a>
+        </li>
+        <li>
+          <IconClock aria-hidden="true" />
+          <span>{site.hours}</span>
+        </li>
+        <li>
+          <IconPhone aria-hidden="true" />
+          <a href={`tel:+${site.whatsapp}`}>{site.phoneDisplay}</a>
+        </li>
+        <li>
+          <IconMail aria-hidden="true" />
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+        </li>
+      </ul>
+    </div>
+
+    {
+      columns.map((col) => (
+        <nav class="col" aria-label={col.title}>
+          <h2>{col.title}</h2>
+          <ul>
+            {col.items.map((item) => (
+              <li>
+                <a href={item.href}>{item.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))
+    }
+  </div>
+
+  <div class="bottom">
+    <div class="container bottom-inner">
+      <p>&copy; {year} {site.name}</p>
+      <ul class="legal">
+        <li><a href="/kredit-foto/">Kredit foto</a></li>
+      </ul>
+      {
+        site.social.length > 0 && (
+          <ul class="social">
+            {site.social.map((s) => {
+              const Icon = socialIcons[s.icon];
+              return (
+                <li>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}>
+                    <Icon aria-hidden="true" />
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      }
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    font-size: 0.875rem;
+  }
+
+  .top {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.4fr) repeat(4, minmax(0, 1fr));
+    gap: 40px 32px;
+    padding-block: 64px 48px;
+  }
+
+  .brand {
+    display: grid;
+    justify-items: start;
+    align-content: start;
+    gap: 18px;
+  }
+
+  .brand p {
+    color: var(--text-2);
+    max-width: 32ch;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .contact {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+    color: var(--text-2);
+  }
+
+  .contact li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    max-width: 40ch;
+  }
+
+  .contact svg {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+  }
+
+  .contact a {
+    text-decoration: none;
+  }
+
+  .contact a:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  .col h2 {
+    margin-bottom: 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-stretch: 100%;
+    letter-spacing: 0;
+  }
+
+  .col ul {
+    display: grid;
+    gap: 10px;
+    color: var(--text-2);
+  }
+
+  .col a {
+    text-decoration: none;
+  }
+
+  .col a:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  .bottom {
+    color: var(--text-2);
+    font-size: 0.8125rem;
+  }
+
+  .bottom-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px 32px;
+    flex-wrap: wrap;
+    padding-block: 20px;
+    border-top: 1px solid var(--line);
+    padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 20px));
+  }
+
+  .legal,
+  .social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+
+  .legal {
+    margin-left: auto;
+  }
+
+  .social {
+    gap: 16px;
+  }
+
+  .bottom a {
+    text-decoration: none;
+  }
+
+  .bottom a:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  .social svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 1024px) {
+    .top {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .top {
+      grid-template-columns: 1fr 1fr;
+      padding-block: 48px 40px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .legal {
+      margin-left: 0;
+    }
+    .bottom-inner {
+      padding-right: 88px; /* ruang untuk tombol WA mengambang */
+    }
+  }
+</style>

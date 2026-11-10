@@ -1,0 +1,25 @@
+---
+import { site } from '../config/site';
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<span class:list={['logo', className]} aria-label={site.name}>
+  <span aria-hidden="true">{site.logo.before}<span class="accent">{site.logo.accent}</span>{site.logo.after}</span>
+</span>
+
+<style>
+  .logo {
+    font-size: 1.625rem;
+    font-weight: 800;
+    font-stretch: 125%;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .accent {
+    color: var(--accent);
+  }
+</style>

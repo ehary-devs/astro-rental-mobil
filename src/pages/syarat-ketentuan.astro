@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { site } from '../config/site';
+// TODO (pemilik usaha): ini draf umum. Sesuaikan dengan kebijakan asli dan konsultasikan bila perlu.
+---
+
+<Base title={`Syarat & Ketentuan Sewa | ${site.name}`} description={`Syarat dokumen, pembayaran, overtime, dan pembatalan sewa mobil di ${site.name}.`} offsetHeader>
+  <Prose title="Syarat & ketentuan">
+    <p class="updated">Draf, terakhir diperbarui 10 November 2026.</p>
+
+    <h2>Dokumen penyewa</h2>
+    <ul>
+      <li>Lepas kunci: KTP, SIM A aktif, dan satu dokumen pendukung (KK, NPWP, atau ID karyawan).</li>
+      <li>Dengan sopir: cukup KTP pemesan.</li>
+      <li>Dokumen asli diperlihatkan saat serah terima. Kami tidak menyimpan dokumen asli.</li>
+    </ul>
+
+    <h2>Pembayaran</h2>
+    <ul>
+      <li>DP 30% untuk mengunci jadwal, pelunasan saat serah terima.</li>
+      <li>Deposit lepas kunci dikembalikan penuh setelah mobil kembali tanpa kerusakan.</li>
+      <li>Pembayaran lewat transfer ke rekening atas nama usaha atau QRIS resmi.</li>
+    </ul>
+
+    <h2>Waktu sewa dan overtime</h2>
+    <ul>
+      <li>Lepas kunci dihitung per 24 jam, dengan sopir per 12 jam.</li>
+      <li>Toleransi keterlambatan 1 jam. Setelahnya overtime 10% dari harga harian per jam.</li>
+    </ul>
+
+    <h2>Perubahan dan pembatalan</h2>
+    <ul>
+      <li>Ubah jadwal gratis sampai H-1, tergantung ketersediaan mobil.</li>
+      <li>Pembatalan H-1 atau lebih awal: DP dikembalikan 50%. Pembatalan di hari H: DP hangus.</li>
+    </ul>
+
+    <h2>Tanggung jawab penyewa</h2>
+    <ul>
+      <li>Mobil tidak boleh disewakan ulang, dipakai balapan, atau mengangkut barang terlarang.</li>
+      <li>Kerusakan akibat kelalaian dan tilang selama masa sewa menjadi tanggung jawab penyewa.</li>
+    </ul>
+  </Prose>
+</Base>

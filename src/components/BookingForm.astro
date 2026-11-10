@@ -1,0 +1,985 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconPin from '@tabler/icons/outline/map-pin.svg';
+import IconCar from '@tabler/icons/outline/car.svg';
+import IconCalendar from '@tabler/icons/outline/calendar.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconMinus from '@tabler/icons/outline/minus.svg';
+import IconPlus from '@tabler/icons/outline/plus.svg';
+import IconChevron from '@tabler/icons/outline/chevron-down.svg';
+import IconLeft from '@tabler/icons/outline/chevron-left.svg';
+import IconRight from '@tabler/icons/outline/chevron-right.svg';
+import IconInfo from '@tabler/icons/outline/info-circle.svg';
+import IconSparkle from '@tabler/icons/outline/sparkles.svg';
+import { formatHargaSingkat, site, WA_SOURCE_TAG } from '../config/site';
+
+interface Props {
+  /** Nama mobil yang langsung terpilih (dipakai di halaman detail). */
+  selected?: string;
+}
+const { selected = '' } = Astro.props;
+
+const cars = (await getCollection('armada', ({ data }) => data.tersedia)).sort((a, b) => a.data.urutan - b.data.urutan);
+
+const selCar = cars.find((c) => c.data.nama === selected);
+const defaultLayanan = selCar && !selCar.data.harga.lepasKunci ? 'Dengan sopir' : 'Lepas kunci';
+
+const layanan = [
+  { value: 'Lepas kunci', label: 'Lepas kunci' },
+  { value: 'Dengan sopir', label: 'Dengan sopir' },
+  { value: 'Antar jemput bandara', label: 'Antar bandara' },
+];
+
+// Slot jam jemput tiap 30 menit, 05.00 - 22.00 WIB.
+const slots: string[] = [];
+for (let m = 5 * 60; m <= 22 * 60; m += 30) {
+  slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}.${String(m % 60).padStart(2, '0')}`);
+}
+const DEFAULT_JAM = '08.00';
+---
+
+<form
+  class="booking"
+  id="pesan"
+  data-booking
+  data-wa={site.whatsapp}
+  data-name={site.name}
+  data-tag={WA_SOURCE_TAG}
+  aria-labelledby="booking-title"
+  novalidate
+>
+  <h2 id="booking-title" class="visually-hidden">Form pemesanan lewat WhatsApp</h2>
+
+  <div class="top">
+    <fieldset class="tabs">
+      <legend class="visually-hidden">Jenis layanan</legend>
+      {
+        layanan.map((l) => (
+          <label class="tab">
+            <input type="radio" name="layanan" value={l.value} checked={l.value === defaultLayanan} />
+            <span>{l.label}</span>
+          </label>
+        ))
+      }
+    </fieldset>
+
+    <p class="estimate" aria-live="polite">
+      <span class="est-label">Estimasi</span>
+      <strong data-estimate>&nbsp;</strong>
+    </p>
+  </div>
+
+  <div class="fields">
+    <div class="field f-lokasi">
+      <IconPin aria-hidden="true" class="ico" />
+      <label for="bk-lokasi" class="label">Lokasi jemput</label>
+      <input
+        id="bk-lokasi"
+        name="lokasi"
+        type="text"
+        required
+        minlength="3"
+        maxlength="120"
+        autocomplete="street-address"
+        placeholder="Alamat, hotel, atau stasiun"
+        aria-describedby="err-lokasi"
+      />
+      <p class="err" id="err-lokasi">Isi lokasi jemput, minimal 3 huruf.</p>
+    </div>
+
+    <div class="field f-mobil" data-picker="mobil">
+      <IconCar aria-hidden="true" class="ico" />
+      <span class="label" id="lbl-mobil">Mobil</span>
+      <button
+        type="button"
+        class="trigger"
+        data-trigger
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls="pnl-mobil"
+        aria-labelledby="lbl-mobil val-mobil"
+      >
+        <span id="val-mobil" data-display>{selected || 'Bantu pilihkan'}</span>
+      </button>
+      <IconChevron aria-hidden="true" class="chev" />
+      <input type="hidden" name="mobil" value={selected} />
+
+      <div class="panel panel-cars" id="pnl-mobil" data-panel hidden>
+        <ul role="listbox" aria-labelledby="lbl-mobil" tabindex="-1" data-listbox>
+          <li role="option" aria-selected={selected ? 'false' : 'true'} tabindex="-1" data-value="" data-label="Bantu pilihkan" data-lk="" data-ds="">
+            <span class="car-thumb car-thumb-help" aria-hidden="true"><IconSparkle /></span>
+            <span class="car-text">
+              <span class="car-name">Bantu pilihkan</span>
+              <span class="car-meta">Admin pilihkan sesuai rombongan</span>
+            </span>
+          </li>
+          {
+            cars.map((c) => {
+              const { nama, gambar, kapasitas, transmisi, harga } = c.data;
+              const termurah = Math.min(harga.lepasKunci ?? Infinity, harga.denganSopir ?? Infinity);
+              return (
+                <li
+                  role="option"
+                  aria-selected={nama === selected ? 'true' : 'false'}
+                  tabindex="-1"
+                  data-value={nama}
+                  data-label={nama}
+                  data-lk={harga.lepasKunci ?? ''}
+                  data-ds={harga.denganSopir ?? ''}
+                >
+                  <Image src={gambar} alt="" width={112} height={72} fit="cover" class="car-thumb" loading="lazy" />
+                  <span class="car-text">
+                    <span class="car-name">{nama}</span>
+                    <span class="car-meta">
+                      {kapasitas} kursi, {transmisi}
+                    </span>
+                  </span>
+                  <span class="car-price">
+                    <small>mulai</small>
+                    {formatHargaSingkat(termurah)}
+                  </span>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="field f-tanggal" data-picker="tanggal">
+      <IconCalendar aria-hidden="true" class="ico" />
+      <span class="label" id="lbl-tanggal">Tanggal</span>
+      <button
+        type="button"
+        class="trigger"
+        data-trigger
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="pnl-tanggal"
+        aria-labelledby="lbl-tanggal val-tanggal"
+      >
+        <span id="val-tanggal" data-display>Pilih tanggal</span>
+      </button>
+      <IconChevron aria-hidden="true" class="chev" />
+      <input type="hidden" name="tanggal" value="" />
+      <p class="err" id="err-tanggal">Pilih tanggal mulai hari ini.</p>
+
+      <div class="panel panel-cal" id="pnl-tanggal" data-panel role="dialog" aria-label="Pilih tanggal jemput" hidden>
+        <div class="cal-head">
+          <button type="button" class="cal-nav" data-cal-prev aria-label="Bulan sebelumnya"><IconLeft aria-hidden="true" /></button>
+          <p class="cal-title" data-cal-title aria-live="polite"></p>
+          <button type="button" class="cal-nav" data-cal-next aria-label="Bulan berikutnya"><IconRight aria-hidden="true" /></button>
+        </div>
+        <div class="cal-grid cal-dow" aria-hidden="true">
+          <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+        </div>
+        <div class="cal-grid" data-cal-days></div>
+        <div class="cal-quick">
+          <button type="button" data-cal-quick="0">Hari ini</button>
+          <button type="button" data-cal-quick="1">Besok</button>
+          <button type="button" data-cal-quick="sat">Sabtu ini</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field f-jam" data-picker="jam">
+      <IconClock aria-hidden="true" class="ico" />
+      <span class="label" id="lbl-jam">Jam (WIB)</span>
+      <button
+        type="button"
+        class="trigger"
+        data-trigger
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls="pnl-jam"
+        aria-labelledby="lbl-jam val-jam"
+      >
+        <span id="val-jam" data-display>{DEFAULT_JAM}</span>
+      </button>
+      <IconChevron aria-hidden="true" class="chev" />
+      <input type="hidden" name="jam" value={DEFAULT_JAM} />
+
+      <div class="panel panel-jam" id="pnl-jam" data-panel hidden>
+        <ul role="listbox" aria-labelledby="lbl-jam" tabindex="-1" data-listbox class="slot-grid">
+          {
+            slots.map((s) => (
+              <li role="option" tabindex="-1" aria-selected={s === DEFAULT_JAM ? 'true' : 'false'} data-value={s} data-label={s}>
+                {s}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="field f-durasi" data-durasi>
+      <span class="label" id="lbl-durasi">Durasi</span>
+      <div class="stepper" role="group" aria-labelledby="lbl-durasi">
+        <button type="button" class="step" data-step="-1" aria-label="Kurangi durasi"><IconMinus aria-hidden="true" /></button>
+        <input id="bk-durasi" name="durasi" type="number" inputmode="numeric" min="1" max="30" value="1" aria-label="Durasi dalam hari" />
+        <span class="unit">hari</span>
+        <button type="button" class="step" data-step="1" aria-label="Tambah durasi"><IconPlus aria-hidden="true" /></button>
+      </div>
+    </div>
+
+    <button type="submit" class="submit">
+      <IconWa aria-hidden="true" />
+      <span>Pesan via WA</span>
+    </button>
+  </div>
+
+  <p class="hint">
+    <IconInfo aria-hidden="true" />
+    <span data-hint>Belum bayar apa pun. Admin cek ketersediaan dan kirim harga final di WhatsApp.</span>
+  </p>
+</form>
+
+<script>
+  import { initBookingForm } from '../scripts/booking';
+  const form = document.querySelector<HTMLFormElement>('form[data-booking]');
+  if (form) initBookingForm(form);
+</script>
+
+<style>
+  .booking {
+    position: relative;
+    color: var(--text);
+    background: var(--surface);
+    box-shadow: 0 20px 40px -15px rgb(0 0 0 / 0.4);
+    border: 1px solid var(--line);
+  }
+
+  /* Baris atas */
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 20px 14px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tabs {
+    display: inline-flex;
+    gap: 4px;
+    margin: 0;
+    padding: 4px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--bg-2);
+  }
+
+  .tab {
+    position: relative;
+  }
+
+  .tab input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .tab span {
+    display: block;
+    padding: 9px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-2);
+    transition:
+      background-color 0.25s var(--ease),
+      color 0.25s var(--ease);
+  }
+
+  .tab:hover span {
+    color: var(--text);
+  }
+
+  .tab input:checked + span {
+    background: var(--ink);
+    color: var(--on-ink);
+  }
+
+  .tab input:focus-visible + span {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .estimate {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 0.875rem;
+  }
+
+  .est-label {
+    color: var(--text-2);
+    font-size: 0.8125rem;
+  }
+
+  .estimate strong {
+    font-size: 1.1875rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Field */
+  .fields {
+    display: grid;
+    grid-template-columns: 1.45fr 1.35fr 1.1fr 0.85fr 1fr auto;
+  }
+
+  .field {
+    position: relative;
+    display: grid;
+    align-content: center;
+    gap: 2px;
+    min-width: 0;
+    padding: 16px 20px 16px 52px;
+    border-right: 1px solid var(--line);
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .field:hover,
+  .field:focus-within,
+  .field:global(.is-open) {
+    background: var(--bg);
+  }
+
+  .field:focus-within,
+  .field:global(.is-open) {
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+
+  .field[hidden] {
+    display: none;
+  }
+
+  .ico {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    translate: 0 -50%;
+    color: var(--text-2);
+    stroke-width: 1.6;
+    pointer-events: none;
+  }
+
+  .field:focus-within .ico,
+  .field:global(.is-open) .ico {
+    color: var(--accent);
+  }
+
+  .chev {
+    position: absolute;
+    right: 16px;
+    top: calc(50% - 8px);
+    width: 16px;
+    height: 16px;
+    color: var(--text-2);
+    pointer-events: none;
+    transition: transform 0.25s var(--ease);
+  }
+
+  .field:global(.is-open) .chev {
+    transform: rotate(180deg);
+  }
+
+  .label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-2);
+    white-space: nowrap;
+  }
+
+  .field input[type='text'],
+  .field input[type='number'],
+  .trigger {
+    width: 100%;
+    min-height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.9688rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: left;
+  }
+
+  .field input::placeholder {
+    color: var(--text-2);
+    font-weight: 500;
+    opacity: 1;
+  }
+
+  .field input:focus,
+  .trigger:focus {
+    outline: none;
+  }
+
+  .trigger {
+    padding-right: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Seluruh area field bisa diklik */
+  .trigger::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .trigger:focus-visible::after {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+
+  /* Panel popover */
+  .panel {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + 4px);
+    left: 0;
+    padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 36px -10px rgb(0 0 0 / 0.25);
+    cursor: default;
+  }
+
+  .panel[hidden] {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .panel:not([hidden]) {
+      animation: panel-in 0.22s var(--ease);
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  [role='listbox'] {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    outline: none;
+  }
+
+  [role='option'] {
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* Daftar mobil */
+  .panel-cars {
+    width: 380px;
+    max-height: 380px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .panel-cars [role='option'] {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px 8px 8px;
+    border-radius: var(--radius-md);
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .panel-cars [role='option']:hover,
+  .panel-cars [role='option']:global(.is-active) {
+    background: var(--bg-2);
+  }
+
+  .panel-cars [role='option'][aria-selected='true'] {
+    background: var(--accent-soft);
+  }
+
+  .car-thumb {
+    width: 56px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+  }
+
+  .car-thumb-help {
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-sm);
+    background: var(--ink);
+    color: var(--on-ink);
+  }
+
+  .car-thumb-help :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .car-text {
+    display: grid;
+    min-width: 0;
+    line-height: 1.25;
+  }
+
+  .car-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .car-meta {
+    font-size: 0.75rem;
+    color: var(--text-2);
+  }
+
+  .car-price {
+    display: grid;
+    justify-items: end;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .car-price small {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  /* Kalender */
+  .panel-cal {
+    width: 312px;
+    padding: 14px;
+  }
+
+  .cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .cal-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .cal-nav {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .cal-nav:hover:not(:disabled) {
+    border-color: var(--text);
+  }
+
+  .cal-nav:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .cal-nav svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .cal-dow span {
+    padding: 4px 0 6px;
+    text-align: center;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .cal-dow span:last-child {
+    color: #b42318;
+  }
+
+  .cal-grid :global(.day) {
+    position: relative;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      background-color 0.15s var(--ease),
+      color 0.15s var(--ease);
+  }
+
+  .cal-grid :global(.day:hover:not(:disabled)) {
+    background: var(--bg-2);
+  }
+
+  .cal-grid :global(.day.is-sun) {
+    color: #b42318;
+  }
+
+  .cal-grid :global(.day.is-today)::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .cal-grid :global(.day[aria-pressed='true']) {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+
+  .cal-grid :global(.day[aria-pressed='true'])::after {
+    background: var(--on-accent);
+  }
+
+  .cal-grid :global(.day:disabled) {
+    color: #c3c7ce;
+    cursor: not-allowed;
+  }
+
+  .cal-grid :global(.day:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  .cal-quick {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .cal-quick button {
+    flex: 1;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .cal-quick button:hover {
+    border-color: var(--text);
+  }
+
+  /* Jam */
+  .panel-jam {
+    left: auto;
+    right: 0;
+    width: 272px;
+    max-height: 300px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .slot-grid [role='option'] {
+    padding: 8px 0;
+    border-radius: var(--radius-pill);
+    text-align: center;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .slot-grid [role='option']:hover,
+  .slot-grid [role='option']:global(.is-active) {
+    background: var(--bg-2);
+  }
+
+  .slot-grid [role='option'][aria-selected='true'] {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+
+  /* Durasi */
+  .f-durasi {
+    padding-left: 20px;
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+  }
+
+  .field .stepper input {
+    width: 2.4ch;
+    text-align: center;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stepper input::-webkit-outer-spin-button,
+  .stepper input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .unit {
+    font-size: 0.9688rem;
+    font-weight: 600;
+    margin-right: auto;
+  }
+
+  .step {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      border-color 0.2s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  .step:hover:not(:disabled) {
+    border-color: var(--text);
+  }
+
+  .step:active {
+    transform: scale(0.92);
+  }
+
+  .step:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .step svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Error */
+  .err {
+    display: none;
+    position: absolute;
+    left: 52px;
+    right: 12px;
+    bottom: 3px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #b42318;
+  }
+
+  .field:global(.has-error) {
+    background: #fef3f2;
+    box-shadow: inset 0 -2px 0 #b42318;
+  }
+
+  .field:global(.has-error) .err {
+    display: block;
+  }
+
+  .field:global(.has-error) .ico {
+    color: #b42318;
+  }
+
+  /* Submit */
+  .submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 170px;
+    padding: 0 24px;
+    border: 0;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease);
+  }
+
+  .submit:hover {
+    background: var(--accent-hover);
+  }
+
+  .submit svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.25s var(--ease);
+  }
+
+  .submit:hover svg {
+    transform: scale(1.06);
+  }
+
+  .hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .hint svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Responsif */
+  @media (max-width: 1180px) {
+    .fields {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .f-lokasi {
+      grid-column: span 3;
+    }
+    .f-mobil {
+      grid-column: span 3;
+      border-right: 0;
+    }
+    .f-tanggal,
+    .f-jam,
+    .f-durasi {
+      grid-column: span 2;
+      border-top: 1px solid var(--line);
+    }
+    .f-durasi {
+      border-right: 0;
+    }
+    .panel-jam {
+      left: 0;
+      right: auto;
+    }
+    .submit {
+      grid-column: 1 / -1;
+      min-height: 60px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .top {
+      padding: 12px;
+    }
+    .tabs {
+      width: 100%;
+    }
+    .tab {
+      flex: 1;
+    }
+    .tab span {
+      padding-inline: 6px;
+      text-align: center;
+      font-size: 0.8125rem;
+    }
+    .estimate {
+      width: 100%;
+      justify-content: space-between;
+      padding-inline: 4px;
+    }
+    .fields {
+      grid-template-columns: 1fr 1fr;
+    }
+    .f-lokasi,
+    .f-mobil,
+    .f-tanggal {
+      grid-column: 1 / -1;
+      border-right: 0;
+    }
+    .f-mobil,
+    .f-tanggal,
+    .f-jam {
+      border-top: 1px solid var(--line);
+    }
+    .f-jam {
+      grid-column: 1;
+      border-right: 1px solid var(--line);
+    }
+    .f-durasi {
+      grid-column: 2;
+    }
+    .f-jam:has(~ .f-durasi[hidden]) {
+      grid-column: 1 / -1;
+      border-right: 0;
+    }
+    .panel-cars,
+    .panel-cal {
+      left: -1px;
+      right: -1px;
+      width: auto;
+    }
+    .panel-jam {
+      width: calc(200% + 1px);
+      max-width: calc(100vw - 2 * var(--gutter));
+    }
+  }
+</style>

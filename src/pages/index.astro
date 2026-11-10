@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Categories from '../components/Categories.astro';
+import PopularFleet from '../components/PopularFleet.astro';
+import Perks from '../components/Perks.astro';
+import Promo from '../components/Promo.astro';
+import Faq from '../components/Faq.astro';
+import { site } from '../config/site';
+---
+
+<Base
+  title={`Rental Mobil ${site.city} Lepas Kunci & Dengan Sopir | ${site.name}`}
+  description={`Sewa mobil di ${site.city}: Avanza, Innova Zenix, Fortuner, HiAce, sampai Alphard. Lepas kunci atau dengan sopir, pesan cepat lewat WhatsApp.`}
+>
+  <Hero />
+  <Categories />
+  <PopularFleet />
+  <Perks />
+  <Promo />
+  <Faq />
+</Base>

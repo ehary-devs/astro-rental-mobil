@@ -1,0 +1,195 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FleetCard from '../../components/FleetCard.astro';
+import { KATEGORI, type Kategori } from '../../content.config';
+import { site } from '../../config/site';
+
+const cars = (await getCollection('armada', ({ data }) => data.tersedia)).sort((a, b) => a.data.urutan - b.data.urutan);
+
+// Hanya kategori yang punya mobil, urut sesuai KATEGORI.
+const filters = (Object.keys(KATEGORI) as Kategori[])
+  .map((k) => ({ slug: k, label: KATEGORI[k], count: cars.filter((c) => c.data.kategori === k).length }))
+  .filter((f) => f.count > 0);
+---
+
+<Base
+  title={`Daftar Armada Rental Mobil ${site.city} | ${site.name}`}
+  description={`Semua mobil sewaan ${site.name}: city car, MPV keluarga, SUV, minibus, premium, dan mobil listrik. Cek harga mulai per hari lalu pesan lewat WhatsApp.`}
+  offsetHeader
+>
+  <div class="container page">
+    <header class="head">
+      <span class="section-eyebrow">Katalog Armada</span>
+      <h1 class="section-title">Pilihan Armada Lengkap</h1>
+      <p class="lead">
+        {cars.length} unit mobil terawat siap jalan. Harga transparan mulai per hari, konfirmasi instan lewat WhatsApp.
+      </p>
+    </header>
+
+    <div class="filters" role="toolbar" aria-label="Saring kategori" data-filters hidden>
+      <button type="button" class="chip" aria-pressed="true" data-filter="semua">
+        Semua <span class="count">{cars.length}</span>
+      </button>
+      {
+        filters.map((f) => (
+          <button type="button" class="chip" aria-pressed="false" data-filter={f.slug} id={f.slug}>
+            {f.label} <span class="count">{f.count}</span>
+          </button>
+        ))
+      }
+    </div>
+
+    <p class="visually-hidden" aria-live="polite" data-filter-status></p>
+
+    <ul class="grid" data-fleet>
+      {
+        cars.map((car) => (
+          <li data-kategori={car.data.kategori}>
+            <FleetCard car={car} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-filters]');
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-fleet] > li'));
+  const status = document.querySelector<HTMLElement>('[data-filter-status]');
+
+  if (bar) {
+    const chips = Array.from(bar.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+
+    const apply = (slug: string) => {
+      let shown = 0;
+      for (const li of items) {
+        const visible = slug === 'semua' || li.dataset.kategori === slug;
+        li.hidden = !visible;
+        if (visible) shown++;
+      }
+      chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.filter === slug)));
+      if (status) status.textContent = `${shown} mobil ditampilkan`;
+    };
+
+    bar.addEventListener('click', (e) => {
+      const chip = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-filter]');
+      if (!chip) return;
+      const slug = chip.dataset.filter!;
+      apply(slug);
+      history.replaceState(null, '', slug === 'semua' ? location.pathname : `#${slug}`);
+    });
+
+    // Link dari kartu kategori di beranda: /armada/#mpv
+    const fromHash = () => {
+      const h = location.hash.slice(1);
+      apply(chips.some((c) => c.dataset.filter === h) ? h : 'semua');
+    };
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+    bar.hidden = false;
+  }
+</script>
+
+<style>
+  .page {
+    padding-bottom: clamp(64px, 9vw, 112px);
+  }
+
+  .lead {
+    margin-top: 14px;
+    color: var(--text-2);
+    max-width: 60ch;
+  }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-top: 28px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+  }
+
+  .filters[hidden] {
+    display: none;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    min-height: 42px;
+    padding: 0 10px 0 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition:
+      background-color 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      color 0.2s var(--ease);
+  }
+
+  .chip:hover {
+    border-color: var(--text);
+  }
+
+  .count {
+    display: grid;
+    place-items: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--on-ink);
+  }
+
+  .chip[aria-pressed='true'] .count {
+    background: rgb(255 255 255 / 0.2);
+    color: #fff;
+  }
+
+  .grid {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .grid > li[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,203 @@
+---
+import { Image } from 'astro:assets';
+import IconArrow from '@tabler/icons/outline/arrow-up-right.svg';
+import avanza from '../assets/cars/avanza.jpg';
+import fortuner from '../assets/cars/fortuner.jpg';
+import brio from '../assets/cars/brio.jpg';
+import hiace from '../assets/cars/hiace-bali.jpg';
+
+const items = [
+  { slug: 'mpv', title: 'MPV Keluarga', subtitle: '7 Kursi', img: avanza, alt: 'Toyota Avanza abu-abu' },
+  { slug: 'suv', title: 'SUV Tangguh', subtitle: 'Gagah & Luas', img: fortuner, alt: 'Toyota Fortuner putih' },
+  { slug: 'city-car', title: 'City Car', subtitle: '5 Kursi • Irit', img: brio, alt: 'Honda Brio kuning' },
+  { slug: 'minibus', title: 'Minibus Rombongan', subtitle: '14-16 Kursi', img: hiace, alt: 'Toyota HiAce Premio putih di Bali' },
+];
+---
+
+<section class="categories container" id="kategori" aria-labelledby="kategori-title">
+  <div class="head">
+    <span class="section-eyebrow">Pilihan Kategori</span>
+    <h2 id="kategori-title" class="section-title">Pilih sesuai rombongan</h2>
+    <p class="section-desc">Pilihan armada lengkap dari mobil harian lincah hingga minibus untuk rombongan.</p>
+  </div>
+
+  <ul class="grid">
+    {
+      items.map((item) => (
+        <li>
+          <a class="card" href={`/armada/#${item.slug}`}>
+            <Image
+              src={item.img}
+              alt={item.alt}
+              widths={[320, 480, 640]}
+              sizes="(max-width: 560px) 45vw, (max-width: 1024px) 45vw, 290px"
+              class="photo"
+            />
+            <div class="info">
+              <span class="subtitle">{item.subtitle}</span>
+              <span class="title">{item.title}</span>
+            </div>
+            <span class="arrow" aria-hidden="true">
+              <IconArrow />
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .categories {
+    padding-block: clamp(56px, 7vw, 88px);
+  }
+
+  .head {
+    max-width: 600px;
+  }
+
+  .section-desc {
+    margin-top: 8px;
+    font-size: 0.9688rem;
+    color: var(--text-2);
+  }
+
+  .grid {
+    list-style: none;
+    margin: clamp(24px, 4vw, 36px) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .card {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--ink-2);
+    color: #fff;
+    text-decoration: none;
+    box-shadow: var(--shadow-xs);
+    transition:
+      transform 0.25s var(--ease),
+      box-shadow 0.25s var(--ease);
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .card :global(.photo) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to bottom,
+      rgba(14, 16, 20, 0.45) 0%,
+      transparent 35%,
+      rgba(14, 16, 20, 0.75) 100%
+    );
+  }
+
+  .info {
+    position: absolute;
+    z-index: 2;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .title {
+    font-size: clamp(1.1875rem, 1.6vw, 1.375rem);
+    font-weight: 700;
+    font-stretch: 105%;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+
+  .arrow {
+    position: absolute;
+    z-index: 2;
+    right: 16px;
+    bottom: 16px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-pill);
+    background: #ffffff;
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+    transition:
+      background-color 0.2s var(--ease),
+      color 0.2s var(--ease),
+      transform 0.2s var(--ease);
+  }
+
+  .arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .card:hover :global(.photo) {
+    transform: scale(1.04);
+  }
+
+  .card:hover .arrow,
+  .card:focus-visible .arrow {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  @media (max-width: 1024px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .card {
+      aspect-ratio: 1 / 1.15;
+    }
+    .info {
+      top: 14px;
+      left: 14px;
+      right: 14px;
+    }
+    .title {
+      font-size: 1.0625rem;
+    }
+    .arrow {
+      right: 12px;
+      bottom: 12px;
+      width: 34px;
+      height: 34px;
+    }
+  }
+</style>

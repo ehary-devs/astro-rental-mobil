@@ -1,0 +1,81 @@
+---
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import { waGreeting, waLink } from '../config/site';
+---
+
+<a
+  class="wa-float"
+  href={waLink(waGreeting)}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Chat admin lewat WhatsApp"
+  data-wa-float
+>
+  <IconWa aria-hidden="true" />
+</a>
+
+<script>
+  // Di layar kecil, sembunyikan sementara tombol jika form booking sedang aktif terlihat
+  const btn = document.querySelector<HTMLElement>('[data-wa-float]');
+  const heroForm = document.querySelector('#pesan');
+
+  if (btn && heroForm && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isFormVisible = entries[0]?.isIntersecting;
+        if (window.innerWidth <= 640) {
+          btn.classList.toggle('is-hidden', Boolean(isFormVisible));
+        } else {
+          btn.classList.remove('is-hidden');
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(heroForm);
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 640) btn.classList.remove('is-hidden');
+    });
+  }
+</script>
+
+<style>
+  .wa-float {
+    position: fixed;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-pill);
+    background: var(--wa);
+    color: #fff;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+    transition:
+      transform 0.2s var(--ease),
+      opacity 0.2s var(--ease),
+      background-color 0.2s var(--ease);
+  }
+
+  .wa-float.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px) scale(0.9);
+  }
+
+  .wa-float:hover {
+    background: var(--wa-hover);
+    transform: translateY(-2px);
+  }
+
+  .wa-float:active {
+    transform: scale(0.95);
+  }
+
+  .wa-float :global(svg) {
+    width: 26px;
+    height: 26px;
+  }
+</style>

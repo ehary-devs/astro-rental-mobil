@@ -1,0 +1,140 @@
+---
+import { Image } from 'astro:assets';
+import IconArrow from '@tabler/icons/outline/arrow-right.svg';
+import ioniq from '../assets/cars/ioniq5.jpg';
+import { site, WA_SOURCE_TAG, waLink } from '../config/site';
+
+const { promo } = site;
+const pesan = `Halo Admin ${site.name}, saya tertarik promo ${promo.car} (${promo.detail}). ${WA_SOURCE_TAG}`;
+---
+
+{
+  promo.active && (
+    <section class="promo-section container" aria-labelledby="promo-title">
+      <div class="promo-card">
+        <div class="copy">
+          <span class="tag">Promo Spesial</span>
+          <h2 id="promo-title">{promo.title}</h2>
+          <p class="detail">{promo.detail}. Nikmati sensasi berkendara mobil listrik modern dengan kabin senyap dan teknologi mutakhir.</p>
+          
+          <div class="offer-row">
+            <span class="discount-badge">Diskon {promo.value}</span>
+            <a class="btn btn-accent" href={waLink(pesan)} target="_blank" rel="noopener noreferrer">
+              <span>Pesan {promo.car}</span>
+              <IconArrow aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+
+        <div class="media">
+          <Image
+            src={ioniq}
+            alt={`${promo.car} putih tampak depan samping`}
+            widths={[480, 720, 960]}
+            sizes="(max-width: 760px) 100vw, 50vw"
+            class="photo"
+          />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .promo-section {
+    padding-block: clamp(40px, 6vw, 64px);
+  }
+
+  .promo-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    align-items: center;
+    background: var(--ink);
+    border: 1px solid var(--line-dark);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    color: var(--on-ink);
+  }
+
+  .copy {
+    padding: clamp(28px, 4vw, 48px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--on-ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  h2 {
+    font-size: clamp(1.875rem, 3.2vw, 2.5rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  .detail {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--on-ink-2);
+    max-width: 44ch;
+  }
+
+  .offer-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+
+  .discount-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius-pill);
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+
+  .media {
+    position: relative;
+    height: 100%;
+    min-height: 280px;
+    overflow: hidden;
+    background: var(--ink-2);
+  }
+
+  .media :global(.photo) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  @media (max-width: 900px) {
+    .promo-card {
+      grid-template-columns: 1fr;
+    }
+    .media {
+      order: -1;
+      min-height: 220px;
+      max-height: 280px;
+    }
+    .copy {
+      padding: 28px 20px;
+    }
+  }
+</style>

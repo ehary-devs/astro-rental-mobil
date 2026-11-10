@@ -1,0 +1,102 @@
+---
+import { getCollection } from 'astro:content';
+import IconArrow from '@tabler/icons/outline/arrow-right.svg';
+import FleetCard from './FleetCard.astro';
+
+const cars = (await getCollection('armada', ({ data }) => data.populer && data.tersedia))
+  .sort((a, b) => a.data.urutan - b.data.urutan)
+  .slice(0, 4);
+---
+
+<section class="popular" id="armada" aria-labelledby="armada-title">
+  <div class="container">
+    <div class="head">
+      <div>
+        <span class="section-eyebrow">Armada Terpopuler</span>
+        <h2 id="armada-title" class="section-title">Paling sering disewa</h2>
+        <p class="sub">Mobil terlaris dengan ulasan terbaik, terawat rutin, dan siap menemani perjalanan Anda.</p>
+      </div>
+      <a class="btn btn-outline all-link" href="/armada/">
+        <span>Lihat semua armada</span>
+        <IconArrow aria-hidden="true" />
+      </a>
+    </div>
+
+    <ul class="track">
+      {
+        cars.map((car, i) => (
+          <li>
+            <FleetCard car={car} highlight={i === 0} />
+          </li>
+        ))
+      }
+    </ul>
+    <p class="note">Harga mulai per 24 jam untuk lepas kunci atau per 12 jam dengan sopir. Belum termasuk BBM, tol, dan parkir.</p>
+  </div>
+</section>
+
+<style>
+  .popular {
+    padding-block: clamp(64px, 8vw, 100px);
+    background: var(--bg-2);
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .sub {
+    margin-top: 8px;
+    font-size: 1rem;
+    color: var(--text-2);
+    max-width: 540px;
+  }
+
+  .all-link {
+    flex-shrink: 0;
+  }
+
+  .track {
+    position: relative;
+    list-style: none;
+    margin: clamp(28px, 4vw, 44px) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .note {
+    margin-top: 20px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  @media (max-width: 1024px) {
+    .track {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(270px, 44%);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      padding-bottom: 12px;
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      scroll-padding-inline: var(--gutter);
+    }
+    .track > li {
+      scroll-snap-align: start;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .track {
+      grid-auto-columns: 82%;
+    }
+  }
+</style>

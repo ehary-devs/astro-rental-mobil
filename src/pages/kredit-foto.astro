@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { site } from '../config/site';
+import { commonsUrl, LICENSE_URL, photoCredits } from '../data/photo-credits';
+---
+
+<Base title={`Kredit Foto | ${site.name}`} description="Sumber dan lisensi foto mobil yang dipakai di website ini." offsetHeader>
+  <Prose title="Kredit foto">
+    <p>Foto mobil di website ini berasal dari Wikimedia Commons dan dipakai sesuai lisensinya.</p>
+    <ul>
+      {
+        photoCredits.map((p) => (
+          <li>
+            <a href={commonsUrl(p.title)} target="_blank" rel="noopener noreferrer">
+              {p.title.replace(/\.jpg$/i, '')}
+            </a>
+            , oleh {p.author}.{' '}
+            <a href={LICENSE_URL[p.license]} target="_blank" rel="noopener noreferrer">
+              {p.license}
+            </a>
+            . Dipotong dan dikompresi untuk web.
+          </li>
+        ))
+      }
+    </ul>
+  </Prose>
+</Base>

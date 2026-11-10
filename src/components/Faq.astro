@@ -1,0 +1,154 @@
+---
+import IconPlus from '@tabler/icons/outline/plus.svg';
+import { kota } from '../data/halaman';
+
+// TODO (pemilik usaha): sesuaikan jawaban dengan kebijakan asli.
+const faqs = [
+  {
+    q: 'Apa syarat sewa lepas kunci?',
+    a: 'KTP dan SIM A yang masih berlaku, ditambah satu dokumen pendukung seperti KK, NPWP, atau ID karyawan. Kami juga meminta deposit yang dikembalikan saat mobil kembali.',
+  },
+  {
+    q: 'Kalau dengan sopir, apa saja yang sudah termasuk?',
+    a: 'Harga dengan sopir sudah termasuk mobil dan jasa sopir selama 12 jam. BBM, tol, parkir, dan makan sopir dibayar terpisah, kecuali Anda memilih paket all in.',
+  },
+  {
+    q: 'Bagaimana cara bayar?',
+    a: 'Transfer bank atau QRIS. DP 30% untuk mengunci jadwal, sisanya dilunasi saat serah terima mobil.',
+  },
+  {
+    q: 'Boleh dibawa ke luar kota?',
+    a: `Boleh, selama masih di Pulau Jawa dan Bali. Sebutkan tujuan saat memesan supaya kami siapkan mobil yang sesuai. Area utama kami ${kota.slice(0, 3).map((k) => k.nama).join(', ')}, dan sekitarnya.`,
+  },
+  {
+    q: 'Kena biaya kalau telat mengembalikan?',
+    a: 'Ada toleransi 1 jam. Setelah itu dihitung overtime 10% dari harga harian per jam. Lewat 5 jam dihitung satu hari penuh.',
+  },
+  {
+    q: 'Bisa antar jemput ke bandara atau stasiun?',
+    a: 'Bisa. Kami antar mobil atau jemput penumpang di Bandara Ahmad Yani, Stasiun Tawang, dan Stasiun Poncol. Biaya antar dalam kota gratis.',
+  },
+];
+---
+
+<section class="faq container" id="faq" aria-labelledby="faq-title">
+  <div class="faq-head">
+    <span class="section-eyebrow">Tanya Jawab</span>
+    <h2 id="faq-title" class="section-title">Pertanyaan yang sering muncul</h2>
+    <p class="lead">Informasi seputar syarat sewa, penjemputan bandara, durasi, dan metode pembayaran.</p>
+  </div>
+
+  <div class="list">
+    {
+      faqs.map((f) => (
+        <details class="faq-item">
+          <summary>
+            <span>{f.q}</span>
+            <IconPlus aria-hidden="true" class="icon-toggle" />
+          </summary>
+          <div class="faq-body">
+            <p>{f.a}</p>
+          </div>
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .faq {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 32px 56px;
+    padding-block: clamp(56px, 7vw, 88px);
+    align-items: start;
+  }
+
+  .faq-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .lead {
+    font-size: 0.9688rem;
+    color: var(--text-2);
+    line-height: 1.6;
+    max-width: 38ch;
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 0 18px;
+    box-shadow: var(--shadow-xs);
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .faq-item:hover {
+    border-color: #cbd5e1;
+  }
+
+  .faq-item[open] {
+    border-color: #94a3b8;
+  }
+
+  summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .icon-toggle {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    color: var(--text-2);
+    transition: transform 0.2s var(--ease), color 0.2s var(--ease);
+  }
+
+  .faq-item[open] .icon-toggle {
+    transform: rotate(45deg);
+    color: var(--accent);
+  }
+
+  .faq-body {
+    padding-bottom: 18px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+
+  .faq-body p {
+    color: var(--text-2);
+    line-height: 1.6;
+    font-size: 0.9375rem;
+  }
+
+  @media (max-width: 860px) {
+    .faq {
+      grid-template-columns: 1fr;
+    }
+    .lead {
+      max-width: none;
+    }
+  }
+</style>

@@ -1,0 +1,136 @@
+---
+import { Picture } from 'astro:assets';
+import heroImg from '../assets/cars/hero-alphard.jpg';
+import BookingForm from './BookingForm.astro';
+import { site } from '../config/site';
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="media">
+    <Picture
+      src={heroImg}
+      formats={['avif', 'webp']}
+      widths={[640, 960, 1280, 1920]}
+      sizes="100vw"
+      alt="Toyota Alphard hitam terparkir, siap disewa dengan sopir"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </div>
+
+  <div class="container content">
+    <div class="copy">
+      <h1 id="hero-title">Sewa mobil<br />tanpa ribet</h1>
+      <p>
+        Lepas kunci atau dengan sopir di {site.city} dan sekitarnya. Pilih mobil, isi jadwal, admin konfirmasi lewat
+        WhatsApp.
+      </p>
+    </div>
+    <BookingForm />
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: flex-end;
+    min-height: min(100dvh, 880px);
+    padding-top: calc(var(--header-h) + 40px);
+    background: var(--ink);
+    color: var(--on-ink);
+    z-index: 2; /* panel picker form boleh menjorok ke section berikutnya */
+  }
+
+  .media {
+    position: absolute;
+    inset: 0 0 18% 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 62%;
+    filter: brightness(0.72) contrast(1.05) saturate(0.85);
+    -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+  }
+
+  /* Scrim kiri bawah agar headline selalu terbaca di atas foto */
+  .media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, var(--ink) 4%, transparent 55%),
+      linear-gradient(100deg, rgb(14 16 20 / 0.7) 0%, transparent 55%);
+  }
+
+  .content {
+    display: grid;
+    gap: clamp(28px, 4vw, 48px);
+    width: 100%;
+  }
+
+  .copy {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 340px);
+    align-items: end;
+    gap: 24px 48px;
+  }
+
+  h1 {
+    font-size: clamp(2.75rem, 8vw, 5.75rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    color: #ffffff;
+  }
+
+  .copy p {
+    color: var(--on-ink-2);
+    font-size: 0.9375rem;
+    max-width: 38ch;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .copy > * {
+      animation: hero-in 0.9s var(--ease) both;
+    }
+    .copy p {
+      animation-delay: 0.12s;
+    }
+    .media :global(img) {
+      animation: hero-zoom 1.6s var(--ease) both;
+    }
+  }
+
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  @keyframes hero-zoom {
+    from {
+      transform: scale(1.06);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .hero {
+      min-height: auto;
+      padding-top: calc(var(--header-h) + 140px);
+    }
+    .media {
+      inset: 0 0 45% 0;
+    }
+    .copy {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

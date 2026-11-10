@@ -1,0 +1,17 @@
+---
+import type { GetStaticPaths } from 'astro';
+import InfoPage from '../../components/InfoPage.astro';
+import { rute, type RutePage as Page } from '../../data/halaman';
+import { site } from '../../config/site';
+
+export const getStaticPaths = (() => rute.map((page) => ({ params: { slug: page.slug }, props: { page } }))) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page;
+}
+
+const { page } = Astro.props;
+const siblings = rute.filter((p) => p.slug !== page.slug).map((p) => ({ href: `/rute/${p.slug}/`, nama: p.nama }));
+---
+
+<InfoPage {page} parent="Rute populer" title={`${page.judul} | ${site.name}`} {siblings} />

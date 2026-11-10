@@ -1,0 +1,278 @@
+---
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconPin from '@tabler/icons/outline/map-pin.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconPhone from '@tabler/icons/outline/phone.svg';
+import IconMail from '@tabler/icons/outline/mail.svg';
+import IconArrow from '@tabler/icons/outline/arrow-up-right.svg';
+import Base from '../layouts/Base.astro';
+import { site, waGreeting, waLink } from '../config/site';
+import { kota } from '../data/halaman';
+
+const channels = [
+  {
+    icon: IconWa,
+    label: 'WhatsApp',
+    value: site.phoneDisplay,
+    note: 'Paling cepat. Admin balas di jam operasional.',
+    href: waLink(waGreeting),
+    external: true,
+  },
+  {
+    icon: IconPhone,
+    label: 'Telepon',
+    value: site.phoneDisplay,
+    note: 'Untuk hal mendesak saat perjalanan.',
+    href: `tel:+${site.whatsapp}`,
+    external: false,
+  },
+  {
+    icon: IconMail,
+    label: 'Email',
+    value: site.email,
+    note: 'Untuk penawaran perusahaan dan sewa bulanan.',
+    href: `mailto:${site.email}`,
+    external: false,
+  },
+];
+---
+
+<Base
+  title={`Kontak & Alamat | ${site.name}`}
+  description={`Hubungi ${site.name} lewat WhatsApp, telepon, atau email. Alamat garasi di ${site.city}, buka ${site.hours}.`}
+  offsetHeader
+>
+  <div class="container page">
+    <header class="head">
+      <h1 class="section-title">Kontak</h1>
+      <p class="lead">
+        Tanya ketersediaan, harga, atau rute dulu, gratis. Paling cepat lewat WhatsApp.
+      </p>
+      <a class="btn btn-wa" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
+        <IconWa aria-hidden="true" />
+        Chat admin sekarang
+      </a>
+    </header>
+
+    <ul class="channels">
+      {
+        channels.map(({ icon: Icon, label, value, note, href, external }) => (
+          <li>
+            <a
+              class="channel"
+              href={href}
+              target={external ? '_blank' : undefined}
+              rel={external ? 'noopener noreferrer' : undefined}
+            >
+              <Icon aria-hidden="true" class="ch-icon" />
+              <span class="ch-label">{label}</span>
+              <span class="ch-value">{value}</span>
+              <span class="ch-note">{note}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="info">
+      <section aria-labelledby="h-alamat">
+        <h2 id="h-alamat">Garasi &amp; jam buka</h2>
+        <ul class="facts">
+          <li>
+            <IconPin aria-hidden="true" />
+            <span>{site.address}</span>
+          </li>
+          <li>
+            <IconClock aria-hidden="true" />
+            <span>{site.hours}</span>
+          </li>
+        </ul>
+        <a class="maps" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Buka di Google Maps
+          <IconArrow aria-hidden="true" />
+        </a>
+      </section>
+
+      <section aria-labelledby="h-area">
+        <h2 id="h-area">Area layanan</h2>
+        <p class="muted">Mobil bisa diambil di garasi atau diantar ke alamat Anda di kota berikut.</p>
+        <ul class="areas">
+          {
+            kota.map((k) => (
+              <li>
+                <a href={`/kota/${k.slug}/`}>{k.nama}</a>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="muted">
+          Pertanyaan umum soal syarat, pembayaran, dan overtime ada di <a href="/#faq">FAQ</a>.
+        </p>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .page {
+    padding-bottom: clamp(64px, 9vw, 112px);
+  }
+
+  .head {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+  }
+
+  .lead {
+    max-width: 56ch;
+    color: var(--text-2);
+    font-size: 1.0625rem;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .channels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: clamp(32px, 4vw, 48px);
+  }
+
+  .channel {
+    display: grid;
+    gap: 4px;
+    height: 100%;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    transition:
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      transform 0.2s var(--ease);
+  }
+
+  .channel:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+  }
+
+  .channel :global(.ch-icon) {
+    width: 26px;
+    height: 26px;
+    margin-bottom: 12px;
+    stroke-width: 1.6;
+  }
+
+  .ch-label {
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .ch-value {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .ch-note {
+    margin-top: 6px;
+    font-size: 0.875rem;
+    color: var(--text-2);
+  }
+
+  .info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    margin-top: clamp(40px, 5vw, 56px);
+    padding-top: clamp(32px, 4vw, 44px);
+    border-top: 1px solid var(--line);
+  }
+
+  .info h2 {
+    font-size: clamp(1.375rem, 2.2vw, 1.75rem);
+  }
+
+  .facts {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .facts li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    max-width: 44ch;
+  }
+
+  .facts :global(svg) {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+  }
+
+  .maps {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .maps :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .muted {
+    margin-top: 12px;
+    color: var(--text-2);
+  }
+
+  .muted a {
+    color: var(--accent);
+  }
+
+  .areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .areas a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .areas a:hover {
+    border-color: var(--text);
+  }
+
+  @media (max-width: 860px) {
+    .channels,
+    .info {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

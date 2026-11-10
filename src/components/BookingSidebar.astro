@@ -1,0 +1,809 @@
+---
+/**
+ * Kartu pemesanan untuk halaman detail mobil. Mobil sudah tetap, pengunjung memilih paket dan jadwal.
+ * Logika sama dengan form beranda (src/scripts/booking.ts).
+ */
+import type { CollectionEntry } from 'astro:content';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconPin from '@tabler/icons/outline/map-pin.svg';
+import IconCalendar from '@tabler/icons/outline/calendar.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconMinus from '@tabler/icons/outline/minus.svg';
+import IconPlus from '@tabler/icons/outline/plus.svg';
+import IconChevron from '@tabler/icons/outline/chevron-down.svg';
+import IconLeft from '@tabler/icons/outline/chevron-left.svg';
+import IconRight from '@tabler/icons/outline/chevron-right.svg';
+import IconShield from '@tabler/icons/outline/shield-check.svg';
+import { formatHargaLengkap, site, WA_SOURCE_TAG } from '../config/site';
+
+interface Props {
+  car: CollectionEntry<'armada'>;
+}
+
+const { car } = Astro.props;
+const { nama, harga } = car.data;
+
+const paket = [
+  harga.lepasKunci && { value: 'Lepas kunci', label: 'Lepas kunci', price: formatHargaLengkap(harga.lepasKunci), unit: '/24 jam' },
+  harga.denganSopir && { value: 'Dengan sopir', label: 'Dengan sopir', price: formatHargaLengkap(harga.denganSopir), unit: '/12 jam' },
+  { value: 'Antar jemput bandara', label: 'Antar jemput bandara', price: 'Sesuai jarak', unit: '' },
+].filter((p): p is { value: string; label: string; price: string; unit: string } => Boolean(p));
+
+const slots: string[] = [];
+for (let m = 5 * 60; m <= 22 * 60; m += 30) {
+  slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}.${String(m % 60).padStart(2, '0')}`);
+}
+const DEFAULT_JAM = '08.00';
+---
+
+<form
+  class="side"
+  id="pesan"
+  data-booking
+  data-wa={site.whatsapp}
+  data-name={site.name}
+  data-tag={WA_SOURCE_TAG}
+  data-car={nama}
+  data-lk={harga.lepasKunci ?? ''}
+  data-ds={harga.denganSopir ?? ''}
+  aria-labelledby="side-title"
+  novalidate
+>
+  <h2 id="side-title" class="title">Pesan {nama}</h2>
+
+  <fieldset class="plans">
+    <legend class="sub">Pilih paket</legend>
+    {
+      paket.map((p, i) => (
+        <label class="plan">
+          <input type="radio" name="layanan" value={p.value} checked={i === 0} />
+          <span class="radio" aria-hidden="true" />
+          <span class="plan-name">{p.label}</span>
+          <span class="plan-price">
+            {p.price}
+            {p.unit && <small>{p.unit}</small>}
+          </span>
+        </label>
+      ))
+    }
+  </fieldset>
+
+  <div class="grid">
+    <div class="field f-lokasi">
+      <label for="bk-lokasi" class="label">Lokasi jemput</label>
+      <div class="box">
+        <IconPin aria-hidden="true" class="ico" />
+        <input
+          id="bk-lokasi"
+          name="lokasi"
+          type="text"
+          required
+          minlength="3"
+          maxlength="120"
+          autocomplete="street-address"
+          placeholder="Alamat, hotel, atau stasiun"
+          aria-describedby="err-lokasi"
+        />
+      </div>
+      <p class="err" id="err-lokasi">Isi lokasi jemput, minimal 3 huruf.</p>
+    </div>
+
+    <div class="field f-tanggal" data-picker="tanggal">
+      <span class="label" id="lbl-tanggal">Tanggal</span>
+      <div class="box">
+        <IconCalendar aria-hidden="true" class="ico" />
+        <button
+          type="button"
+          class="trigger"
+          data-trigger
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          aria-controls="pnl-tanggal"
+          aria-labelledby="lbl-tanggal val-tanggal"
+        >
+          <span id="val-tanggal" data-display>Pilih tanggal</span>
+        </button>
+        <IconChevron aria-hidden="true" class="chev" />
+      </div>
+      <input type="hidden" name="tanggal" value="" />
+
+      <div class="panel panel-cal" id="pnl-tanggal" data-panel role="dialog" aria-label="Pilih tanggal jemput" hidden>
+        <div class="cal-head">
+          <button type="button" class="cal-nav" data-cal-prev aria-label="Bulan sebelumnya"><IconLeft aria-hidden="true" /></button>
+          <p class="cal-title" data-cal-title aria-live="polite"></p>
+          <button type="button" class="cal-nav" data-cal-next aria-label="Bulan berikutnya"><IconRight aria-hidden="true" /></button>
+        </div>
+        <div class="cal-grid cal-dow" aria-hidden="true">
+          <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+        </div>
+        <div class="cal-grid" data-cal-days></div>
+        <div class="cal-quick">
+          <button type="button" data-cal-quick="0">Hari ini</button>
+          <button type="button" data-cal-quick="1">Besok</button>
+          <button type="button" data-cal-quick="sat">Sabtu ini</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field f-jam" data-picker="jam">
+      <span class="label" id="lbl-jam">Jam (WIB)</span>
+      <div class="box">
+        <IconClock aria-hidden="true" class="ico" />
+        <button
+          type="button"
+          class="trigger"
+          data-trigger
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          aria-controls="pnl-jam"
+          aria-labelledby="lbl-jam val-jam"
+        >
+          <span id="val-jam" data-display>{DEFAULT_JAM}</span>
+        </button>
+        <IconChevron aria-hidden="true" class="chev" />
+      </div>
+      <input type="hidden" name="jam" value={DEFAULT_JAM} />
+
+      <div class="panel panel-jam" id="pnl-jam" data-panel hidden>
+        <ul role="listbox" aria-labelledby="lbl-jam" tabindex="-1" data-listbox class="slot-grid">
+          {
+            slots.map((s) => (
+              <li role="option" tabindex="-1" aria-selected={s === DEFAULT_JAM ? 'true' : 'false'} data-value={s} data-label={s}>
+                {s}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="field f-durasi" data-durasi>
+      <span class="label" id="lbl-durasi">Durasi</span>
+      <div class="stepper" role="group" aria-labelledby="lbl-durasi">
+        <button type="button" class="step" data-step="-1" aria-label="Kurangi durasi"><IconMinus aria-hidden="true" /></button>
+        <input id="bk-durasi" name="durasi" type="number" inputmode="numeric" min="1" max="30" value="1" aria-label="Durasi dalam hari" />
+        <span class="unit">hari</span>
+        <button type="button" class="step" data-step="1" aria-label="Tambah durasi"><IconPlus aria-hidden="true" /></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="total" aria-live="polite">
+    <span>Estimasi <span class="days">(<span data-estimate-days>1 hari</span>)</span></span>
+    <strong data-estimate>&nbsp;</strong>
+  </div>
+
+  <button type="submit" class="submit">
+    <IconWa aria-hidden="true" />
+    Pesan via WhatsApp
+  </button>
+
+  <p class="hint">
+    <IconShield aria-hidden="true" />
+    <span data-hint>Belum bayar apa pun. Admin cek ketersediaan dan kirim harga final di WhatsApp.</span>
+  </p>
+</form>
+
+<script>
+  import { initBookingForm } from '../scripts/booking';
+  const form = document.querySelector<HTMLFormElement>('form[data-booking]');
+  if (form) initBookingForm(form);
+</script>
+
+<style>
+  .side {
+    display: grid;
+    gap: 20px;
+    padding: 26px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .title {
+    font-size: 1.25rem;
+    font-stretch: 110%;
+  }
+
+  .sub,
+  .label {
+    display: block;
+    margin-bottom: 8px;
+    padding: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Paket */
+  .plans {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .plan {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition:
+      border-color 0.2s var(--ease),
+      background-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
+  }
+
+  .plan:hover {
+    border-color: #b9bec7;
+  }
+
+  .plan input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .radio {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #9aa0aa;
+    border-radius: 50%;
+    transition:
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
+  }
+
+  .plan-name {
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .plan-price {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .plan-price small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  .plan:has(input:checked) {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  .plan input:checked ~ .radio {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 4px var(--accent);
+  }
+
+  .plan:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Field */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 12px;
+  }
+
+  .f-lokasi,
+  .f-durasi {
+    grid-column: 1 / -1;
+  }
+
+  .field {
+    position: relative;
+    min-width: 0;
+  }
+
+  .field[hidden] {
+    display: none;
+  }
+
+  .box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    transition:
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
+  }
+
+  .box:hover {
+    border-color: #b9bec7;
+  }
+
+  .box:focus-within,
+  .field:global(.is-open) .box {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .ico {
+    position: absolute;
+    left: 14px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-2);
+    stroke-width: 1.7;
+    pointer-events: none;
+  }
+
+  .box:focus-within .ico,
+  .field:global(.is-open) .ico {
+    color: var(--accent);
+  }
+
+  .chev {
+    position: absolute;
+    right: 12px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-2);
+    pointer-events: none;
+    transition: transform 0.25s var(--ease);
+  }
+
+  .field:global(.is-open) .chev {
+    transform: rotate(180deg);
+  }
+
+  .box input,
+  .trigger {
+    width: 100%;
+    height: 100%;
+    padding: 0 36px 0 42px;
+    border: 0;
+    background: transparent;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text);
+    text-align: left;
+  }
+
+  .box input {
+    padding-right: 14px;
+  }
+
+  .box input::placeholder {
+    color: var(--text-2);
+    opacity: 1;
+  }
+
+  .box input:focus,
+  .trigger:focus {
+    outline: none;
+  }
+
+  .trigger {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Durasi */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 48px;
+    padding: 0 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+  }
+
+  .stepper input {
+    width: 3ch;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stepper input:focus {
+    outline: none;
+  }
+
+  .stepper input::-webkit-outer-spin-button,
+  .stepper input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .stepper:focus-within {
+    border-color: var(--accent);
+  }
+
+  .unit {
+    margin-right: auto;
+    font-size: 0.9375rem;
+    color: var(--text-2);
+  }
+
+  .stepper .step:first-child {
+    order: 0;
+  }
+
+  .step {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      border-color 0.2s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  .step:hover:not(:disabled) {
+    border-color: var(--text);
+  }
+
+  .step:active {
+    transform: scale(0.92);
+  }
+
+  .step:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .step svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Error */
+  .err {
+    display: none;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #b42318;
+  }
+
+  .field:global(.has-error) .box {
+    border-color: #b42318;
+    background: #fef3f2;
+  }
+
+  .field:global(.has-error) .err {
+    display: block;
+  }
+
+  /* Total */
+  .total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .days {
+    color: var(--text-2);
+    font-weight: 400;
+  }
+
+  .total strong {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-stretch: 110%;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 50px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.9688rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  .submit:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  .submit:active {
+    transform: translateY(1px);
+  }
+
+  .submit svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .hint {
+    display: flex;
+    gap: 8px;
+    margin-top: -6px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .hint svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+  }
+
+  /* Panel popover (kalender & jam) */
+  .panel {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + 6px);
+    left: 0;
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .panel[hidden] {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .panel:not([hidden]) {
+      animation: panel-in 0.22s var(--ease);
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  .panel-cal {
+    width: 312px;
+    padding: 14px;
+  }
+
+  .panel-jam {
+    left: auto;
+    right: 0;
+    width: 264px;
+    max-height: 280px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .cal-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .cal-nav {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  .cal-nav:hover:not(:disabled) {
+    border-color: var(--text);
+  }
+
+  .cal-nav:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .cal-nav svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .cal-dow span {
+    padding: 4px 0 6px;
+    text-align: center;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .cal-dow span:last-child {
+    color: #b42318;
+  }
+
+  .cal-grid :global(.day) {
+    position: relative;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .cal-grid :global(.day:hover:not(:disabled)) {
+    background: var(--bg-2);
+  }
+
+  .cal-grid :global(.day.is-sun) {
+    color: #b42318;
+  }
+
+  .cal-grid :global(.day.is-today)::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .cal-grid :global(.day[aria-pressed='true']) {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+
+  .cal-grid :global(.day[aria-pressed='true'])::after {
+    background: var(--on-accent);
+  }
+
+  .cal-grid :global(.day:disabled) {
+    color: #c3c7ce;
+    cursor: not-allowed;
+  }
+
+  .cal-grid :global(.day:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  .cal-quick {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .cal-quick button {
+    flex: 1;
+    min-height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .cal-quick button:hover {
+    border-color: var(--text);
+  }
+
+  [role='listbox'] {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    outline: none;
+  }
+
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .slot-grid [role='option'] {
+    padding: 8px 0;
+    border-radius: var(--radius-pill);
+    text-align: center;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .slot-grid [role='option']:hover,
+  .slot-grid [role='option']:global(.is-active) {
+    background: var(--bg-2);
+  }
+
+  .slot-grid [role='option'][aria-selected='true'] {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+
+  @media (max-width: 420px) {
+    .side {
+      padding: 18px;
+    }
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .panel-cal,
+    .panel-jam {
+      left: 0;
+      right: 0;
+      width: auto;
+    }
+  }
+</style>

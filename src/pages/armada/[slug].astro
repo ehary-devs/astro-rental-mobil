@@ -1,0 +1,533 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Picture } from 'astro:assets';
+import IconUsers from '@tabler/icons/outline/users.svg';
+import IconGear from '@tabler/icons/outline/manual-gearbox.svg';
+import IconFuel from '@tabler/icons/outline/gas-station.svg';
+import IconCar from '@tabler/icons/outline/car.svg';
+import IconCheck from '@tabler/icons/outline/check.svg';
+import IconX from '@tabler/icons/outline/x.svg';
+import IconId from '@tabler/icons/outline/id.svg';
+import IconChevronRight from '@tabler/icons/outline/chevron-right.svg';
+import Base from '../../layouts/Base.astro';
+import BookingSidebar from '../../components/BookingSidebar.astro';
+import FleetCard from '../../components/FleetCard.astro';
+import { KATEGORI } from '../../content.config';
+import { formatHargaLengkap, formatHargaSingkat, site } from '../../config/site';
+
+export const getStaticPaths = (async () => {
+  const cars = await getCollection('armada', ({ data }) => data.tersedia);
+  return cars.map((car) => ({ params: { slug: car.id }, props: { car } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  car: CollectionEntry<'armada'>;
+}
+
+const { car } = Astro.props;
+const { nama, kategori, gambar, alt, kapasitas, transmisi, bbm, harga } = car.data;
+const { Content } = await render(car);
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const termurah = Math.min(harga.lepasKunci ?? Infinity, harga.denganSopir ?? Infinity);
+
+// Mobil lain: kategori sama dulu, lalu sisanya.
+const related = (await getCollection('armada', ({ data, id }) => data.tersedia && id !== car.id))
+  .sort(
+    (a, b) =>
+      Number(b.data.kategori === kategori) - Number(a.data.kategori === kategori) || a.data.urutan - b.data.urutan,
+  )
+  .slice(0, 3);
+
+const specs = [
+  { icon: IconUsers, label: 'Kapasitas', value: `${kapasitas} kursi` },
+  { icon: IconGear, label: 'Transmisi', value: cap(transmisi) },
+  { icon: IconFuel, label: 'Bahan bakar', value: cap(bbm) },
+  { icon: IconCar, label: 'Kategori', value: KATEGORI[kategori] },
+];
+
+// Isi paket & syarat harus konsisten dengan FAQ dan Syarat & Ketentuan.
+const paket = [
+  harga.lepasKunci && {
+    nama: 'Lepas kunci',
+    termasuk: ['Mobil bersih dan siap jalan', 'Antar jemput mobil dalam kota', 'Bantuan darurat 24 jam'],
+    tidak: ['BBM, tol, dan parkir', 'Deposit, dikembalikan setelah sewa'],
+    syarat: ['KTP dan SIM A aktif', 'KK, NPWP, atau ID karyawan', 'Deposit sesuai jenis mobil'],
+  },
+  harga.denganSopir && {
+    nama: 'Dengan sopir',
+    termasuk: ['Sopir berpengalaman, 12 jam', 'Penjemputan di alamat Anda', 'Bantuan darurat 24 jam'],
+    tidak: ['BBM, tol, dan parkir', 'Makan sopir dan overtime'],
+    syarat: ['KTP pemesan'],
+  },
+].filter((p): p is Exclude<typeof p, 0 | undefined | false> => Boolean(p));
+---
+
+<Base
+  title={`Sewa ${nama} ${site.city} Mulai ${formatHargaSingkat(termurah)}/Hari | ${site.name}`}
+  description={`Rental ${nama} di ${site.city}, ${kapasitas} kursi, ${transmisi}. ${paket.map((p) => p.nama.toLowerCase()).join(' atau ')} mulai ${formatHargaLengkap(termurah)}. Pesan cepat lewat WhatsApp.`}
+  image={gambar}
+  offsetHeader
+>
+  <div class="container">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Beranda</a></li>
+        <li aria-hidden="true"><IconChevronRight /></li>
+        <li><a href="/armada/">Armada</a></li>
+        <li aria-hidden="true"><IconChevronRight /></li>
+        <li><span aria-current="page">{nama}</span></li>
+      </ol>
+    </nav>
+
+    <div class="layout">
+      <div class="hero">
+        <p class="cat">{KATEGORI[kategori]}</p>
+        <h1>{nama}</h1>
+        <ul class="chips" aria-label="Ringkasan">
+          <li><IconUsers aria-hidden="true" />{kapasitas} kursi</li>
+          <li><IconGear aria-hidden="true" />{cap(transmisi)}</li>
+          <li><IconFuel aria-hidden="true" />{cap(bbm)}</li>
+        </ul>
+        <div class="media">
+          <Picture
+            src={gambar}
+            alt={alt}
+            formats={['avif', 'webp']}
+            widths={[480, 720, 960, 1280]}
+            sizes="(max-width: 960px) 100vw, 760px"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+      </div>
+
+      <aside class="aside" aria-label="Pemesanan">
+        <BookingSidebar car={car} />
+      </aside>
+
+      <div class="details">
+        <section aria-labelledby="h-tentang">
+          <h2 id="h-tentang">Tentang mobil ini</h2>
+          <div class="desc"><Content /></div>
+          <dl class="specs">
+            {
+              specs.map(({ icon: Icon, label, value }) => (
+                <div>
+                  <Icon aria-hidden="true" />
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section aria-labelledby="h-paket">
+          <h2 id="h-paket">Yang didapat</h2>
+          <div class:list={['paket', { one: paket.length === 1 }]}>
+            {
+              paket.map((p) => (
+                <div class="paket-col">
+                  <h3>{p.nama}</h3>
+                  <ul class="list">
+                    {p.termasuk.map((t) => (
+                      <li class="yes">
+                        <IconCheck aria-hidden="true" />
+                        {t}
+                      </li>
+                    ))}
+                    {p.tidak.map((t) => (
+                      <li class="no">
+                        <IconX aria-hidden="true" />
+                        <span>
+                          <span class="visually-hidden">Tidak termasuk: </span>
+                          {t}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <section aria-labelledby="h-syarat">
+          <h2 id="h-syarat">Yang perlu disiapkan</h2>
+          <div class:list={['paket', { one: paket.length === 1 }]}>
+            {
+              paket.map((p) => (
+                <div class="paket-col">
+                  <h3>{p.nama}</h3>
+                  <ul class="list">
+                    {p.syarat.map((t) => (
+                      <li class="doc">
+                        <IconId aria-hidden="true" />
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+          <p class="note">
+            Harga bisa berbeda saat musim liburan. Detail lengkap di <a href="/syarat-ketentuan/">syarat &amp; ketentuan</a>.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    {
+      related.length > 0 && (
+        <section class="related" aria-labelledby="related-title">
+          <div class="related-head">
+            <h2 id="related-title">Mobil lain</h2>
+            <a href="/armada/" class="see-all">
+              Lihat semua armada
+            </a>
+          </div>
+          <ul class="related-grid">
+            {related.map((c) => (
+              <li>
+                <FleetCard car={c} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  /* Breadcrumb */
+  .crumbs ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .crumbs a {
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  .crumbs li[aria-hidden] :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  .crumbs [aria-current] {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Layout: konten kiri, kartu pesan sticky kanan */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 400px;
+    grid-template-areas:
+      'hero aside'
+      'details aside';
+    column-gap: clamp(32px, 4vw, 56px);
+    margin-top: 20px;
+  }
+
+  .hero {
+    grid-area: hero;
+  }
+
+  .aside {
+    grid-area: aside;
+    align-self: start;
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+  }
+
+  .details {
+    grid-area: details;
+  }
+
+  .cat {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  h1 {
+    margin-top: 4px;
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+  }
+
+  .chips {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chips li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .chips :global(svg) {
+    width: 16px;
+    height: 16px;
+    color: var(--text-2);
+  }
+
+  .media {
+    margin-top: 24px;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-md);
+    background: var(--bg-2);
+  }
+
+  .media :global(picture) {
+    height: 100%;
+  }
+
+  .media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Detail */
+  .details section {
+    padding-top: clamp(32px, 4vw, 44px);
+    margin-top: clamp(32px, 4vw, 44px);
+    border-top: 1px solid var(--line);
+  }
+
+  .details h2 {
+    font-size: clamp(1.375rem, 2.2vw, 1.75rem);
+  }
+
+  .desc {
+    margin-top: 14px;
+    max-width: 62ch;
+    color: var(--text-2);
+    font-size: 1.0625rem;
+  }
+
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0 0;
+  }
+
+  .specs > div {
+    display: grid;
+    gap: 4px;
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .specs :global(svg) {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 10px;
+    color: var(--text);
+    stroke-width: 1.6;
+  }
+
+  .specs dt {
+    font-size: 0.75rem;
+    color: var(--text-2);
+  }
+
+  .specs dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .paket {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .paket.one {
+    grid-template-columns: 1fr;
+  }
+
+  .paket-col {
+    padding: 24px;
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .paket h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    font-stretch: 105%;
+    letter-spacing: -0.01em;
+  }
+
+  .paket.one h3 {
+    display: none;
+  }
+
+  .list {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .paket.one .list {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 0;
+  }
+
+  .list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.9375rem;
+  }
+
+  .list :global(svg) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+  }
+
+  .yes :global(svg) {
+    color: var(--wa);
+  }
+
+  .no {
+    color: var(--text-2);
+  }
+
+  .no :global(svg) {
+    color: #9aa0aa;
+  }
+
+  .doc :global(svg) {
+    color: var(--text-2);
+  }
+
+  .note {
+    margin-top: 24px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .note a {
+    color: var(--accent);
+  }
+
+  /* Mobil lain */
+  .related {
+    margin-top: clamp(56px, 7vw, 88px);
+    padding-block: clamp(40px, 5vw, 56px) clamp(56px, 7vw, 88px);
+    border-top: 1px solid var(--line);
+  }
+
+  .related h2 {
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+  }
+
+  .related-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .see-all {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .related-grid {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 1100px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr) 360px;
+    }
+    .specs {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .layout {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'hero'
+        'aside'
+        'details';
+    }
+    .aside {
+      position: static;
+      margin-top: 24px;
+    }
+    .related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .related-grid > li:nth-child(3) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .paket,
+    .paket.one .list {
+      grid-template-columns: 1fr;
+    }
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+    .related-grid > li:nth-child(3) {
+      display: block;
+    }
+  }
+</style>

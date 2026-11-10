@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "astro-rental-mobil",
+  "compatibility_date": "2026-11-10",
+  // Static only: pemesanan lewat link wa.me di client, tidak butuh worker /api.
+  // Kalau nanti butuh /api, tambah "main", assets.binding "ASSETS", dan run_worker_first ["/api/*"].
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}

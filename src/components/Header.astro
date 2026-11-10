@@ -1,0 +1,527 @@
+---
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconMenu from '@tabler/icons/outline/menu-2.svg';
+import IconX from '@tabler/icons/outline/x.svg';
+import IconChevron from '@tabler/icons/outline/chevron-down.svg';
+import Logo from './Logo.astro';
+import { waGreeting, waLink } from '../config/site';
+import { kota, layanan, rute } from '../data/halaman';
+
+type Link = { href: string; label: string };
+type Group = { title?: string; links: Link[] };
+type Item = { label: string; href?: string; match: string[]; groups?: Group[] };
+
+const toLinks = (base: string, list: { slug: string; nama: string }[]): Link[] =>
+  list.map((p) => ({ href: `/${base}/${p.slug}/`, label: p.nama }));
+
+const nav: Item[] = [
+  { label: 'Armada', href: '/armada/', match: ['/armada/'] },
+  { label: 'Layanan', match: ['/layanan/'], groups: [{ links: toLinks('layanan', layanan) }] },
+  {
+    label: 'Area & rute',
+    match: ['/kota/', '/rute/'],
+    groups: [
+      { title: 'Kota layanan', links: toLinks('kota', kota) },
+      { title: 'Rute populer', links: toLinks('rute', rute) },
+    ],
+  },
+  { label: 'FAQ', href: '/#faq', match: [] },
+  { label: 'Kontak', href: '/kontak/', match: ['/kontak/'] },
+];
+
+const path = Astro.url.pathname;
+const isActive = (item: Item) => item.match.some((m) => path.startsWith(m));
+---
+
+<header class="header">
+  <div class="bar">
+    <a href="/" class="brand" aria-label="Beranda"><Logo /></a>
+
+    <nav class="nav" aria-label="Navigasi utama">
+      <ul class="nav-list">
+        {
+          nav.map((item, i) => (
+            <li class:list={['nav-item', { active: isActive(item) }]}>
+              {item.groups ? (
+                <>
+                  <button
+                    type="button"
+                    class="nav-link"
+                    aria-expanded="false"
+                    aria-controls={`dd-${i}`}
+                    data-dropdown-toggle
+                  >
+                    {item.label}
+                    <IconChevron aria-hidden="true" class="chev" />
+                  </button>
+                  <div class:list={['dropdown', { wide: item.groups.length > 1 }]} id={`dd-${i}`} data-dropdown>
+                    {item.groups.map((g) => (
+                      <div class="dd-group">
+                        {g.title && <p class="dd-title">{g.title}</p>}
+                        <ul>
+                          {g.links.map((l) => (
+                            <li>
+                              <a href={l.href} aria-current={l.href === path ? 'page' : undefined}>
+                                {l.label}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <a class="nav-link" href={item.href} aria-current={isActive(item) ? 'page' : undefined}>
+                  {item.label}
+                </a>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <a class="btn btn-wa cta" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
+        <IconWa aria-hidden="true" />
+        <span>Chat admin</span>
+      </a>
+
+      <details class="menu" data-mobile-menu>
+        <summary aria-label="Menu">
+          <IconMenu aria-hidden="true" class="ic-open" />
+          <IconX aria-hidden="true" class="ic-close" />
+        </summary>
+        <nav class="panel" aria-label="Navigasi seluler">
+          <ul class="m-list">
+            {
+              // Link langsung dulu supaya tidak tenggelam di bawah daftar panjang.
+              [...nav.filter((n) => !n.groups), ...nav.filter((n) => n.groups)].map((item) =>
+                item.groups ? (
+                  item.groups.map((g) => (
+                    <li class="m-group">
+                      <p class="m-title">{g.title ?? item.label}</p>
+                      <ul class="m-chips">
+                        {g.links.map((l) => (
+                          <li>
+                            <a href={l.href} aria-current={l.href === path ? 'page' : undefined}>
+                              {l.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))
+                ) : (
+                  <li>
+                    <a class="m-link" href={item.href} aria-current={isActive(item) ? 'page' : undefined}>
+                      {item.label}
+                    </a>
+                  </li>
+                ),
+              )
+            }
+          </ul>
+          <a class="btn btn-wa m-cta" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
+            <IconWa aria-hidden="true" />
+            Chat admin di WhatsApp
+          </a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Dropdown desktop: klik/Enter membuka, Esc & klik di luar menutup. Hover ditangani CSS.
+  const toggles = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-dropdown-toggle]'));
+
+  const closeAll = (except?: HTMLButtonElement) => {
+    for (const t of toggles) if (t !== except) t.setAttribute('aria-expanded', 'false');
+  };
+
+  for (const t of toggles) {
+    t.addEventListener('click', () => {
+      const open = t.getAttribute('aria-expanded') === 'true';
+      closeAll(t);
+      t.setAttribute('aria-expanded', String(!open));
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement).closest('.nav-item')) closeAll();
+  });
+
+  const mobile = document.querySelector<HTMLDetailsElement>('[data-mobile-menu]');
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const openToggle = toggles.find((t) => t.getAttribute('aria-expanded') === 'true');
+    if (openToggle) {
+      closeAll();
+      openToggle.focus();
+    }
+    if (mobile?.open) {
+      mobile.open = false;
+      mobile.querySelector('summary')?.focus();
+    }
+  });
+
+  // Tutup menu seluler setelah link dipilih (penting untuk anchor di halaman yang sama, mis. /#faq).
+  mobile?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) mobile.open = false;
+  });
+</script>
+
+<style>
+  .header {
+    position: fixed;
+    inset: 16px 0 auto;
+    z-index: 50; /* lapisan: header 50, tombol WA 40 */
+    padding-inline: var(--gutter);
+    pointer-events: none;
+  }
+
+  .bar {
+    position: relative;
+    pointer-events: auto;
+    max-width: var(--container);
+    height: var(--header-h);
+    margin-inline: auto;
+    padding: 0 10px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgb(255 255 255 / 0.88);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgb(226 232 240 / 0.85);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-lg);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .bar {
+      background: var(--surface);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+
+  .brand {
+    flex: none;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ---------- Desktop ---------- */
+  .nav {
+    margin-left: clamp(16px, 4vw, 48px);
+  }
+
+  .nav-list {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 44px;
+    padding: 0 14px;
+    border: 0;
+    background: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s var(--ease);
+  }
+
+  .nav-link:hover,
+  .nav-item:hover > .nav-link,
+  .nav-link[aria-expanded='true'] {
+    color: var(--text);
+  }
+
+  /* Penanda halaman aktif: garis aksen di bawah teks. */
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 6px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.25s var(--ease);
+  }
+
+  .nav-item.active > .nav-link {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .nav-item.active > .nav-link::after {
+    transform: scaleX(1);
+  }
+
+  .nav-item.active > button.nav-link::after {
+    right: 32px;
+  }
+
+  .nav-link :global(.chev) {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s var(--ease);
+  }
+
+  .nav-link[aria-expanded='true'] :global(.chev),
+  .nav-item:hover > .nav-link :global(.chev) {
+    transform: rotate(180deg);
+  }
+
+  .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 230px;
+    padding: 8px;
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: 0 24px 48px -20px rgb(14 16 20 / 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition:
+      opacity 0.18s var(--ease),
+      transform 0.18s var(--ease),
+      visibility 0s linear 0.18s;
+  }
+
+  /* Jembatan tak terlihat agar hover tidak putus di celah antara tombol dan panel. */
+  .dropdown::before {
+    content: '';
+    position: absolute;
+    inset: -12px 0 auto;
+    height: 12px;
+  }
+
+  .dropdown.wide {
+    min-width: 520px;
+  }
+
+  .dropdown.wide .dd-group {
+    flex: 1;
+  }
+
+  .dropdown.wide .dd-group + .dd-group {
+    padding-left: 8px;
+    border-left: 1px solid var(--line);
+  }
+
+  .nav-item:hover > .dropdown,
+  .nav-link[aria-expanded='true'] + .dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 0.18s var(--ease),
+      transform 0.18s var(--ease);
+  }
+
+  .dd-title {
+    padding: 8px 12px 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .dropdown a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .dropdown a:hover {
+    background: var(--bg-2);
+  }
+
+  .dropdown a[aria-current='page'] {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  /* ---------- Seluler ---------- */
+  .menu {
+    display: none;
+  }
+
+  .menu summary {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    background: var(--ink);
+    color: var(--on-ink);
+    cursor: pointer;
+  }
+
+  .menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu summary :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .menu :global(.ic-close),
+  .menu[open] :global(.ic-open) {
+    display: none;
+  }
+
+  .menu[open] :global(.ic-close) {
+    display: block;
+  }
+
+  /* Panel selebar bar (posisi relatif ke .bar). */
+  .panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 10px);
+    max-height: calc(100dvh - var(--header-h) - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: 0 24px 48px -20px rgb(14 16 20 / 0.45);
+  }
+
+  .m-list {
+    display: grid;
+  }
+
+  .m-list > li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .m-link {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 12px;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .m-link[aria-current='page'] {
+    color: var(--accent);
+  }
+
+  .m-group {
+    padding: 14px 12px;
+  }
+
+  .m-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .m-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .m-chips a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .m-chips a[aria-current='page'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--on-ink);
+  }
+
+  .m-cta {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 920px) {
+    .nav {
+      display: none;
+    }
+    .menu {
+      display: block;
+    }
+    .bar {
+      padding-left: 20px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .cta {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link::after,
+    .dropdown,
+    .nav-link :global(.chev) {
+      transition: none;
+    }
+  }
+</style>

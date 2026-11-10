@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { site } from '../config/site';
+---
+
+<Base title={`Kebijakan Privasi | ${site.name}`} description={`Cara ${site.name} memperlakukan data yang Anda isi di form pemesanan.`} offsetHeader>
+  <Prose title="Kebijakan privasi">
+    <p class="updated">Terakhir diperbarui 10 November 2026.</p>
+
+    <h2>Data dari form pemesanan</h2>
+    <p>
+      Isi form pemesanan (lokasi jemput, mobil, jadwal, dan durasi) diolah di browser Anda dan langsung diteruskan ke
+      WhatsApp. Website ini tidak mengirim isi form ke server mana pun dan tidak menyimpannya.
+    </p>
+
+    <h2>Percakapan WhatsApp</h2>
+    <p>
+      Setelah Anda menekan kirim di WhatsApp, pesan diterima admin {site.name} dan dipakai hanya untuk memproses
+      pemesanan. Penggunaan WhatsApp tunduk pada kebijakan privasi WhatsApp.
+    </p>
+
+    <h2>Dokumen identitas</h2>
+    <p>
+      Foto KTP atau SIM yang Anda kirim lewat WhatsApp hanya dipakai untuk verifikasi sewa dan dihapus setelah masa
+      sewa selesai, kecuali diperlukan untuk menyelesaikan klaim.
+    </p>
+
+    <h2>Cookie dan analitik</h2>
+    <p>Website ini tidak memakai cookie. Statistik kunjungan, bila diaktifkan, memakai analitik tanpa cookie.</p>
+
+    <h2>Kontak</h2>
+    <p>Pertanyaan soal data pribadi bisa dikirim ke <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+  </Prose>
+</Base>

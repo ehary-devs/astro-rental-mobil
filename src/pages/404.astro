@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../config/site';
+---
+
+<Base title={`Halaman tidak ditemukan | ${site.name}`} description="Halaman yang Anda cari tidak ada." offsetHeader noindex>
+  <div class="container nf">
+    <h1 class="section-title">Halaman ini tidak ada</h1>
+    <p>Mungkin link-nya sudah berubah. Coba mulai dari beranda atau lihat daftar armada.</p>
+    <div class="actions">
+      <a class="btn btn-accent" href="/">Ke beranda</a>
+      <a class="btn btn-outline" href="/armada/">Lihat armada</a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .nf {
+    display: grid;
+    justify-items: start;
+    gap: 20px;
+    padding-bottom: clamp(80px, 12vw, 160px);
+  }
+  .nf p {
+    color: var(--text-2);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+</style>

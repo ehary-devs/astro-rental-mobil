@@ -1,0 +1,321 @@
+---
+import { getCollection } from 'astro:content';
+import IconCheck from '@tabler/icons/outline/check.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconChevronRight from '@tabler/icons/outline/chevron-right.svg';
+import IconRoute from '@tabler/icons/outline/route.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import Base from '../layouts/Base.astro';
+import FleetCard from './FleetCard.astro';
+import { site, WA_SOURCE_TAG, waLink } from '../config/site';
+import type { InfoPage, RutePage } from '../data/halaman';
+
+interface Props {
+  page: InfoPage | RutePage;
+  /** Label & tautan induk untuk breadcrumb. */
+  parent: string;
+  title: string;
+  /** Halaman saudara (kota lain, layanan lain, dst). */
+  siblings: { href: string; nama: string }[];
+}
+
+const { page, parent, title, siblings } = Astro.props;
+const rute = 'jarak' in page ? page : null;
+
+const cars = (await getCollection('armada', (c) => c.data.tersedia && (page.filterMobil?.(c) ?? true)))
+  .sort((a, b) => Number(b.data.populer) - Number(a.data.populer) || a.data.urutan - b.data.urutan)
+  .slice(0, 6);
+
+const pesan = `Halo Admin ${site.name}, ${page.pesan} ${WA_SOURCE_TAG}`;
+---
+
+<Base {title} description={page.ringkas} offsetHeader>
+  <div class="container page">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Beranda</a></li>
+        <li aria-hidden="true"><IconChevronRight /></li>
+        <li><span>{parent}</span></li>
+        <li aria-hidden="true"><IconChevronRight /></li>
+        <li><span aria-current="page">{page.nama}</span></li>
+      </ol>
+    </nav>
+
+    <header class="head">
+      <h1 class="section-title">{page.judul}</h1>
+      <p class="lead">{page.ringkas}</p>
+      {
+        rute && (
+          <dl class="trip">
+            <div>
+              <IconRoute aria-hidden="true" />
+              <dt>Jarak</dt>
+              <dd>{rute.jarak}</dd>
+            </div>
+            <div>
+              <IconClock aria-hidden="true" />
+              <dt>Waktu tempuh</dt>
+              <dd>{rute.waktu}</dd>
+            </div>
+          </dl>
+        )
+      }
+      {rute && <p class="hint">Perkiraan kondisi lalu lintas normal.</p>}
+      <a class="btn btn-wa" href={waLink(pesan)} target="_blank" rel="noopener noreferrer">
+        <IconWa aria-hidden="true" />
+        Tanya admin
+      </a>
+    </header>
+
+    <section class="block" aria-labelledby="h-poin">
+      <h2 id="h-poin">Yang perlu diketahui</h2>
+      <ul class="poin">
+        {
+          page.poin.map((p) => (
+            <li>
+              <IconCheck aria-hidden="true" />
+              {p}
+            </li>
+          ))
+        }
+      </ul>
+      <p class="note">
+        Harga final dikonfirmasi admin lewat WhatsApp. Detail lengkap di <a href="/syarat-ketentuan/">syarat &amp; ketentuan</a>.
+      </p>
+    </section>
+
+    {
+      cars.length > 0 && (
+        <section class="block" aria-labelledby="h-mobil">
+          <div class="block-head">
+            <h2 id="h-mobil">Mobil yang cocok</h2>
+            <a href="/armada/" class="see-all">
+              Lihat semua armada
+            </a>
+          </div>
+          <ul class="grid">
+            {cars.map((car) => (
+              <li>
+                <FleetCard car={car} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      siblings.length > 0 && (
+        <nav class="block" aria-labelledby="h-lain">
+          <h2 id="h-lain">{parent} lainnya</h2>
+          <ul class="siblings">
+            {siblings.map((s) => (
+              <li>
+                <a href={s.href}>{s.nama}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .page {
+    padding-bottom: clamp(64px, 9vw, 112px);
+  }
+
+  .crumbs ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .crumbs a {
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  .crumbs li[aria-hidden] :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  .crumbs [aria-current] {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .head {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .lead {
+    max-width: 60ch;
+    color: var(--text-2);
+    font-size: 1.0625rem;
+  }
+
+  .trip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 4px 0 0;
+  }
+
+  .trip > div {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 12px;
+    align-items: center;
+    padding: 14px 20px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .trip :global(svg) {
+    grid-row: span 2;
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.6;
+  }
+
+  .trip dt {
+    font-size: 0.75rem;
+    color: var(--text-2);
+  }
+
+  .trip dd {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .hint {
+    margin-top: -8px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .block {
+    margin-top: clamp(40px, 5vw, 56px);
+    padding-top: clamp(32px, 4vw, 44px);
+    border-top: 1px solid var(--line);
+  }
+
+  .block h2 {
+    font-size: clamp(1.375rem, 2.2vw, 1.75rem);
+  }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .see-all {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .poin {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 40px;
+  }
+
+  .poin li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .poin :global(svg) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    color: var(--wa);
+  }
+
+  .note {
+    margin-top: 24px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+  }
+
+  .note a {
+    color: var(--accent);
+  }
+
+  .grid {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .siblings {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .siblings a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .siblings a:hover {
+    border-color: var(--text);
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .poin,
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,195 +1,334 @@
 ---
 import { getCollection } from 'astro:content';
+import IconHome from '@tabler/icons/outline/home.svg';
+import IconSearch from '@tabler/icons/outline/search.svg';
+import IconRefresh from '@tabler/icons/outline/refresh.svg';
+import IconX from '@tabler/icons/outline/x.svg';
+import IconSpray from '@tabler/icons/outline/spray.svg';
+import IconShield from '@tabler/icons/outline/shield-check.svg';
+import IconTools from '@tabler/icons/outline/tools.svg';
+import IconPlane from '@tabler/icons/outline/plane-arrival.svg';
+import IconVerified from '@tabler/icons/outline/rosette-discount-check.svg';
 import Base from '../../layouts/Base.astro';
 import FleetCard from '../../components/FleetCard.astro';
+import KatalogWhy from '../../components/katalog/KatalogWhy.astro';
+import KatalogSyarat from '../../components/katalog/KatalogSyarat.astro';
+import KatalogCta from '../../components/katalog/KatalogCta.astro';
 import { KATEGORI, type Kategori } from '../../content.config';
 import { site } from '../../config/site';
 
 const cars = (await getCollection('armada', ({ data }) => data.tersedia)).sort((a, b) => a.data.urutan - b.data.urutan);
 
-// Hanya kategori yang punya mobil, urut sesuai KATEGORI.
 const filters = (Object.keys(KATEGORI) as Kategori[])
   .map((k) => ({ slug: k, label: KATEGORI[k], count: cars.filter((c) => c.data.kategori === k).length }))
   .filter((f) => f.count > 0);
+
+const fuels = (['bensin', 'solar', 'hybrid', 'listrik'] as const).filter((b) => cars.some((c) => c.data.bbm === b));
+const fuelLabel = { bensin: 'Bensin', solar: 'Solar / Diesel', hybrid: 'Hybrid', listrik: 'Listrik (EV)' };
+
+const trust = [
+  { icon: IconSpray, label: 'Unit Bersih & AC Dingin' },
+  { icon: IconTools, label: 'Servis Bengkel Resmi Rutin' },
+  { icon: IconShield, label: 'Asuransi All-Risk Aman' },
+  { icon: IconPlane, label: 'Antar Jemput Bandara & Stasiun' },
+];
+
+const selectCls =
+  'bg-surface-container text-on-surface text-xs font-semibold px-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer border-0 shrink-0';
+const pillActive =
+  'cat-pill active-pill px-4 py-1.5 rounded-full text-xs font-bold bg-on-background text-white shadow-sm whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+const pillIdle =
+  'cat-pill px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant hover:text-on-background hover:bg-surface-container-high transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 ---
 
 <Base
-  title={`Daftar Armada Rental Mobil ${site.city} | ${site.name}`}
-  description={`Semua mobil sewaan ${site.name}: city car, MPV keluarga, SUV, minibus, premium, dan mobil listrik. Cek harga mulai per hari lalu pesan lewat WhatsApp.`}
+  title={`Pilihan Armada Lengkap & Terawat | ${site.name} ${site.city}`}
+  description={`8 unit mobil sewaan ${site.name}: Avanza, Xpander, Innova Zenix, Fortuner, HiAce, Alphard, Brio, Ioniq 5. Bersih, terawat, lepas kunci atau dengan sopir.`}
   offsetHeader
 >
-  <div class="container page">
-    <header class="head">
-      <span class="section-eyebrow">Katalog Armada</span>
-      <h1 class="section-title">Pilihan Armada Lengkap</h1>
-      <p class="lead">
-        {cars.length} unit mobil terawat siap jalan. Harga transparan mulai per hari, konfirmasi instan lewat WhatsApp.
-      </p>
-    </header>
+  <div class="w-full bg-surface">
+    <!-- Hero: breadcrumb, judul, statistik, trust chips -->
+    <section class="relative w-full bg-surface-container-lowest pt-6 pb-10 lg:pb-12 overflow-hidden shadow-sm">
+      <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-primary-fixed/30 blur-3xl pointer-events-none" aria-hidden="true"></div>
+      <div class="absolute left-1/3 -bottom-20 w-80 h-80 rounded-full bg-emerald-conversion/10 blur-3xl pointer-events-none" aria-hidden="true"></div>
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 relative z-10">
+        <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium mb-5">
+          <a class="hover:text-primary transition-colors flex items-center gap-1" href="/">
+            <IconHome class="w-4 h-4" aria-hidden="true" />
+            <span>Beranda</span>
+          </a>
+          <span class="text-outline-variant" aria-hidden="true">/</span>
+          <span class="text-primary font-bold" aria-current="page">Katalog Armada</span>
+        </nav>
 
-    <div class="filters" role="toolbar" aria-label="Saring kategori" data-filters hidden>
-      <button type="button" class="chip" aria-pressed="true" data-filter="semua">
-        Semua <span class="count">{cars.length}</span>
-      </button>
-      {
-        filters.map((f) => (
-          <button type="button" class="chip" aria-pressed="false" data-filter={f.slug} id={f.slug}>
-            {f.label} <span class="count">{f.count}</span>
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div class="max-w-2xl flex flex-col gap-3">
+            <div class="inline-flex items-center gap-2 bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-xs font-bold w-fit">
+              <span class="w-2 h-2 rounded-full bg-primary animate-pulse" aria-hidden="true"></span>
+              <span>Armada Siap Jalan {site.city} &amp; Sekitarnya</span>
+            </div>
+            <h1 class="font-extrabold text-3xl sm:text-4xl lg:text-5xl text-on-background tracking-tight leading-tight">
+              Pilihan Armada Lengkap &amp; Terawat
+            </h1>
+            <p class="text-sm sm:text-base lg:text-lg text-on-surface-variant leading-relaxed">
+              {cars.length} unit armada prima siap jalan untuk kebutuhan dinas, liburan keluarga, perjalanan bisnis, hingga rombongan wisata di {site.city} &amp; Jawa Tengah. Bebas pilih lepas kunci atau dengan sopir berpengalaman.
+            </p>
+          </div>
+
+          <div class="bg-surface-container-low p-4 sm:p-5 rounded-2xl flex items-center justify-between sm:justify-start gap-4 sm:gap-6 shadow-sm shrink-0">
+            <div class="flex flex-col">
+              <span class="font-extrabold text-xl sm:text-3xl text-primary leading-tight whitespace-nowrap">100%</span>
+              <span class="text-[11px] sm:text-xs text-on-surface-variant leading-snug">Unit Terinspeksi</span>
+            </div>
+            <div class="w-px h-10 bg-outline-variant/40" aria-hidden="true"></div>
+            <div class="flex flex-col">
+              <span class="font-extrabold text-xl sm:text-3xl text-emerald-deep leading-tight whitespace-nowrap">&lt; 15 Mnt</span>
+              <span class="text-[11px] sm:text-xs text-on-surface-variant leading-snug">Konfirmasi Instan</span>
+            </div>
+            <div class="w-px h-10 bg-outline-variant/40" aria-hidden="true"></div>
+            <div class="flex flex-col">
+              <span class="font-extrabold text-xl sm:text-3xl text-on-background leading-tight whitespace-nowrap">24/7</span>
+              <span class="text-[11px] sm:text-xs text-on-surface-variant leading-snug">Bantuan Darurat</span>
+            </div>
+          </div>
+        </div>
+
+        <ul class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 list-none p-0">
+          {
+            trust.map((t) => (
+              <li class="flex items-center gap-2 p-3 rounded-xl bg-surface-container/60">
+                <t.icon class="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
+                <span class="text-xs font-semibold text-on-surface">{t.label}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- Search, filter & kategori -->
+    <section class="sticky top-20 z-30 bg-surface-container-lowest/95 backdrop-blur-md shadow-md py-3" data-filters-section aria-label="Cari dan saring armada">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-3">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          <div class="relative flex-1 lg:min-w-[280px]">
+            <IconSearch class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" aria-hidden="true" />
+            <label for="fleetSearchInput" class="visually-hidden">Cari armada</label>
+            <input
+              type="search"
+              id="fleetSearchInput"
+              placeholder="Cari armada (Zenix, Avanza, HiAce, Brio, Alphard)..."
+              autocomplete="off"
+              class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-surface-container text-sm font-medium text-on-surface placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary shadow-inner [&::-webkit-search-cancel-button]:hidden"
+            />
+            <button
+              type="button"
+              id="clearSearchBtn"
+              aria-label="Bersihkan pencarian"
+              class="hidden absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-on-surface-variant hover:text-on-surface cursor-pointer"
+            >
+              <IconX class="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+            <select id="transmissionSelect" class={selectCls} aria-label="Filter transmisi">
+              <option value="all">Semua Transmisi</option>
+              <option value="matic">Otomatis (Matic)</option>
+              <option value="manual">Manual</option>
+            </select>
+            <select id="seatSelect" class={selectCls} aria-label="Filter kapasitas kursi">
+              <option value="all">Kapasitas Kursi</option>
+              <option value="5">5 Kursi (City Car)</option>
+              <option value="7">7 Kursi (MPV / SUV)</option>
+              <option value="14">14+ Kursi (Minibus)</option>
+            </select>
+            <select id="fuelSelect" class={selectCls} aria-label="Filter bahan bakar">
+              <option value="all">Bahan Bakar</option>
+              {fuels.map((b) => <option value={b}>{fuelLabel[b]}</option>)}
+            </select>
+            <button
+              id="resetFiltersBtn"
+              type="button"
+              class="flex items-center gap-1 text-on-surface-variant hover:text-primary px-3 py-2.5 text-xs font-bold rounded-xl hover:bg-surface-container transition-colors whitespace-nowrap cursor-pointer shrink-0"
+            >
+              <IconRefresh class="w-4 h-4" aria-hidden="true" />
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-none" id="categoryPillList" data-active-cls={pillActive} data-idle-cls={pillIdle} role="toolbar" aria-label="Saring kategori armada">
+          <button type="button" class={pillActive} data-filter="semua" aria-pressed="true">
+            <span>Semua Unit</span>
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-primary text-white font-bold">{cars.length}</span>
           </button>
-        ))
-      }
-    </div>
+          {
+            filters.map((f) => (
+              <button type="button" class={pillIdle} data-filter={f.slug} id={f.slug} aria-pressed="false">
+                <span>{f.label}</span>
+                <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-surface-container-highest text-on-surface font-bold">{f.count}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </section>
 
-    <p class="visually-hidden" aria-live="polite" data-filter-status></p>
+    <!-- Grid armada -->
+    <section class="w-full py-10 lg:py-14 bg-surface" aria-label="Daftar armada">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+          <p class="text-sm sm:text-base text-on-surface-variant" data-filter-status aria-live="polite">
+            Menampilkan <strong class="text-lg text-primary font-bold" id="visibleCount">{cars.length}</strong> kendaraan siap dipesan
+          </p>
+          <p class="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-deep">
+            <IconVerified class="w-[18px] h-[18px]" aria-hidden="true" />
+            Semua unit dicek sebelum serah terima
+          </p>
+        </div>
 
-    <ul class="grid" data-fleet>
-      {
-        cars.map((car) => (
-          <li data-kategori={car.data.kategori}>
-            <FleetCard car={car} />
-          </li>
-        ))
-      }
-    </ul>
+        <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 list-none p-0 m-0" data-fleet>
+          {
+            cars.map((car, i) => (
+              <li
+                data-kategori={car.data.kategori}
+                data-nama={car.data.nama.toLowerCase()}
+                data-transmisi={car.data.transmisi.toLowerCase()}
+                data-kapasitas={car.data.kapasitas}
+                data-bbm={car.data.bbm}
+                class="fleet-item"
+              >
+                <FleetCard car={car} loading={i < 4 ? 'eager' : 'lazy'} />
+              </li>
+            ))
+          }
+        </ul>
+
+        <div id="emptyState" class="hidden text-center py-16 px-4 bg-surface-container-lowest rounded-2xl border border-border-subtle mt-4">
+          <p class="text-lg font-bold text-on-surface">Unit tidak ditemukan</p>
+          <p class="text-sm text-on-surface-variant mt-1">Coba kata kunci lain atau reset filter untuk melihat semua armada.</p>
+          <button type="button" id="resetEmptyBtn" class="mt-4 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-sm cursor-pointer">
+            Tampilkan Semua Armada ({cars.length} Unit)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <KatalogWhy />
+    <KatalogSyarat />
+    <KatalogCta />
   </div>
 </Base>
 
 <script>
-  const bar = document.querySelector<HTMLElement>('[data-filters]');
-  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-fleet] > li'));
-  const status = document.querySelector<HTMLElement>('[data-filter-status]');
+  const searchInput = document.getElementById('fleetSearchInput') as HTMLInputElement | null;
+  const clearSearchBtn = document.getElementById('clearSearchBtn');
+  const transSelect = document.getElementById('transmissionSelect') as HTMLSelectElement | null;
+  const seatSelect = document.getElementById('seatSelect') as HTMLSelectElement | null;
+  const fuelSelect = document.getElementById('fuelSelect') as HTMLSelectElement | null;
+  const resetBtn = document.getElementById('resetFiltersBtn');
+  const resetEmptyBtn = document.getElementById('resetEmptyBtn');
+  const pillList = document.getElementById('categoryPillList');
+  const pillActive = pillList?.dataset.activeCls || '';
+  const pillIdle = pillList?.dataset.idleCls || '';
+  const categoryPills = Array.from(document.querySelectorAll<HTMLButtonElement>('.cat-pill'));
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.fleet-item'));
+  const visibleCountEl = document.getElementById('visibleCount');
+  const emptyState = document.getElementById('emptyState');
 
-  if (bar) {
-    const chips = Array.from(bar.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+  let activeCategory = 'semua';
 
-    const apply = (slug: string) => {
-      let shown = 0;
-      for (const li of items) {
-        const visible = slug === 'semua' || li.dataset.kategori === slug;
-        li.hidden = !visible;
-        if (visible) shown++;
-      }
-      chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.filter === slug)));
-      if (status) status.textContent = `${shown} mobil ditampilkan`;
-    };
+  function applyFilters() {
+    const q = (searchInput?.value || '').trim().toLowerCase();
+    const trans = transSelect?.value || 'all';
+    const seats = seatSelect?.value || 'all';
+    const fuel = fuelSelect?.value || 'all';
 
-    bar.addEventListener('click', (e) => {
-      const chip = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-filter]');
-      if (!chip) return;
-      const slug = chip.dataset.filter!;
-      apply(slug);
-      history.replaceState(null, '', slug === 'semua' ? location.pathname : `#${slug}`);
+    clearSearchBtn?.classList.toggle('hidden', !q);
+
+    let visible = 0;
+
+    items.forEach((item) => {
+      const itemCat = item.dataset.kategori || '';
+      const itemName = item.dataset.nama || '';
+      const itemTrans = item.dataset.transmisi || '';
+      const itemSeats = Number(item.dataset.kapasitas || '0');
+      const itemFuel = item.dataset.bbm || '';
+
+      const matchCat = activeCategory === 'semua' || itemCat === activeCategory;
+      const matchSearch = !q || itemName.includes(q);
+      const matchTrans = trans === 'all' || itemTrans.includes(trans);
+      const matchSeats =
+        seats === 'all' ||
+        (seats === '5' && itemSeats <= 5) ||
+        (seats === '7' && itemSeats > 5 && itemSeats <= 8) ||
+        (seats === '14' && itemSeats >= 14);
+      const matchFuel = fuel === 'all' || itemFuel === fuel;
+
+      const isMatch = matchCat && matchSearch && matchTrans && matchSeats && matchFuel;
+
+      item.style.display = isMatch ? '' : 'none';
+      if (isMatch) visible++;
     });
 
-    // Link dari kartu kategori di beranda: /armada/#mpv
-    const fromHash = () => {
-      const h = location.hash.slice(1);
-      apply(chips.some((c) => c.dataset.filter === h) ? h : 'semua');
-    };
-    window.addEventListener('hashchange', fromHash);
-    fromHash();
-    bar.hidden = false;
+    if (visibleCountEl) visibleCountEl.textContent = String(visible);
+    if (emptyState) emptyState.classList.toggle('hidden', visible > 0);
   }
+
+  function setCategory(slug: string) {
+    activeCategory = slug;
+    categoryPills.forEach((p) => {
+      const isActive = p.dataset.filter === slug;
+      p.setAttribute('aria-pressed', String(isActive));
+      p.className = isActive ? pillActive : pillIdle;
+      const badge = p.lastElementChild;
+      if (badge) {
+        badge.className = isActive
+          ? 'px-1.5 py-0.5 rounded-full text-[10px] bg-primary text-white font-bold'
+          : 'px-1.5 py-0.5 rounded-full text-[10px] bg-surface-container-highest text-on-surface font-bold';
+      }
+    });
+    applyFilters();
+    history.replaceState(null, '', slug === 'semua' ? location.pathname : `#${slug}`);
+  }
+
+  categoryPills.forEach((p) => {
+    p.addEventListener('click', () => setCategory(p.dataset.filter || 'semua'));
+  });
+
+  searchInput?.addEventListener('input', applyFilters);
+  transSelect?.addEventListener('change', applyFilters);
+  seatSelect?.addEventListener('change', applyFilters);
+  fuelSelect?.addEventListener('change', applyFilters);
+  clearSearchBtn?.addEventListener('click', () => {
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.focus();
+    }
+    applyFilters();
+  });
+
+  function resetAll() {
+    if (searchInput) searchInput.value = '';
+    if (transSelect) transSelect.value = 'all';
+    if (seatSelect) seatSelect.value = 'all';
+    if (fuelSelect) fuelSelect.value = 'all';
+    setCategory('semua');
+  }
+
+  resetBtn?.addEventListener('click', resetAll);
+  resetEmptyBtn?.addEventListener('click', resetAll);
+
+  // Kategori dari hash (mis. /armada/#mpv)
+  const fromHash = () => {
+    const h = location.hash.slice(1);
+    if (h && categoryPills.some((p) => p.dataset.filter === h)) {
+      setCategory(h);
+    } else {
+      applyFilters();
+    }
+  };
+
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
 </script>
-
-<style>
-  .page {
-    padding-bottom: clamp(64px, 9vw, 112px);
-  }
-
-  .lead {
-    margin-top: 14px;
-    color: var(--text-2);
-    max-width: 60ch;
-  }
-
-  .filters {
-    display: flex;
-    gap: 8px;
-    margin-top: 28px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    margin-inline: calc(var(--gutter) * -1);
-    padding-inline: var(--gutter);
-  }
-
-  .filters[hidden] {
-    display: none;
-  }
-
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex: none;
-    min-height: 42px;
-    padding: 0 10px 0 18px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: var(--surface);
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text);
-    cursor: pointer;
-    box-shadow: var(--shadow-xs);
-    transition:
-      background-color 0.2s var(--ease),
-      border-color 0.2s var(--ease),
-      box-shadow 0.2s var(--ease),
-      color 0.2s var(--ease);
-  }
-
-  .chip:hover {
-    border-color: var(--text);
-  }
-
-  .count {
-    display: grid;
-    place-items: center;
-    min-width: 24px;
-    height: 24px;
-    padding: 0 6px;
-    border-radius: var(--radius-pill);
-    background: var(--bg-2);
-    font-size: 0.75rem;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .chip[aria-pressed='true'] {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--on-ink);
-  }
-
-  .chip[aria-pressed='true'] .count {
-    background: rgb(255 255 255 / 0.2);
-    color: #fff;
-  }
-
-  .grid {
-    list-style: none;
-    margin: 24px 0 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  .grid > li[hidden] {
-    display: none;
-  }
-
-  @media (max-width: 960px) {
-    .grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

@@ -1,8 +1,9 @@
 ---
-import IconPlus from '@tabler/icons/outline/plus.svg';
+import IconChevronDown from '@tabler/icons/outline/chevron-down.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
 import { kota } from '../data/halaman';
+import { waGreeting, waLink } from '../config/site';
 
-// TODO (pemilik usaha): sesuaikan jawaban dengan kebijakan asli.
 const faqs = [
   {
     q: 'Apa syarat sewa lepas kunci?',
@@ -31,124 +32,64 @@ const faqs = [
 ];
 ---
 
-<section class="faq container" id="faq" aria-labelledby="faq-title">
-  <div class="faq-head">
-    <span class="section-eyebrow">Tanya Jawab</span>
-    <h2 id="faq-title" class="section-title">Pertanyaan yang sering muncul</h2>
-    <p class="lead">Informasi seputar syarat sewa, penjemputan bandara, durasi, dan metode pembayaran.</p>
-  </div>
+<section class="w-full py-10 bg-surface-subtle" id="faq" aria-labelledby="faq-title">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
+    <!-- Left Column Header -->
+    <div class="lg:col-span-4 flex flex-col gap-2">
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-primary">TANYA JAWAB</span>
+        <h2 id="faq-title" class="font-bold text-2xl leading-8 sm:text-[32px] sm:leading-10 text-on-surface tracking-tight">
+          Pertanyaan yang sering muncul
+        </h2>
+        <p class="text-sm leading-[22px] text-on-surface-variant mt-1">
+          Informasi seputar syarat sewa, penjemputan bandara, durasi, dan metode pembayaran.
+        </p>
+      </div>
 
-  <div class="list">
-    {
-      faqs.map((f) => (
-        <details class="faq-item">
-          <summary>
-            <span>{f.q}</span>
-            <IconPlus aria-hidden="true" class="icon-toggle" />
-          </summary>
-          <div class="faq-body">
-            <p>{f.a}</p>
-          </div>
-        </details>
-      ))
-    }
+      <div class="p-4 rounded-lg bg-surface-container-lowest shadow-sm flex flex-col gap-2 mt-4">
+        <span class="font-semibold text-lg leading-6 text-on-surface">Butuh bantuan cepat?</span>
+        <p class="text-xs text-on-surface-variant leading-relaxed">
+          Admin kami siap menjawab pertanyaan dan cek ketersediaan unit secara langsung via WhatsApp.
+        </p>
+        <a
+          class="inline-flex items-center justify-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white py-2.5 px-4 rounded-md font-semibold text-sm transition-colors"
+          href={waLink(waGreeting)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <IconWa class="w-4 h-4" aria-hidden="true" />
+          Tanya via WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column Accordions -->
+    <div class="lg:col-span-8 flex flex-col gap-2">
+      {
+        faqs.map((f) => (
+          <details class="faq-item group bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden transition-all duration-200">
+            <summary class="w-full p-4 flex items-center justify-between text-left font-semibold text-base sm:text-lg leading-6 text-on-surface hover:text-primary cursor-pointer list-none select-none transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">
+              <span>{f.q}</span>
+              <IconChevronDown class="w-5 h-5 text-on-surface-variant group-open:rotate-180 transition-transform duration-200 shrink-0 ml-3" aria-hidden="true" />
+            </summary>
+            <div class="px-4 pb-4 text-sm text-on-surface-variant leading-relaxed">
+              {f.a}
+            </div>
+          </details>
+        ))
+      }
+      <div class="pt-2">
+        <a href="/faq/" class="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-container transition-colors">
+          <span>Lihat semua panduan &amp; tanya jawab operasional</span>
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
-  .faq {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    gap: 32px 56px;
-    padding-block: clamp(56px, 7vw, 88px);
-    align-items: start;
-  }
-
-  .faq-head {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .lead {
-    font-size: 0.9688rem;
-    color: var(--text-2);
-    line-height: 1.6;
-    max-width: 38ch;
-  }
-
-  .list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .faq-item {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    padding: 0 18px;
-    box-shadow: var(--shadow-xs);
-    transition: border-color 0.2s var(--ease);
-  }
-
-  .faq-item:hover {
-    border-color: #cbd5e1;
-  }
-
-  .faq-item[open] {
-    border-color: #94a3b8;
-  }
-
-  summary {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 18px 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text);
-    cursor: pointer;
-    user-select: none;
-  }
-
   summary::-webkit-details-marker {
     display: none;
-  }
-
-  .icon-toggle {
-    flex: none;
-    width: 20px;
-    height: 20px;
-    color: var(--text-2);
-    transition: transform 0.2s var(--ease), color 0.2s var(--ease);
-  }
-
-  .faq-item[open] .icon-toggle {
-    transform: rotate(45deg);
-    color: var(--accent);
-  }
-
-  .faq-body {
-    padding-bottom: 18px;
-    border-top: 1px solid var(--line);
-    padding-top: 12px;
-  }
-
-  .faq-body p {
-    color: var(--text-2);
-    line-height: 1.6;
-    font-size: 0.9375rem;
-  }
-
-  @media (max-width: 860px) {
-    .faq {
-      grid-template-columns: 1fr;
-    }
-    .lead {
-      max-width: none;
-    }
   }
 </style>

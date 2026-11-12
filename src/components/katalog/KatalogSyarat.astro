@@ -1,0 +1,91 @@
+---
+import IconList from '@tabler/icons/outline/list-check.svg';
+import IconKey from '@tabler/icons/outline/key.svg';
+import IconSteering from '@tabler/icons/outline/steering-wheel.svg';
+import IconCheck from '@tabler/icons/outline/circle-check.svg';
+import IconArrow from '@tabler/icons/outline/arrow-right.svg';
+import { site } from '../../config/site';
+
+// Konsisten dengan src/pages/syarat-ketentuan.astro dan data layanan di src/data/halaman.ts.
+const modes = [
+  {
+    icon: IconKey,
+    box: 'bg-primary-fixed text-primary',
+    title: 'Syarat Sewa Lepas Kunci (Self-Drive)',
+    sub: 'Dihitung per 24 jam, toleransi keterlambatan 1 jam',
+    points: [
+      'KTP asli yang masih berlaku (wajib).',
+      'SIM A asli yang masih aktif (wajib).',
+      '1 dokumen penjamin: KK, NPWP, atau ID kerja karyawan.',
+      'Deposit jaminan, dikembalikan penuh setelah mobil kembali dalam kondisi baik.',
+    ],
+  },
+  {
+    icon: IconSteering,
+    box: 'bg-emerald-conversion/20 text-emerald-deep',
+    title: 'Syarat Sewa Dengan Sopir',
+    sub: 'Dihitung per 12 jam, tanpa repot menyetir',
+    points: [
+      'Cukup konfirmasi KTP pemesan.',
+      'Info alamat penjemputan (rumah, hotel, stasiun, atau bandara) dan jam berangkat.',
+      'Sopir berpengalaman dan hafal rute Jawa Tengah - DIY.',
+      'BBM, tol, parkir, makan sopir, dan overtime di luar harga sewa.',
+    ],
+  },
+];
+---
+
+<section class="w-full py-14 lg:py-20 bg-surface" aria-labelledby="proses-heading">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div class="lg:col-span-5 flex flex-col gap-4">
+        <div class="inline-flex items-center gap-2 text-primary text-xs font-bold">
+          <IconList class="w-5 h-5" aria-hidden="true" />
+          Persyaratan Simpel &amp; Anti Ribet
+        </div>
+        <h2 id="proses-heading" class="font-bold text-2xl sm:text-3xl text-on-background tracking-tight">
+          Proses Booking Cepat Tanpa Menunggu Lama
+        </h2>
+        <p class="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+          Pilih mobil, kirim tanggal dan dokumen lewat WhatsApp, lalu kunci jadwal dengan DP 30%. Pelunasan dilakukan saat serah terima unit. Ganti jadwal bebas biaya hingga H-1 (menyesuaikan ketersediaan unit).
+        </p>
+        <div class="p-5 rounded-2xl bg-surface-container-low flex flex-col gap-1.5 mt-1">
+          <span class="text-sm font-bold text-on-surface">Punya kebutuhan khusus?</span>
+          <p class="text-sm text-on-surface-variant leading-relaxed">
+            Mobil bisa diantar ke rumah, hotel, Stasiun Tawang, Stasiun Poncol, atau Bandara Ahmad Yani {site.city}.
+          </p>
+          <a href="/syarat-ketentuan/" class="mt-1 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline w-fit">
+            Baca syarat &amp; ketentuan lengkap
+            <IconArrow class="w-4 h-4" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 flex flex-col gap-4">
+        {
+          modes.map((m) => (
+            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-border-subtle/60">
+              <div class="flex items-center gap-3 mb-4">
+                <div class:list={['w-10 h-10 rounded-lg flex items-center justify-center shrink-0', m.box]}>
+                  <m.icon class="w-6 h-6" aria-hidden="true" />
+                </div>
+                <div>
+                  <h3 class="font-bold text-base sm:text-lg text-on-surface leading-snug">{m.title}</h3>
+                  <span class="text-xs sm:text-sm text-text-muted">{m.sub}</span>
+                </div>
+              </div>
+              <ul class="flex flex-col gap-2 text-sm text-on-surface-variant list-none p-0">
+                {m.points.map((p) => (
+                  <li class="flex items-start gap-2">
+                    <IconCheck class="w-[18px] h-[18px] text-emerald-deep shrink-0 mt-0.5" aria-hidden="true" />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

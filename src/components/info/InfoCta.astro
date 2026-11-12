@@ -1,0 +1,56 @@
+---
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconPhone from '@tabler/icons/outline/phone.svg';
+import IconBolt from '@tabler/icons/outline/bolt.svg';
+import IconMapPin from '@tabler/icons/outline/map-pin.svg';
+import { site, waLink } from '../../config/site';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  desc: string;
+  pesan: string;
+}
+
+const { eyebrow, title, desc, pesan } = Astro.props;
+---
+
+<section class="w-full bg-surface py-12 lg:py-16" aria-labelledby="h-cta">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-container text-on-primary p-6 sm:p-10 lg:p-12 shadow-xl">
+      <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10 blur-2xl" aria-hidden="true"></div>
+      <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+        <div class="lg:col-span-7 flex flex-col gap-3">
+          <span class="inline-flex items-center gap-1.5 w-fit bg-white/15 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+            <IconBolt class="w-4 h-4" aria-hidden="true" />
+            {eyebrow}
+          </span>
+          <h2 id="h-cta" class="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight">{title}</h2>
+          <p class="text-sm sm:text-base text-on-primary-container leading-relaxed max-w-xl">{desc}</p>
+          <p class="flex items-start gap-1.5 text-xs text-on-primary-container">
+            <IconMapPin class="w-4 h-4 shrink-0" aria-hidden="true" />
+            {site.address}
+          </p>
+        </div>
+        <div class="lg:col-span-5 flex flex-col sm:flex-row lg:flex-col gap-3 lg:max-w-sm lg:ml-auto lg:w-full">
+          <a
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap bg-emerald-conversion hover:bg-emerald-deep text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-[0_4px_16px_rgba(16,185,129,0.35)] transition-colors"
+            href={waLink(pesan)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconWa class="w-5 h-5" aria-hidden="true" />
+            WhatsApp {site.phoneDisplay}
+          </a>
+          <a
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap bg-white hover:bg-surface-bright text-primary px-6 py-3.5 rounded-xl font-bold text-sm transition-colors"
+            href={`tel:+${site.whatsapp}`}
+          >
+            <IconPhone class="w-5 h-5" aria-hidden="true" />
+            Telepon admin
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

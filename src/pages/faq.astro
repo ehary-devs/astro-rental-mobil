@@ -1,0 +1,703 @@
+---
+import IconHome from '@tabler/icons/outline/home.svg';
+import IconSearch from '@tabler/icons/outline/search.svg';
+import IconX from '@tabler/icons/outline/x.svg';
+import IconArrowRight from '@tabler/icons/outline/arrow-right.svg';
+import IconCreditCard from '@tabler/icons/outline/credit-card.svg';
+import IconId from '@tabler/icons/outline/id.svg';
+import IconGasStation from '@tabler/icons/outline/gas-station.svg';
+import IconAlertTriangle from '@tabler/icons/outline/alert-triangle.svg';
+import IconLifebuoy from '@tabler/icons/outline/lifebuoy.svg';
+import IconPhone from '@tabler/icons/outline/phone.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconMapPin from '@tabler/icons/outline/map-pin.svg';
+import IconChevronDown from '@tabler/icons/outline/chevron-down.svg';
+import IconCheck from '@tabler/icons/outline/circle-check.svg';
+import IconClipboard from '@tabler/icons/outline/clipboard-check.svg';
+import IconKey from '@tabler/icons/outline/key.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconExternal from '@tabler/icons/outline/external-link.svg';
+import IconCar from '@tabler/icons/outline/car.svg';
+import Base from '../layouts/Base.astro';
+import MapPlaceholder from '../components/kontak/MapPlaceholder.astro';
+import { site, waLink, waGreeting, WA_SOURCE_TAG } from '../config/site';
+import { kota } from '../data/halaman';
+
+type CatId = 'booking' | 'syarat' | 'operasional' | 'darurat';
+
+interface FaqItem {
+  cat: CatId;
+  q: string;
+  /** Kata kunci tambahan untuk pencarian (tidak tampil). */
+  keywords: string;
+  intro?: string;
+  list?: string[];
+  ordered?: boolean;
+  note?: string;
+}
+
+// TODO (pemilik usaha): sesuaikan jawaban dengan kebijakan asli. Isi diselaraskan dengan Syarat & Ketentuan.
+const faqs: FaqItem[] = [
+  {
+    cat: 'booking',
+    q: `Bagaimana tata cara pemesanan mobil dan sistem pembayaran di ${site.name}?`,
+    keywords: 'reservasi booking pesan wa whatsapp dp uang muka pelunasan transfer qris pembayaran bayar',
+    intro: 'Pemesanan dilakukan langsung lewat WhatsApp admin kami:',
+    ordered: true,
+    list: [
+      'Pilih mobil, layanan (lepas kunci atau dengan sopir), tanggal mulai, dan durasi sewa.',
+      'Kirim foto dokumen yang diperlukan untuk verifikasi.',
+      'Bayar DP 30% lewat transfer bank atau QRIS untuk mengunci jadwal.',
+      'Lunasi sisa biaya saat serah terima mobil.',
+    ],
+    note: `Pembayaran hanya ke rekening atas nama usaha atau QRIS resmi ${site.name}. Detailnya dikirim oleh admin resmi lewat WhatsApp ${site.phoneDisplay}.`,
+  },
+  {
+    cat: 'booking',
+    q: 'Apakah ada biaya tambahan untuk antar-jemput mobil di Bandara Ahmad Yani atau stasiun?',
+    keywords: 'antar jemput bandara ahmad yani srg stasiun tawang poncol pengantaran gratis hotel rumah luar kota',
+    intro: `Antar jemput mobil di dalam Kota ${site.city} gratis, termasuk ke:`,
+    list: ['Bandara Ahmad Yani.', 'Stasiun Tawang dan Stasiun Poncol.', 'Rumah atau hotel Anda di dalam kota.'],
+    note: 'Untuk pengantaran ke luar kota, biaya antar disesuaikan dengan jarak. Konfirmasi biayanya ke admin lewat WhatsApp.',
+  },
+  {
+    cat: 'booking',
+    q: 'Apakah saya bisa mengubah jadwal (reschedule) atau membatalkan pesanan sewa?',
+    keywords: 'reschedule batal pembatalan jadwal ubah tanggal refund uang kembali ganti jadwal',
+    intro: 'Bisa, dengan ketentuan berikut:',
+    list: [
+      'Ubah jadwal gratis sampai H-1, tergantung ketersediaan mobil di jadwal baru.',
+      'Pembatalan H-1 atau lebih awal: DP dikembalikan 50%.',
+      'Pembatalan di hari H: DP hangus.',
+    ],
+  },
+  {
+    cat: 'syarat',
+    q: 'Apa saja persyaratan dokumen untuk sewa mobil sistem Lepas Kunci (Self-Drive)?',
+    keywords: 'syarat lepas kunci self drive ktp sim a npwp kartu keluarga kk id karyawan dokumen deposit jaminan',
+    list: [
+      'KTP.',
+      'SIM A yang masih aktif.',
+      'Satu dokumen pendukung: KK, NPWP, atau ID karyawan.',
+      'Deposit, yang dikembalikan penuh setelah mobil kembali tanpa kerusakan.',
+    ],
+    note: 'Dokumen asli cukup diperlihatkan saat serah terima. Kami tidak menyimpan dokumen asli Anda.',
+  },
+  {
+    cat: 'syarat',
+    q: 'Apakah bisa menyewa jika saya tidak memiliki kartu kredit?',
+    keywords: 'tanpa kartu kredit deposit jaminan transfer qris debit',
+    intro: `Bisa. ${site.name} tidak mewajibkan kartu kredit. Pembayaran dan deposit cukup lewat transfer bank atau QRIS.`,
+    note: 'Besaran deposit untuk lepas kunci tergantung mobil yang dipilih. Tanyakan ke admin saat memesan.',
+  },
+  {
+    cat: 'syarat',
+    q: 'Kalau sewa dengan sopir, dokumen apa yang perlu disiapkan?',
+    keywords: 'dengan sopir driver dokumen ktp pemesan alamat jemput',
+    intro: 'Cukup KTP pemesan. Sertakan juga alamat penjemputan dan rencana rute supaya kami siapkan mobil dan sopir yang sesuai.',
+  },
+  {
+    cat: 'operasional',
+    q: 'Bagaimana aturan BBM, tol, dan parkir selama periode sewa?',
+    keywords: 'bahan bakar bbm bensin tol etoll parkir makan sopir all in 12 jam',
+    list: [
+      'Dengan sopir: harga sudah termasuk mobil dan jasa sopir selama 12 jam. BBM, tol, parkir, dan makan sopir dibayar terpisah, kecuali Anda memilih paket all in.',
+      'Lepas kunci: dihitung per 24 jam. BBM, tol, dan parkir selama pemakaian ditanggung penyewa.',
+    ],
+  },
+  {
+    cat: 'operasional',
+    q: 'Berapa biaya denda keterlambatan pengembalian unit (overtime)?',
+    keywords: 'overtime telat terlambat kembali denda per jam keterlambatan toleransi batas waktu',
+    intro: 'Ada toleransi keterlambatan 1 jam. Setelah itu dihitung overtime 10% dari harga harian per jam. Lewat 5 jam dihitung satu hari penuh.',
+  },
+  {
+    cat: 'operasional',
+    q: 'Boleh dibawa ke luar kota?',
+    keywords: 'luar kota mudik wisata jawa bali rute antar kota perjalanan jauh',
+    intro: `Boleh, selama masih di Pulau Jawa dan Bali. Sebutkan tujuan saat memesan supaya kami siapkan mobil yang sesuai. Area utama kami ${kota
+      .slice(0, 3)
+      .map((k) => k.nama)
+      .join(', ')}, dan sekitarnya.`,
+  },
+  {
+    cat: 'darurat',
+    q: 'Apa yang harus saya lakukan jika mobil mengalami kendala teknis atau mogok di jalan?',
+    keywords: 'mogok rusak di jalan kendala teknis aki ban bocor darurat bantuan',
+    ordered: true,
+    list: [
+      'Tepikan mobil ke tempat aman dan nyalakan lampu hazard.',
+      `Hubungi admin lewat WhatsApp atau telepon ${site.phoneDisplay}, kirim lokasi dan foto kondisi mobil.`,
+      'Ikuti arahan admin. Jangan memperbaiki atau membawa mobil ke bengkel tanpa koordinasi.',
+    ],
+  },
+  {
+    cat: 'darurat',
+    q: 'Bagaimana jika terjadi baret kecil atau kecelakaan saat mobil digunakan?',
+    keywords: 'baret lecet tabrakan kecelakaan kerusakan tilang etle tanggung jawab',
+    intro: 'Segera kabari admin dan dokumentasikan kondisi mobil dengan foto. Penanganan dan biayanya akan dibicarakan sesuai kejadian.',
+    note: 'Sesuai syarat & ketentuan, kerusakan akibat kelalaian dan tilang selama masa sewa menjadi tanggung jawab penyewa.',
+  },
+];
+
+const countOf = (id: CatId) => faqs.filter((f) => f.cat === id).length;
+
+const categories = [
+  { id: 'all', label: 'Semua Topik', icon: IconLifebuoy, count: faqs.length },
+  { id: 'booking', label: 'Reservasi & Pembayaran', icon: IconCreditCard, count: countOf('booking') },
+  { id: 'syarat', label: 'Persyaratan & Dokumen', icon: IconId, count: countOf('syarat') },
+  { id: 'operasional', label: 'Aturan Selama Sewa', icon: IconGasStation, count: countOf('operasional') },
+  { id: 'darurat', label: 'Bantuan & Darurat', icon: IconAlertTriangle, count: countOf('darurat') },
+];
+
+const quickCards = [
+  {
+    cat: 'booking' as CatId,
+    title: 'Reservasi & Bayar',
+    desc: 'Cara booking lewat WhatsApp, DP 30%, pelunasan, dan perubahan jadwal.',
+    icon: IconCreditCard,
+    color: 'bg-primary-fixed text-primary group-hover:bg-primary group-hover:text-white',
+  },
+  {
+    cat: 'syarat' as CatId,
+    title: 'Syarat & Dokumen',
+    desc: 'Dokumen lepas kunci, sewa dengan sopir, dan ketentuan deposit.',
+    icon: IconId,
+    color: 'bg-secondary-fixed text-on-secondary-fixed group-hover:bg-primary group-hover:text-white',
+  },
+  {
+    cat: 'operasional' as CatId,
+    title: 'Selama Perjalanan',
+    desc: 'Aturan BBM, tol, overtime, dan pemakaian ke luar kota.',
+    icon: IconGasStation,
+    color: 'bg-tertiary-fixed text-tertiary group-hover:bg-tertiary group-hover:text-white',
+  },
+  {
+    cat: 'darurat' as CatId,
+    title: 'Bantuan Darurat',
+    desc: 'Langkah saat mobil mogok, baret, atau terjadi kecelakaan.',
+    icon: IconAlertTriangle,
+    color: 'bg-error-container text-error group-hover:bg-error group-hover:text-white',
+  },
+];
+
+const quickTags = ['Lepas Kunci', 'Bandara', 'Pembayaran', 'Luar Kota', 'Deposit', 'Overtime', 'Reschedule'];
+
+const plain = (f: FaqItem) => [f.intro, ...(f.list ?? []), f.note].filter(Boolean).join(' ');
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: plain(f) },
+  })),
+};
+
+const steps = [
+  {
+    n: '01',
+    title: 'Cek Dokumen',
+    desc: 'Tunjukkan dokumen asli yang sebelumnya sudah difoto lewat WhatsApp. Dokumen langsung dikembalikan.',
+    tag: 'Dokumen tidak ditahan',
+    icon: IconId,
+    tone: 'bg-primary text-white',
+    tagTone: 'text-primary',
+  },
+  {
+    n: '02',
+    title: 'Cek Kondisi Mobil Bersama',
+    desc: 'Periksa bodi, level BBM, kebersihan kabin, dan kelengkapan mobil bersama petugas. Foto kondisinya sebagai catatan bersama.',
+    tag: 'Kondisi tercatat bersama',
+    icon: IconClipboard,
+    tone: 'bg-primary-container text-on-primary-container',
+    tagTone: 'text-primary-container',
+  },
+  {
+    n: '03',
+    title: 'Pelunasan & Serah Kunci',
+    desc: 'Lunasi sisa biaya sewa, terima kunci, dan mobil siap dipakai sesuai jadwal Anda.',
+    tag: 'Langsung berangkat',
+    icon: IconKey,
+    tone: 'bg-emerald-conversion text-white',
+    tagTone: 'text-emerald-deep',
+  },
+];
+---
+
+<Base
+  title={`Pusat Bantuan & FAQ Rental Mobil | ${site.name} ${site.city}`}
+  description={`Pusat bantuan & tanya jawab seputar sewa mobil ${site.name} ${site.city}. Info syarat lepas kunci, cara reservasi, antar jemput bandara, overtime, dan langkah saat darurat.`}
+  offsetHeader
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
+
+  <div class="w-full bg-surface pb-16 lg:pb-24">
+    <!-- Breadcrumb & status -->
+    <section class="w-full bg-surface-container-low border-b border-border-subtle/50 py-3">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
+          <a class="hover:text-primary transition-colors flex items-center gap-1" href="/">
+            <IconHome class="w-4 h-4" aria-hidden="true" />
+            <span>Beranda</span>
+          </a>
+          <span class="text-outline-variant" aria-hidden="true">/</span>
+          <span class="text-primary font-bold" aria-current="page">Pusat Bantuan &amp; FAQ</span>
+        </nav>
+        <div class="inline-flex items-center gap-2 bg-surface-container-lowest px-3.5 py-1.5 rounded-full shadow-sm text-xs font-semibold text-on-surface border border-border-subtle/60">
+          <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-conversion opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-conversion"></span>
+          </span>
+          <span>Admin Siap Melayani {site.hours}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hero & pencarian -->
+    <section class="relative w-full bg-surface-container-low overflow-hidden pt-12 sm:pt-16 pb-16 border-b border-border-subtle/50">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 relative z-10">
+        <div class="max-w-3xl mx-auto text-center flex flex-col items-center">
+          <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed font-bold text-xs mb-4 shadow-sm">
+            <IconLifebuoy class="w-4 h-4 text-primary" aria-hidden="true" />
+            <span>Pusat Bantuan Resmi {site.name} {site.city}</span>
+          </span>
+          <h1 class="font-extrabold text-3xl sm:text-4xl lg:text-5xl text-on-surface tracking-tight mb-4">Ada yang Bisa Kami Bantu?</h1>
+          <p class="text-sm sm:text-base text-on-surface-variant max-w-2xl mb-8 leading-relaxed">
+            Cari panduan sewa, solusi kendala perjalanan di {site.city} &amp; Jawa Tengah, atau hubungi tim customer service kami yang siap membantu setiap hari.
+          </p>
+
+          <form id="faqSearchForm" role="search" class="w-full bg-surface-container-lowest p-2 rounded-2xl shadow-xl border border-border-subtle flex flex-col sm:flex-row items-center gap-2" action="#faqAccordionSection">
+            <div class="flex items-center gap-3 w-full px-4 py-2.5 text-on-surface">
+              <IconSearch class="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
+              <label for="faqSearchInput" class="sr-only">Cari pertanyaan</label>
+              <input
+                id="faqSearchInput"
+                type="search"
+                class="w-full bg-transparent border-0 outline-none text-sm text-on-surface placeholder:text-outline [&::-webkit-search-cancel-button]:hidden"
+                placeholder="Cari pertanyaan, misal: syarat lepas kunci, overtime, jemput bandara..."
+                autocomplete="off"
+              />
+              <button type="button" id="clearSearchBtn" class="hidden p-1 text-on-surface-variant hover:text-on-surface rounded-lg transition-colors cursor-pointer" aria-label="Bersihkan pencarian">
+                <IconX class="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
+            <button type="submit" class="w-full sm:w-auto bg-primary hover:bg-primary-container text-white font-bold text-sm px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+              Cari
+              <IconArrowRight class="w-4 h-4" aria-hidden="true" />
+            </button>
+          </form>
+
+          <div class="flex flex-wrap items-center justify-center gap-2 mt-5 text-xs">
+            <span class="text-on-surface-variant font-medium">Populer:</span>
+            {
+              quickTags.map((tag) => (
+                <button type="button" data-quick-tag={tag} class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  {tag}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kartu kategori cepat -->
+    <section class="max-w-[1280px] mx-auto px-4 sm:px-6 w-full -mt-8 relative z-20" aria-label="Topik bantuan">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {
+          quickCards.map((card) => (
+            <button
+              type="button"
+              data-cat-trigger={card.cat}
+              class="group text-left cursor-pointer bg-surface-container-lowest p-5 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-border-subtle flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <span class="flex flex-col gap-3">
+                <span class:list={['w-12 h-12 rounded-xl flex items-center justify-center transition-colors shadow-sm', card.color]}>
+                  <card.icon class="w-6 h-6" aria-hidden="true" />
+                </span>
+                <span>
+                  <span class="block font-bold text-base text-on-surface group-hover:text-primary transition-colors">{card.title}</span>
+                  <span class="block text-xs text-on-surface-variant mt-1 leading-relaxed">{card.desc}</span>
+                </span>
+              </span>
+              <span class="w-full pt-2 border-t border-border-subtle/50 flex items-center justify-between text-xs font-bold text-primary">
+                <span>{countOf(card.cat)} Pertanyaan</span>
+                <IconArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+              </span>
+            </button>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Kategori + accordion -->
+    <section class="max-w-[1280px] mx-auto px-4 sm:px-6 w-full py-16 scroll-mt-24" id="faqAccordionSection">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div class="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-28">
+          <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-border-subtle flex flex-col gap-4">
+            <div>
+              <h2 class="font-bold text-lg text-on-surface">Kategori Pertanyaan</h2>
+              <p class="text-xs text-on-surface-variant mt-1">Pilih kategori untuk memfilter jawaban seputar rental mobil kami.</p>
+            </div>
+            <div class="flex flex-col gap-1.5" id="categoryTabList">
+              {
+                categories.map((cat, idx) => (
+                  <button
+                    type="button"
+                    data-cat-btn={cat.id}
+                    aria-pressed={idx === 0 ? 'true' : 'false'}
+                    class:list={[
+                      'cat-nav-btn w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                      idx === 0 ? 'bg-primary-fixed text-on-primary-fixed font-bold' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container',
+                    ]}
+                  >
+                    <span class="flex items-center gap-2.5">
+                      <cat.icon class="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span>{cat.label}</span>
+                    </span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-surface-container-high/60 font-bold opacity-80">{cat.count}</span>
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="hidden lg:flex bg-surface-container-low p-6 rounded-2xl border border-border-subtle flex-col gap-3">
+            <div class="flex items-center gap-2 text-emerald-deep font-bold text-xs">
+              <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-conversion opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-conversion"></span>
+              </span>
+              <span>Layanan Customer Care Aktif</span>
+            </div>
+            <h3 class="font-bold text-base text-on-surface">Pusat Bantuan {site.city}</h3>
+            <p class="text-xs text-on-surface-variant leading-relaxed">
+              Pertanyaan Anda belum terjawab? Admin kami siap membantu lewat WhatsApp atau telepon di jam operasional.
+            </p>
+            <div class="pt-3 border-t border-border-subtle/60 flex flex-col gap-1.5 text-xs">
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-on-surface-variant">Jam layanan:</span>
+                <span class="font-bold text-on-surface">06.00 &ndash; 22.00 WIB</span>
+              </div>
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-on-surface-variant">WhatsApp:</span>
+                <a href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer" class="font-bold text-emerald-deep hover:underline">{site.phoneDisplay}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-8 flex flex-col gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border-subtle/50">
+            <div class="flex items-center gap-2">
+              <IconLifebuoy class="w-5 h-5 text-primary" aria-hidden="true" />
+              <h2 class="font-bold text-xl text-on-surface" id="currentTopicTitle">Semua Pertanyaan</h2>
+            </div>
+            <span class="text-xs text-on-surface-variant font-medium" id="resultCount" aria-live="polite">Menampilkan {faqs.length} pertanyaan</span>
+          </div>
+
+          <div class="flex flex-col gap-3" id="faqAccordionList">
+            {
+              faqs.map((f, i) => (
+                <details
+                  class="faq-item group bg-surface-container-lowest rounded-2xl border border-border-subtle shadow-sm overflow-hidden"
+                  data-category={f.cat}
+                  data-keywords={f.keywords}
+                  open={i === 0}
+                >
+                  <summary class="w-full p-5 sm:p-6 flex items-center justify-between gap-3 text-left font-bold text-sm sm:text-base text-on-surface hover:text-primary cursor-pointer list-none select-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary rounded-2xl">
+                    <span>{f.q}</span>
+                    <IconChevronDown class="w-5 h-5 text-on-surface-variant group-open:rotate-180 transition-transform duration-200 shrink-0" aria-hidden="true" />
+                  </summary>
+                  <div class="px-5 sm:px-6 pb-6 text-sm text-on-surface-variant leading-relaxed border-t border-border-subtle/50 pt-4 flex flex-col gap-3">
+                    {f.intro && <p>{f.intro}</p>}
+                    {f.list &&
+                      (f.ordered ? (
+                        <ol class="list-decimal pl-5 space-y-1.5 text-on-surface">
+                          {f.list.map((li) => <li>{li}</li>)}
+                        </ol>
+                      ) : (
+                        <ul class="list-disc pl-5 space-y-1.5 text-on-surface">
+                          {f.list.map((li) => <li>{li}</li>)}
+                        </ul>
+                      ))}
+                    {f.note && <p class="bg-surface-container-low p-3.5 rounded-xl border border-border-subtle/60 text-xs text-on-surface">{f.note}</p>}
+                  </div>
+                </details>
+              ))
+            }
+          </div>
+
+          <div id="noFaqResults" class="hidden flex-col items-center justify-center p-8 sm:p-12 text-center bg-surface-container-lowest rounded-2xl border border-border-subtle mt-4">
+            <div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center mb-4">
+              <IconSearch class="w-8 h-8 text-outline" aria-hidden="true" />
+            </div>
+            <h3 class="font-bold text-lg text-on-surface mb-1">Pertanyaan Tidak Ditemukan</h3>
+            <p class="text-sm text-on-surface-variant max-w-md mb-6 leading-relaxed">
+              Kami tidak menemukan jawaban yang cocok dengan kata kunci tersebut. Silakan tanyakan langsung ke admin {site.name} lewat WhatsApp.
+            </p>
+            <a
+              href={waLink(`Halo Admin ${site.name}, saya punya pertanyaan soal sewa mobil yang belum ada di FAQ. ${WA_SOURCE_TAG}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-colors"
+            >
+              <IconWa class="w-4 h-4" aria-hidden="true" />
+              Tanya Admin Langsung
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Prosedur serah terima -->
+    <section class="w-full bg-surface-container-low py-16 border-y border-border-subtle/50">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <span class="text-primary font-bold text-xs uppercase tracking-wider">Prosedur Serah Terima</span>
+          <h2 class="font-extrabold text-2xl sm:text-3xl text-on-surface mt-2 tracking-tight">Serah Terima Kendaraan dalam 3 Langkah</h2>
+          <p class="text-sm text-on-surface-variant mt-2 leading-relaxed">Kondisi mobil dicek bersama di awal, supaya saat pengembalian semuanya jelas.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {
+            steps.map((s) => (
+              <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-border-subtle flex flex-col justify-between gap-6">
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between">
+                    <div class:list={['w-12 h-12 rounded-xl flex items-center justify-center shadow-sm', s.tone]}>
+                      <s.icon class="w-6 h-6" aria-hidden="true" />
+                    </div>
+                    <span class="font-extrabold text-3xl text-surface-container-highest select-none" aria-hidden="true">{s.n}</span>
+                  </div>
+                  <h3 class="font-bold text-base text-on-surface">{Number(s.n)}. {s.title}</h3>
+                  <p class="text-sm text-on-surface-variant leading-relaxed">{s.desc}</p>
+                </div>
+                <div class:list={['pt-3 border-t border-border-subtle/50 flex items-center gap-1.5 font-bold text-xs', s.tagTone]}>
+                  <IconCheck class="w-4 h-4" aria-hidden="true" />
+                  <span>{s.tag}</span>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Jalur bantuan langsung -->
+    <section class="max-w-[1280px] mx-auto px-4 sm:px-6 w-full py-16">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <div>
+          <span class="text-primary font-bold text-xs uppercase tracking-wider">Jalur Bantuan Langsung</span>
+          <h2 class="font-extrabold text-2xl sm:text-3xl text-on-surface mt-1 tracking-tight">Butuh Solusi Lebih Cepat?</h2>
+          <p class="text-sm text-on-surface-variant mt-1">Pilih metode komunikasi yang paling nyaman bagi Anda.</p>
+        </div>
+        <span class="self-start md:self-auto inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface font-semibold text-xs border border-border-subtle">
+          <span class="w-2 h-2 rounded-full bg-emerald-conversion animate-pulse" aria-hidden="true"></span>
+          <span>Aktif setiap hari</span>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm hover:shadow-xl transition-shadow border border-border-subtle flex flex-col justify-between gap-6">
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-xl bg-emerald-conversion/10 text-emerald-deep flex items-center justify-center">
+                <IconWa class="w-6 h-6" aria-hidden="true" />
+              </div>
+              <span class="bg-emerald-conversion/15 text-emerald-deep text-xs px-2.5 py-1 rounded-full font-bold">Paling Cepat</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-on-surface">WhatsApp Customer Care</h3>
+              <p class="text-sm text-on-surface-variant mt-1 leading-relaxed">Jalur tercepat untuk cek mobil kosong, kirim dokumen, tanya harga, dan konsultasi rute.</p>
+            </div>
+            <div class="font-bold text-lg text-emerald-deep">{site.phoneDisplay}</div>
+          </div>
+          <a href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer" class="w-full bg-emerald-conversion hover:bg-emerald-deep text-white font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm">
+            Kirim Pesan WhatsApp
+            <IconExternal class="w-4 h-4" aria-hidden="true" />
+          </a>
+        </div>
+
+        <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm hover:shadow-xl transition-shadow border border-border-subtle flex flex-col justify-between gap-6">
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
+                <IconPhone class="w-6 h-6" aria-hidden="true" />
+              </div>
+              <span class="bg-error-container text-error text-xs px-2.5 py-1 rounded-full font-bold">Hal Mendesak</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-on-surface">Telepon Admin</h3>
+              <p class="text-sm text-on-surface-variant mt-1 leading-relaxed">Hubungi langsung untuk keperluan mendesak di jalan atau koordinasi jadwal jemput.</p>
+            </div>
+            <div class="font-bold text-lg text-primary">{site.phoneDisplay}</div>
+          </div>
+          <a href={`tel:+${site.whatsapp}`} class="w-full bg-primary hover:bg-primary-container text-white font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm">
+            Panggil Langsung
+            <IconPhone class="w-4 h-4" aria-hidden="true" />
+          </a>
+        </div>
+
+        <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm hover:shadow-xl transition-shadow border border-border-subtle flex flex-col justify-between gap-6">
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-xl bg-surface-container-high text-on-surface flex items-center justify-center">
+                <IconMapPin class="w-6 h-6" aria-hidden="true" />
+              </div>
+              <span class="bg-surface-container text-on-surface-variant text-xs px-2.5 py-1 rounded-full font-semibold">06.00 &ndash; 22.00 WIB</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-on-surface">Kantor &amp; Garasi Utama</h3>
+              <p class="text-sm text-on-surface-variant mt-1 leading-relaxed">Ingin melihat mobil langsung sebelum menyewa? Kabari admin dulu, lalu kunjungi garasi kami di pusat kota {site.city}.</p>
+            </div>
+            <div class="text-xs font-semibold text-on-surface">{site.address}</div>
+          </div>
+          <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer" class="w-full bg-surface-container-high hover:bg-surface-dim text-on-surface font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-colors">
+            Petunjuk Arah Google Maps
+            <IconExternal class="w-4 h-4" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Garasi + peta -->
+    <section class="max-w-[1280px] mx-auto px-4 sm:px-6 w-full">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-border-subtle overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+        <div class="p-6 sm:p-8 flex flex-col gap-4 justify-center">
+          <span class="self-start inline-flex items-center px-2.5 py-1 rounded-md bg-primary-fixed text-on-primary-fixed text-xs font-bold">Lokasi Garasi</span>
+          <h2 class="font-bold text-xl sm:text-2xl text-on-surface">Garasi Pusat &amp; Pool Armada</h2>
+          <p class="text-sm text-on-surface-variant leading-relaxed">
+            Ambil mobil sendiri di garasi kami, atau minta diantar. Antar jemput di dalam Kota {site.city} gratis, termasuk ke Bandara Ahmad Yani, Stasiun Tawang, dan Stasiun Poncol.
+          </p>
+          <ul class="flex flex-col gap-2 text-sm text-on-surface-variant">
+            <li class="flex items-start gap-2">
+              <IconMapPin class="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+              <span>{site.address}</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <IconClock class="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+              <span>{site.hours}</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <IconCar class="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+              <span>Antar ke luar kota tersedia, biaya sesuai jarak</span>
+            </li>
+          </ul>
+          <a
+            href={waLink(`Halo Admin ${site.name}, saya ingin jadwalkan kunjungan ke garasi untuk lihat mobil. ${WA_SOURCE_TAG}`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="self-start inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors shadow-sm"
+          >
+            Jadwalkan Kunjungan Garasi
+          </a>
+        </div>
+        <MapPlaceholder class="h-64 lg:h-full lg:min-h-[320px] rounded-none" label={`Garasi ${site.name} ${site.city}`} />
+      </div>
+    </section>
+  </div>
+</Base>
+
+<script>
+  function initFaqPage() {
+    const form = document.getElementById('faqSearchForm') as HTMLFormElement | null;
+    const searchInput = document.getElementById('faqSearchInput') as HTMLInputElement | null;
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const items = document.querySelectorAll<HTMLDetailsElement>('.faq-item');
+    const catButtons = document.querySelectorAll<HTMLButtonElement>('.cat-nav-btn');
+    const quickCards = document.querySelectorAll<HTMLButtonElement>('[data-cat-trigger]');
+    const quickTags = document.querySelectorAll<HTMLButtonElement>('[data-quick-tag]');
+    const title = document.getElementById('currentTopicTitle');
+    const resultCount = document.getElementById('resultCount');
+    const emptyState = document.getElementById('noFaqResults');
+    const section = document.getElementById('faqAccordionSection');
+
+    let currentCategory = 'all';
+    const titleMap: Record<string, string> = {
+      all: 'Semua Pertanyaan',
+      booking: 'Reservasi & Pembayaran',
+      syarat: 'Persyaratan & Dokumen',
+      operasional: 'Aturan Selama Sewa',
+      darurat: 'Bantuan & Darurat',
+    };
+
+    const scrollToList = () => section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    function updateView() {
+      const query = (searchInput?.value || '').trim().toLowerCase();
+      const words = query.split(/\s+/).filter(Boolean);
+      let visible = 0;
+
+      clearBtn?.classList.toggle('hidden', query.length === 0);
+
+      items.forEach((item) => {
+        const cat = item.dataset.category || '';
+        const haystack = `${item.textContent || ''} ${item.dataset.keywords || ''}`.toLowerCase();
+        const matchesCat = query !== '' || currentCategory === 'all' || cat === currentCategory;
+        const matchesQuery = words.every((w) => haystack.includes(w));
+        const show = matchesCat && matchesQuery;
+        item.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+
+      if (title) title.textContent = query ? `Hasil Pencarian: "${query}"` : titleMap[currentCategory] || 'Daftar Pertanyaan';
+      if (resultCount) resultCount.textContent = `Menampilkan ${visible} pertanyaan`;
+      if (emptyState) {
+        emptyState.classList.toggle('hidden', visible > 0);
+        emptyState.classList.toggle('flex', visible === 0);
+      }
+
+      catButtons.forEach((btn) => {
+        const active = btn.dataset.catBtn === currentCategory && !query;
+        btn.setAttribute('aria-pressed', String(active));
+        btn.classList.toggle('bg-primary-fixed', active);
+        btn.classList.toggle('text-on-primary-fixed', active);
+        btn.classList.toggle('font-bold', active);
+        btn.classList.toggle('text-on-surface-variant', !active);
+      });
+    }
+
+    function setCategory(cat: string, scroll = false) {
+      currentCategory = cat;
+      if (searchInput) searchInput.value = '';
+      updateView();
+      if (scroll) scrollToList();
+    }
+
+    catButtons.forEach((btn) => btn.addEventListener('click', () => setCategory(btn.dataset.catBtn || 'all')));
+    quickCards.forEach((card) => card.addEventListener('click', () => setCategory(card.dataset.catTrigger || 'all', true)));
+
+    searchInput?.addEventListener('input', updateView);
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      updateView();
+      scrollToList();
+    });
+    clearBtn?.addEventListener('click', () => {
+      setCategory('all');
+      searchInput?.focus();
+    });
+    quickTags.forEach((btn) =>
+      btn.addEventListener('click', () => {
+        if (!searchInput) return;
+        searchInput.value = btn.dataset.quickTag || '';
+        updateView();
+        scrollToList();
+      }),
+    );
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFaqPage);
+  } else {
+    initFaqPage();
+  }
+</script>
+
+<style>
+  summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

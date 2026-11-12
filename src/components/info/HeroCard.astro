@@ -1,0 +1,227 @@
+---
+/**
+ * Kartu media di sisi kanan hero halaman info.
+ * - kota: garasi pusat + foto armada + strip info operasional
+ * - layanan: unit unggulan untuk layanan ini + harga mulai
+ * - rute: ringkasan rute (asal -> tujuan, jarak, waktu)
+ */
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import IconGarage from '@tabler/icons/outline/building-warehouse.svg';
+import IconMapPin from '@tabler/icons/outline/map-pin.svg';
+import IconPhone from '@tabler/icons/outline/phone.svg';
+import IconExternal from '@tabler/icons/outline/external-link.svg';
+import IconRoute from '@tabler/icons/outline/route.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconUsers from '@tabler/icons/outline/users.svg';
+import IconGear from '@tabler/icons/outline/manual-gearbox.svg';
+import IconFuel from '@tabler/icons/outline/gas-station.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconArrowRight from '@tabler/icons/outline/arrow-right.svg';
+import IconFlag from '@tabler/icons/outline/flag.svg';
+import { KATEGORI } from '../../content.config';
+import { formatHargaLengkap, site, waLink } from '../../config/site';
+import type { InfoPage, RutePage } from '../../data/halaman';
+
+type Car = CollectionEntry<'armada'>;
+
+interface Props {
+  type: 'kota' | 'layanan' | 'rute';
+  page: InfoPage | RutePage;
+  car?: Car;
+  /** Jumlah model armada aktif (dari koleksi). */
+  totalModel: number;
+  pesan: string;
+}
+
+const { type, page, car, totalModel, pesan } = Astro.props;
+const rute = 'jarak' in page ? page : null;
+const isHome = page.slug === site.city.toLowerCase();
+const tel = `tel:+${site.whatsapp}`;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// Harga mulai untuk kartu layanan. Sewa bulanan tidak ditampilkan karena harganya khusus (bukan harian).
+let harga: { nilai: number; satuan: string } | null = null;
+if (car && page.slug !== 'sewa-bulanan') {
+  const { lepasKunci, denganSopir } = car.data.harga;
+  if (page.slug === 'lepas-kunci') harga = lepasKunci ? { nilai: lepasKunci, satuan: '24 jam' } : null;
+  else harga = denganSopir ? { nilai: denganSopir, satuan: '12 jam' } : null;
+}
+---
+
+{
+  type === 'kota' && (
+    <div class="relative bg-surface-container-lowest p-5 sm:p-6 rounded-2xl shadow-xl border border-border-subtle/60 flex flex-col gap-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <IconGarage class="w-7 h-7 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+          <div>
+            <p class="font-bold text-lg text-on-surface leading-tight">Pool &amp; garasi pusat</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">{site.address}</p>
+          </div>
+        </div>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-conversion/15 text-emerald-deep whitespace-nowrap">
+          Buka tiap hari
+        </span>
+      </div>
+      {car && (
+        <div class="relative w-full aspect-[16/9] rounded-xl overflow-hidden bg-surface-container-low">
+          <Image src={car.data.gambar} alt={car.data.alt} widths={[420, 640]} sizes="(max-width: 1024px) 100vw, 480px" class="w-full h-full object-cover" loading="eager" />
+          <div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/85 via-transparent to-transparent flex items-end p-4">
+            <span class="text-inverse-on-surface flex items-center gap-1.5 text-xs font-semibold">
+              <IconMapPin class="w-4 h-4" aria-hidden="true" />
+              {isHome ? 'Antar jemput mobil gratis di dalam kota' : `Diantar dari ${site.city} ke ${page.nama}`}
+            </span>
+          </div>
+        </div>
+      )}
+      <dl class="grid grid-cols-3 gap-2 bg-surface-container-low p-3 rounded-xl text-center">
+        <div>
+          <dt class="sr-only">Jam admin</dt>
+          <dd class="font-bold text-sm text-primary">06.00 - 22.00</dd>
+          <dd class="text-[11px] sm:text-xs text-on-surface-variant">Admin aktif</dd>
+        </div>
+        <div>
+          <dt class="sr-only">Pilihan armada</dt>
+          <dd class="font-bold text-sm text-primary">{totalModel} model</dd>
+          <dd class="text-[11px] sm:text-xs text-on-surface-variant">Pilihan armada</dd>
+        </div>
+        <div>
+          <dt class="sr-only">Uang muka</dt>
+          <dd class="font-bold text-sm text-primary">DP 30%</dd>
+          <dd class="text-[11px] sm:text-xs text-on-surface-variant">Kunci jadwal</dd>
+        </div>
+      </dl>
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-on-surface-variant">
+        <a href={tel} class="flex items-center gap-1 hover:text-primary transition-colors">
+          <IconPhone class="w-4 h-4 text-primary" aria-hidden="true" />
+          {site.phoneDisplay}
+        </a>
+        <a class="text-primary hover:underline font-semibold flex items-center gap-1" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Buka Google Maps
+          <IconExternal class="w-3.5 h-3.5" aria-hidden="true" />
+        </a>
+      </div>
+    </div>
+  )
+}
+
+{
+  type === 'layanan' && car && (
+    <div class="relative bg-surface-container-lowest rounded-2xl shadow-xl border border-border-subtle/60 overflow-hidden flex flex-col">
+      <div class="relative w-full aspect-[16/10] bg-surface-container-low">
+        <Image src={car.data.gambar} alt={car.data.alt} widths={[420, 640]} sizes="(max-width: 1024px) 100vw, 480px" class="w-full h-full object-cover" loading="eager" />
+        <span class="absolute top-3 left-3 bg-surface-container-lowest/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-primary shadow-sm">
+          Pilihan untuk {page.nama.toLowerCase()}
+        </span>
+        {harga && (
+          <span class="absolute bottom-3 right-3 bg-primary text-on-primary px-3 py-1.5 rounded-lg text-xs font-bold shadow-md">
+            Mulai {formatHargaLengkap(harga.nilai)}
+            <span class="font-medium opacity-80"> / {harga.satuan}</span>
+          </span>
+        )}
+      </div>
+      <div class="p-5 flex flex-col gap-3">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-on-surface-variant">{KATEGORI[car.data.kategori]}</p>
+          <p class="font-bold text-lg text-on-surface leading-tight">{car.data.nama}</p>
+        </div>
+        <ul class="flex flex-wrap gap-2 text-xs text-on-surface-variant list-none p-0 m-0">
+          <li class="inline-flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-lg">
+            <IconUsers class="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+            {car.data.kapasitas} kursi
+          </li>
+          <li class="inline-flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-lg">
+            <IconGear class="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+            {cap(car.data.transmisi)}
+          </li>
+          <li class="inline-flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-lg">
+            <IconFuel class="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+            {cap(car.data.bbm)}
+          </li>
+        </ul>
+        <a
+          href={waLink(pesan)}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-1 flex items-center justify-between gap-3 bg-surface-container-low hover:bg-surface-container p-3 rounded-xl transition-colors group"
+        >
+          <span class="flex flex-col">
+            <span class="text-sm font-bold text-on-surface">Pesan untuk hari ini?</span>
+            <span class="text-xs text-on-surface-variant">Tanya ketersediaan unit ke admin</span>
+          </span>
+          <span class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
+            <IconArrowRight class="w-4 h-4" aria-hidden="true" />
+          </span>
+        </a>
+      </div>
+    </div>
+  )
+}
+
+{
+  type === 'rute' && rute && (
+    <div class="flex flex-col gap-4">
+      <div class="bg-surface-container-lowest p-5 sm:p-6 rounded-2xl shadow-xl border border-border-subtle/60 flex flex-col gap-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-primary">Ringkasan rute</p>
+            <p class="font-bold text-lg text-on-surface leading-tight">{rute.dari} ke {rute.ke}</p>
+          </div>
+          <span class="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center shrink-0">
+            <IconRoute class="w-5 h-5" aria-hidden="true" />
+          </span>
+        </div>
+        <ol class="relative flex flex-col gap-4 list-none p-0 m-0 pl-7">
+          <span class="absolute left-[9px] top-2 bottom-2 border-l-2 border-dashed border-outline-variant" aria-hidden="true" />
+          <li class="relative">
+            <span class="absolute -left-7 top-0.5 w-5 h-5 rounded-full bg-primary-fixed flex items-center justify-center" aria-hidden="true">
+              <span class="w-2.5 h-2.5 rounded-full bg-primary" />
+            </span>
+            <span class="block text-xs text-on-surface-variant">Titik jemput</span>
+            <span class="block font-bold text-sm text-on-surface">{rute.dari}</span>
+          </li>
+          <li class="relative">
+            <span class="absolute -left-7 top-0.5 w-5 h-5 rounded-full bg-emerald-conversion/15 flex items-center justify-center text-emerald-deep" aria-hidden="true">
+              <IconFlag class="w-3 h-3" />
+            </span>
+            <span class="block text-xs text-on-surface-variant">Tujuan</span>
+            <span class="block font-bold text-sm text-on-surface">{rute.ke}</span>
+          </li>
+        </ol>
+        <dl class="grid grid-cols-2 gap-2">
+          <div class="bg-surface-container-low p-3 rounded-xl">
+            <dt class="flex items-center gap-1 text-xs text-on-surface-variant">
+              <IconRoute class="w-3.5 h-3.5 text-primary" aria-hidden="true" /> Jarak
+            </dt>
+            <dd class="font-bold text-sm text-on-surface mt-0.5">{rute.jarak}</dd>
+          </div>
+          <div class="bg-surface-container-low p-3 rounded-xl">
+            <dt class="flex items-center gap-1 text-xs text-on-surface-variant">
+              <IconClock class="w-3.5 h-3.5 text-emerald-deep" aria-hidden="true" /> Waktu tempuh
+            </dt>
+            <dd class="font-bold text-sm text-on-surface mt-0.5">{rute.waktu}</dd>
+          </div>
+        </dl>
+        <a
+          class="inline-flex items-center justify-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white px-4 py-3 rounded-xl font-bold text-sm transition-colors"
+          href={waLink(pesan)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <IconWa class="w-5 h-5" aria-hidden="true" />
+          Konsultasi rute via WhatsApp
+        </a>
+        <p class="text-[11px] text-text-muted text-center">*Perkiraan pada kondisi lalu lintas normal.</p>
+      </div>
+      {car && (
+        <div class="relative hidden sm:block w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-md bg-surface-container-low">
+          <Image src={car.data.gambar} alt={car.data.alt} widths={[420, 640]} sizes="480px" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/85 via-transparent to-transparent flex items-end p-4">
+            <span class="text-inverse-on-surface text-xs font-semibold">{car.data.nama} &middot; siap untuk rute ini</span>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

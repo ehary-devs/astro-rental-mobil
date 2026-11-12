@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
@@ -13,6 +14,7 @@ export default defineConfig({
     inlineStylesheets: 'never',
   },
   vite: {
+    plugins: [tailwindcss()],
     build: {
       // Astro meng-inline <script> kecil ke HTML → diblokir CSP script-src 'self'. 0 = selalu file eksternal.
       assetsInlineLimit: 0,

@@ -1,0 +1,77 @@
+---
+import IconSpray from '@tabler/icons/outline/spray.svg';
+import IconTool from '@tabler/icons/outline/tool.svg';
+import IconClipboard from '@tabler/icons/outline/clipboard-check.svg';
+import IconReplace from '@tabler/icons/outline/replace.svg';
+import IconCheck from '@tabler/icons/outline/circle-check.svg';
+import { site } from '../../config/site';
+
+const items = [
+  {
+    icon: IconSpray,
+    box: 'bg-primary-fixed text-primary',
+    title: 'Bersih & Nyaman',
+    desc: 'Kabin dibersihkan dan AC dicek setiap kali sebelum unit diserahkan, siap dipakai keluarga maupun tamu kantor.',
+    foot: 'Unit bersih & AC dingin',
+    footClass: 'text-emerald-deep',
+  },
+  {
+    icon: IconTool,
+    box: 'bg-secondary-fixed text-on-secondary-fixed',
+    title: 'Servis Berkala',
+    desc: 'Perawatan rutin di bengkel resmi sesuai jadwal pabrikan. Biaya servis berkala ditanggung kami, bukan penyewa.',
+    foot: 'Servis bengkel resmi rutin',
+    footClass: 'text-primary',
+  },
+  {
+    icon: IconClipboard,
+    box: 'bg-emerald-conversion/20 text-emerald-deep',
+    title: 'Dicek Sebelum Jalan',
+    desc: 'Kondisi rem, ban, oli, lampu, dan kelistrikan diperiksa sebelum kunci diserahkan, sehingga mobil siap untuk perjalanan dalam maupun luar kota.',
+    foot: 'Siap perjalanan jauh',
+    footClass: 'text-primary',
+  },
+  {
+    icon: IconReplace,
+    box: 'bg-tertiary-fixed text-tertiary',
+    title: 'Mobil Pengganti',
+    desc: `Bila terjadi kendala teknis selama masa sewa, hubungi admin ${site.name} dan kami bantu siapkan mobil pengganti.`,
+    foot: 'Bantuan saat ada kendala',
+    footClass: 'text-tertiary',
+  },
+];
+---
+
+<section class="w-full py-14 lg:py-20 bg-surface-container-low" aria-labelledby="kenapa-heading">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto mb-10 lg:mb-12">
+      <span class="text-xs text-primary uppercase font-bold tracking-wider">Komitmen Keandalan</span>
+      <h2 id="kenapa-heading" class="mt-1 mb-2 font-bold text-2xl sm:text-3xl text-on-background tracking-tight">
+        Kenapa Memilih Armada {site.name}?
+      </h2>
+      <p class="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+        Standar perawatan yang jelas agar setiap perjalanan Anda di {site.city} &amp; Jawa Tengah aman, nyaman, dan tanpa repot.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+      {
+        items.map((it) => (
+          <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-border-subtle/60 flex flex-col justify-between">
+            <div>
+              <div class:list={['w-12 h-12 rounded-xl flex items-center justify-center mb-4', it.box]}>
+                <it.icon class="w-7 h-7" aria-hidden="true" />
+              </div>
+              <h3 class="font-semibold text-lg text-on-surface mb-2">{it.title}</h3>
+              <p class="text-sm text-on-surface-variant leading-relaxed">{it.desc}</p>
+            </div>
+            <div class:list={['mt-5 flex items-center gap-1.5 text-xs font-semibold', it.footClass]}>
+              <IconCheck class="w-[18px] h-[18px]" aria-hidden="true" />
+              {it.foot}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

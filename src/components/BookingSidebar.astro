@@ -14,7 +14,10 @@ import IconChevron from '@tabler/icons/outline/chevron-down.svg';
 import IconLeft from '@tabler/icons/outline/chevron-left.svg';
 import IconRight from '@tabler/icons/outline/chevron-right.svg';
 import IconShield from '@tabler/icons/outline/shield-check.svg';
-import { formatHargaLengkap, site, WA_SOURCE_TAG } from '../config/site';
+import IconCalendarRepeat from '@tabler/icons/outline/calendar-repeat.svg';
+import IconWallet from '@tabler/icons/outline/wallet.svg';
+import IconHeadset from '@tabler/icons/outline/headset.svg';
+import { formatHargaLengkap, formatHargaSingkat, site, WA_SOURCE_TAG } from '../config/site';
 
 interface Props {
   car: CollectionEntry<'armada'>;
@@ -23,11 +26,18 @@ interface Props {
 const { car } = Astro.props;
 const { nama, harga } = car.data;
 
+// value harus sama dengan konstanta LAYANAN_* di src/scripts/booking.ts.
+type Paket = { value: string; short: string; price: string; unit: string };
 const paket = [
-  harga.lepasKunci && { value: 'Lepas kunci', label: 'Lepas kunci', price: formatHargaLengkap(harga.lepasKunci), unit: '/24 jam' },
-  harga.denganSopir && { value: 'Dengan sopir', label: 'Dengan sopir', price: formatHargaLengkap(harga.denganSopir), unit: '/12 jam' },
-  { value: 'Antar jemput bandara', label: 'Antar jemput bandara', price: 'Sesuai jarak', unit: '' },
-].filter((p): p is { value: string; label: string; price: string; unit: string } => Boolean(p));
+  harga.lepasKunci && { value: 'Lepas kunci', short: 'Lepas kunci', price: formatHargaSingkat(harga.lepasKunci), unit: '/24j' },
+  harga.denganSopir && { value: 'Dengan sopir', short: '+ Sopir', price: formatHargaSingkat(harga.denganSopir), unit: '/12j' },
+  // Antar jemput bandara selalu dengan sopir (lihat layanan di src/data/halaman.ts).
+  harga.denganSopir && { value: 'Antar jemput bandara', short: 'Bandara', price: 'Sesuai jarak', unit: '' },
+].filter((p): p is Paket => Boolean(p));
+
+const termurah = harga.lepasKunci
+  ? { nilai: Math.min(harga.lepasKunci, harga.denganSopir ?? Infinity), unit: harga.lepasKunci <= (harga.denganSopir ?? Infinity) ? '/24 jam' : '/12 jam' }
+  : { nilai: harga.denganSopir!, unit: '/12 jam' };
 
 const slots: string[] = [];
 for (let m = 5 * 60; m <= 22 * 60; m += 30) {
@@ -49,23 +59,34 @@ const DEFAULT_JAM = '08.00';
   aria-labelledby="side-title"
   novalidate
 >
-  <h2 id="side-title" class="title">Pesan {nama}</h2>
+  <div class="head">
+    <div>
+      <span class="eyebrow">Simulasi sewa</span>
+      <h2 id="side-title" class="title">Pesan {nama}</h2>
+    </div>
+    <div class="head-price">
+      <span class="from">Mulai</span>
+      <strong>{formatHargaLengkap(termurah.nilai)}</strong>
+      <span class="from">{termurah.unit}</span>
+    </div>
+  </div>
 
   <fieldset class="plans">
-    <legend class="sub">Pilih paket</legend>
-    {
-      paket.map((p, i) => (
-        <label class="plan">
-          <input type="radio" name="layanan" value={p.value} checked={i === 0} />
-          <span class="radio" aria-hidden="true" />
-          <span class="plan-name">{p.label}</span>
-          <span class="plan-price">
-            {p.price}
-            {p.unit && <small>{p.unit}</small>}
-          </span>
-        </label>
-      ))
-    }
+    <legend class="sub">Pilihan layanan</legend>
+    <div class="seg" style={`--n:${paket.length}`}>
+      {
+        paket.map((p, i) => (
+          <label class="seg-opt">
+            <input type="radio" name="layanan" value={p.value} checked={i === 0} />
+            <span class="seg-name">{p.short}</span>
+            <span class="seg-price">
+              {p.price}
+              {p.unit && <small>{p.unit}</small>}
+            </span>
+          </label>
+        ))
+      }
+    </div>
   </fieldset>
 
   <div class="grid">
@@ -168,9 +189,15 @@ const DEFAULT_JAM = '08.00';
     </div>
   </div>
 
-  <div class="total" aria-live="polite">
-    <span>Estimasi <span class="days">(<span data-estimate-days>1 hari</span>)</span></span>
-    <strong data-estimate>&nbsp;</strong>
+  <div class="summary">
+    <div class="sum-row">
+      <span>Antar jemput dalam Kota {site.city}</span>
+      <span class="free">Gratis</span>
+    </div>
+    <div class="total" aria-live="polite">
+      <span>Total estimasi <span class="days">(<span data-estimate-days>1 hari</span>)</span></span>
+      <strong data-estimate>&nbsp;</strong>
+    </div>
   </div>
 
   <button type="submit" class="submit">
@@ -182,6 +209,12 @@ const DEFAULT_JAM = '08.00';
     <IconShield aria-hidden="true" />
     <span data-hint>Belum bayar apa pun. Admin cek ketersediaan dan kirim harga final di WhatsApp.</span>
   </p>
+
+  <ul class="trust">
+    <li><IconCalendarRepeat aria-hidden="true" />Reschedule H-1</li>
+    <li><IconWallet aria-hidden="true" />DP 30%</li>
+    <li><IconHeadset aria-hidden="true" />Admin 06.00-22.00</li>
+  </ul>
 </form>
 
 <script>
@@ -193,106 +226,141 @@ const DEFAULT_JAM = '08.00';
 <style>
   .side {
     display: grid;
-    gap: 20px;
-    padding: 26px;
+    gap: 18px;
+    padding: 24px;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
   }
 
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--color-surface-container);
+  }
+
+  .eyebrow {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+  }
+
   .title {
-    font-size: 1.25rem;
-    font-stretch: 110%;
+    margin-top: 2px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .head-price {
+    display: grid;
+    justify-items: end;
+    text-align: right;
+    flex: none;
+  }
+
+  .head-price strong {
+    font-size: 1.375rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--color-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .from {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
   }
 
   .sub,
   .label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     padding: 0;
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--text);
   }
 
-  /* Paket */
+  /* Paket: segmented control */
   .plans {
-    display: grid;
-    gap: 8px;
     margin: 0;
     padding: 0;
     border: 0;
+    min-width: 0;
   }
 
-  .plan {
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-container);
+  }
+
+  .seg-opt {
     position: relative;
     display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
+    justify-items: center;
+    gap: 1px;
+    padding: 8px 4px;
+    border-radius: 8px;
+    text-align: center;
+    color: var(--color-on-surface-variant);
     cursor: pointer;
     transition:
-      border-color 0.2s var(--ease),
       background-color 0.2s var(--ease),
+      color 0.2s var(--ease),
       box-shadow 0.2s var(--ease);
   }
 
-  .plan:hover {
-    border-color: #b9bec7;
+  .seg-opt:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
   }
 
-  .plan input {
+  .seg-opt input {
     position: absolute;
-    opacity: 0;
     inset: 0;
     margin: 0;
+    opacity: 0;
     cursor: pointer;
   }
 
-  .radio {
-    width: 18px;
-    height: 18px;
-    border: 1.5px solid #9aa0aa;
-    border-radius: 50%;
-    transition:
-      border-color 0.2s var(--ease),
-      box-shadow 0.2s var(--ease);
-  }
-
-  .plan-name {
-    font-size: 0.9375rem;
-    font-weight: 500;
-  }
-
-  .plan-price {
-    font-size: 0.9375rem;
+  .seg-name {
+    font-size: 0.8125rem;
     font-weight: 700;
-    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
-  .plan-price small {
-    font-size: 0.75rem;
+  .seg-price {
+    font-size: 0.6875rem;
     font-weight: 500;
-    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    opacity: 0.85;
   }
 
-  .plan:has(input:checked) {
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
-    box-shadow: inset 0 0 0 1px var(--accent);
+  .seg-price small {
+    font-size: inherit;
   }
 
-  .plan input:checked ~ .radio {
-    border-color: var(--accent);
-    box-shadow: inset 0 0 0 4px var(--accent);
+  .seg-opt:has(input:checked) {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: var(--shadow-sm);
   }
 
-  .plan:has(input:focus-visible) {
+  .seg-opt:has(input:focus-visible) {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
@@ -504,16 +572,37 @@ const DEFAULT_JAM = '08.00';
     display: block;
   }
 
-  /* Total */
+  /* Ringkasan */
+  .summary {
+    display: grid;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-container-low);
+  }
+
+  .sum-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  .free {
+    font-weight: 700;
+    color: var(--color-emerald-deep);
+  }
+
   .total {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 12px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    font-size: 0.9375rem;
-    font-weight: 500;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-surface-container-highest);
+    font-size: 0.875rem;
+    font-weight: 700;
   }
 
   .days {
@@ -522,12 +611,37 @@ const DEFAULT_JAM = '08.00';
   }
 
   .total strong {
-    font-size: 1.5rem;
-    font-weight: 700;
-    font-stretch: 110%;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-primary);
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
     text-align: right;
+  }
+
+  .trust {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 0;
+    padding: 12px 0 0;
+    list-style: none;
+    border-top: 1px solid var(--color-surface-container);
+    text-align: center;
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
+  .trust li {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+  }
+
+  .trust svg {
+    width: 16px;
+    height: 16px;
+    color: var(--color-primary);
   }
 
   .submit {
@@ -537,13 +651,13 @@ const DEFAULT_JAM = '08.00';
     gap: 10px;
     min-height: 50px;
     border: 0;
-    border-radius: var(--radius-pill);
-    background: var(--accent);
-    color: var(--on-accent);
+    border-radius: 0.75rem;
+    background: #10b981;
+    color: #ffffff;
     font-size: 0.9688rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
     transition:
       background-color 0.2s var(--ease),
       box-shadow 0.2s var(--ease),
@@ -551,12 +665,13 @@ const DEFAULT_JAM = '08.00';
   }
 
   .submit:hover {
-    background: var(--accent-hover);
-    box-shadow: var(--shadow-md);
+    background: #059669;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+    transform: scale(1.02);
   }
 
   .submit:active {
-    transform: translateY(1px);
+    transform: scale(0.98);
   }
 
   .submit svg {

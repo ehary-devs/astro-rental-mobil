@@ -1,0 +1,48 @@
+---
+/** Banner ajakan di bagian bawah halaman detail. */
+import IconPhone from '@tabler/icons/outline/phone-call.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import { site, WA_SOURCE_TAG, waLink } from '../../config/site';
+
+interface Props {
+  nama: string;
+}
+
+const { nama } = Astro.props;
+const tel = `tel:+${site.whatsapp}`;
+const wa = waLink(`Halo Admin ${site.name}, saya mau sewa ${nama}. Apakah tersedia? ${WA_SOURCE_TAG}`);
+---
+
+<section class="w-full bg-primary text-on-primary py-12 lg:py-16" aria-labelledby="cta-detail-title">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col lg:flex-row items-center justify-between gap-8">
+    <div class="max-w-2xl text-center lg:text-left">
+      <span class="px-3 py-1 rounded-full bg-primary-container text-white text-xs uppercase tracking-wider font-semibold inline-block mb-3">
+        Pesan lewat WhatsApp
+      </span>
+      <h2 id="cta-detail-title" class="font-extrabold text-2xl sm:text-3xl lg:text-[34px] leading-tight text-white">
+        Butuh {nama} di {site.city}?
+      </h2>
+      <p class="text-base text-on-primary-container mt-2 leading-relaxed">
+        Admin {site.name} aktif {site.hours.replace('Setiap', 'setiap')}. Kirim tanggal dan lokasi jemput, kami cek ketersediaan unit dan kirim harga final.
+      </p>
+    </div>
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
+      <a
+        href={tel}
+        class="px-6 py-3 rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container font-bold text-base flex items-center justify-center gap-2 shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        <IconPhone class="w-5 h-5" aria-hidden="true" />
+        <span>{site.phoneDisplay}</span>
+      </a>
+      <a
+        href={wa}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="px-6 py-3 rounded-xl bg-emerald-conversion hover:bg-emerald-deep text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        <IconWa class="w-5 h-5" aria-hidden="true" />
+        <span>Pesan via WhatsApp</span>
+      </a>
+    </div>
+  </div>
+</section>

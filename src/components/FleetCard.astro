@@ -2,238 +2,137 @@
 import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import IconUsers from '@tabler/icons/outline/users.svg';
-import IconGear from '@tabler/icons/outline/manual-gearbox.svg';
+import IconManual from '@tabler/icons/outline/manual-gearbox.svg';
+import IconAuto from '@tabler/icons/outline/automatic-gearbox.svg';
 import IconFuel from '@tabler/icons/outline/gas-station.svg';
+import IconBolt from '@tabler/icons/outline/bolt.svg';
+import IconLeaf from '@tabler/icons/outline/leaf.svg';
+import IconKey from '@tabler/icons/outline/key.svg';
+import IconSteering from '@tabler/icons/outline/steering-wheel.svg';
 import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
 import { KATEGORI } from '../content.config';
-import { formatHargaLengkap, formatHargaSingkat, site, WA_SOURCE_TAG, waLink } from '../config/site';
+import { formatHargaLengkap, site, WA_SOURCE_TAG, waLink } from '../config/site';
 
 interface Props {
   car: CollectionEntry<'armada'>;
   highlight?: boolean;
+  /** Tampilkan satu baris deskripsi dari isi markdown. Default true. */
+  showDescription?: boolean;
+  /** Atribut loading gambar, mis. 'eager' untuk kartu di atas lipatan. */
+  loading?: 'lazy' | 'eager';
 }
 
-const { car, highlight = false } = Astro.props;
-const { nama, kategori, gambar, alt, kapasitas, transmisi, bbm, harga } = car.data;
+const { car, highlight = false, showDescription = true, loading = 'lazy' } = Astro.props;
+const { nama, kategori, gambar, alt, kapasitas, transmisi, bbm, harga, populer, tersedia } = car.data;
 
-// Tampilkan harga termurah yang tersedia.
+// Tampilkan harga termurah yang tersedia. Lepas kunci per 24 jam, dengan sopir per 12 jam.
 const opsi = [
-  harga.lepasKunci ? { nilai: harga.lepasKunci, label: 'lepas kunci' } : null,
-  harga.denganSopir ? { nilai: harga.denganSopir, label: 'dengan sopir' } : null,
-].filter((o): o is { nilai: number; label: string } => o !== null);
+  harga.lepasKunci ? { nilai: harga.lepasKunci, label: 'Lepas kunci', durasi: '24 jam' } : null,
+  harga.denganSopir ? { nilai: harga.denganSopir, label: 'Dengan sopir', durasi: '12 jam' } : null,
+].filter((o): o is { nilai: number; label: string; durasi: string } => o !== null);
 const termurah = opsi.reduce((a, b) => (b.nilai < a.nilai ? b : a));
 
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const pesan = `Halo Admin ${site.name}, saya mau tanya ketersediaan ${nama}. ${WA_SOURCE_TAG}`;
+// Deskripsi singkat: kalimat pertama dari body markdown.
+const deskripsi = showDescription ? (car.body ?? '').trim().split(/(?<=\.)\s/)[0] : '';
+
+const transmisiLabel = { manual: 'Manual', matic: 'Matic', 'manual/matic': 'Manual/Matic' }[transmisi];
+const bbmLabel = { bensin: 'Bensin', solar: 'Solar (Diesel)', hybrid: 'Hybrid', listrik: 'Listrik (EV)' }[bbm];
+const BbmIcon = bbm === 'listrik' ? IconBolt : bbm === 'hybrid' ? IconLeaf : IconFuel;
+const layanan =
+  harga.lepasKunci && harga.denganSopir
+    ? { label: 'Kunci & sopir', icon: IconKey }
+    : harga.lepasKunci
+      ? { label: 'Lepas kunci', icon: IconKey }
+      : { label: 'Dengan sopir', icon: IconSteering };
+
+const specs = [
+  { icon: IconUsers, label: `${kapasitas} Kursi` },
+  { icon: transmisi === 'manual' ? IconManual : IconAuto, label: transmisiLabel },
+  { icon: BbmIcon, label: bbmLabel },
+  { icon: layanan.icon, label: layanan.label },
+];
+
+const promo = site.promo.active && site.promo.car === nama ? `Promo diskon ${site.promo.value}` : null;
+const pesan = `Halo Admin ${site.name}, saya mau sewa ${nama}. ${WA_SOURCE_TAG}`;
+const href = `/armada/${car.id}/`;
 ---
 
-<article class:list={['card', { highlight }]}>
-  <div class="media">
+<article
+  class:list={[
+    'card group flex flex-col h-full bg-surface-container-lowest rounded-2xl overflow-hidden border border-border-subtle shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300',
+    { 'ring-2 ring-primary/30': highlight },
+  ]}
+>
+  <!-- Foto -->
+  <a href={href} class="relative block aspect-[16/10] overflow-hidden bg-surface-container" aria-label={`Detail armada ${nama}`}>
     <Image
       src={gambar}
       alt={alt}
       widths={[360, 540, 760]}
-      sizes="(max-width: 560px) 85vw, (max-width: 1024px) 45vw, 380px"
-      class="photo"
+      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
+      loading={loading}
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
     />
-  </div>
+    <span class="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
+      <span class="px-2.5 py-1 rounded-md bg-on-background/85 backdrop-blur-sm text-white text-[11px] font-bold uppercase tracking-wide">
+        {KATEGORI[kategori]}
+      </span>
+      {populer && <span class="px-2.5 py-1 rounded-md bg-primary-container text-white text-[11px] font-bold shadow-sm">Terpopuler</span>}
+      {promo && <span class="px-2.5 py-1 rounded-md bg-emerald-conversion text-white text-[11px] font-bold shadow-sm">{promo}</span>}
+    </span>
+    {
+      tersedia && (
+        <span class="absolute bottom-2.5 right-2.5 bg-surface-container-lowest/90 backdrop-blur-sm px-2 py-0.5 rounded text-[11px] font-semibold text-emerald-deep flex items-center gap-1 shadow-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-conversion" aria-hidden="true" /> Unit siap
+        </span>
+      )
+    }
+  </a>
 
-  <div class="body">
-    <p class="cat">{KATEGORI[kategori]}</p>
-    <h3><a class="stretch" href={`/armada/${car.id}/`}>{nama}</a></h3>
+  <!-- Isi -->
+  <div class="p-4 sm:p-5 flex-1 flex flex-col">
+    <h3 class="font-bold text-lg text-on-surface tracking-tight leading-snug group-hover:text-primary transition-colors">
+      <a href={href} class="focus-visible:outline-none focus-visible:underline">{nama}</a>
+    </h3>
+    {deskripsi && <p class="mt-1 text-[13px] text-on-surface-variant line-clamp-1" title={deskripsi}>{deskripsi}</p>}
 
-    <ul class="specs" aria-label="Spesifikasi">
-      <li><IconUsers aria-hidden="true" />{kapasitas} kursi</li>
-      <li><IconGear aria-hidden="true" />{cap(transmisi)}</li>
-      <li><IconFuel aria-hidden="true" />{cap(bbm)}</li>
+    <ul class="grid grid-cols-2 gap-2 mt-3 list-none p-0" aria-label="Spesifikasi">
+      {
+        specs.map((s) => (
+          <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-surface-container-low text-xs font-medium text-on-surface min-w-0">
+            <s.icon class="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+            <span class="leading-tight">{s.label}</span>
+          </li>
+        ))
+      }
     </ul>
 
-    <div class="foot">
-      <div class="price">
-        <span class="visually-hidden">Mulai {formatHargaLengkap(termurah.nilai)} per hari, {termurah.label}</span>
-        <div class="price-vis" aria-hidden="true">
-          <span class="amount"><strong>{formatHargaSingkat(termurah.nilai)}</strong><small>/hari</small></span>
-          <span class="type-tag">{cap(termurah.label)}</span>
+    <!-- Harga & aksi -->
+    <div class="mt-auto pt-4 flex flex-col gap-3">
+      <div class="flex flex-col gap-0.5">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs text-text-muted">Mulai dari</span>
+          <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed whitespace-nowrap" aria-hidden="true">
+            {termurah.label}
+          </span>
         </div>
+        <span class="visually-hidden">{formatHargaLengkap(termurah.nilai)} per {termurah.durasi}, {termurah.label.toLowerCase()}</span>
+        <span class="flex items-baseline gap-1" aria-hidden="true">
+          <span class="font-extrabold text-xl text-primary leading-tight whitespace-nowrap">{formatHargaLengkap(termurah.nilai)}</span>
+          <span class="text-xs text-on-surface-variant whitespace-nowrap">/ {termurah.durasi}</span>
+        </span>
       </div>
-      <a class="btn btn-ink book" href={waLink(pesan)} target="_blank" rel="noopener noreferrer">
-        <IconWa aria-hidden="true" />
-        <span>Pesan</span>
-        <span class="visually-hidden"> {nama} lewat WhatsApp</span>
+
+      <a
+        class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-conversion hover:bg-emerald-deep text-white font-bold text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-deep focus-visible:ring-offset-2"
+        href={waLink(pesan)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Pesan ${nama} via WhatsApp`}
+      >
+        <IconWa class="w-[18px] h-[18px]" aria-hidden="true" />
+        Pesan via WA
       </a>
     </div>
   </div>
 </article>
-
-<style>
-  .card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-xs);
-    transition:
-      border-color 0.2s var(--ease),
-      box-shadow 0.2s var(--ease),
-      transform 0.2s var(--ease);
-  }
-
-  .card:hover {
-    border-color: #cbd5e1;
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-  }
-
-  .media {
-    aspect-ratio: 16 / 10;
-    overflow: hidden;
-    background: var(--bg-2);
-  }
-
-  .media :global(.photo) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s var(--ease);
-  }
-
-  .card:hover .media :global(.photo) {
-    transform: scale(1.04);
-  }
-
-  .body {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    padding: 16px 18px 18px;
-  }
-
-  .cat {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-2);
-  }
-
-  h3 {
-    margin-top: 2px;
-    font-size: 1.125rem;
-    font-weight: 700;
-    font-stretch: 105%;
-    letter-spacing: -0.015em;
-    line-height: 1.3;
-  }
-
-  .stretch {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .stretch::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-  }
-
-  .stretch:focus-visible {
-    outline: none;
-  }
-
-  .stretch:focus-visible::after {
-    outline: 2px solid var(--focus);
-    outline-offset: -2px;
-  }
-
-  .card:hover .stretch {
-    color: var(--accent);
-  }
-
-  .book {
-    position: relative;
-    z-index: 2;
-    min-height: 38px;
-    padding: 0 14px;
-    font-size: 0.8438rem;
-  }
-
-  .book svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .specs {
-    list-style: none;
-    margin: 10px 0 16px;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .specs li {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: var(--radius-sm);
-    background: var(--bg-2);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-2);
-    white-space: nowrap;
-  }
-
-  .specs svg {
-    width: 14px;
-    height: 14px;
-    color: var(--text-2);
-  }
-
-  .foot {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: auto;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
-  }
-
-  .price-vis {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
-  .amount {
-    font-size: 0.8125rem;
-    color: var(--text-2);
-  }
-
-  .amount strong {
-    font-size: 1.1875rem;
-    font-weight: 700;
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .amount small {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-2);
-  }
-
-  .type-tag {
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--text-2);
-  }
-
-  .highlight {
-    border-color: var(--accent);
-  }
-</style>

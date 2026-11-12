@@ -1,0 +1,19 @@
+---
+/** Sub-kartu abu-abu di dalam pasal. */
+type Icon = (props: Record<string, unknown>) => unknown;
+interface Props {
+  title: string;
+  icon?: Icon;
+}
+const { title, icon: SubIcon } = Astro.props;
+---
+
+<div class="p-4 rounded-xl bg-surface-container-low">
+  <h3 class="text-sm font-semibold text-on-surface mb-2 flex items-center gap-2">
+    {SubIcon && <SubIcon class="w-5 h-5 text-primary shrink-0" aria-hidden="true" />}
+    {title}
+  </h3>
+  <div class="text-xs leading-[18px] text-on-surface-variant flex flex-col gap-1.5">
+    <slot />
+  </div>
+</div>

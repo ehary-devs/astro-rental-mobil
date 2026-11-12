@@ -14,4 +14,4 @@ const { page } = Astro.props;
 const siblings = kota.filter((p) => p.slug !== page.slug).map((p) => ({ href: `/kota/${p.slug}/`, nama: p.nama }));
 ---
 
-<InfoPage {page} parent="Kota layanan" title={`Rental Mobil ${page.nama} Lepas Kunci & Dengan Sopir | ${site.name}`} {siblings} />
+<InfoPage type="kota" {page} parent="Kota layanan" title={`Rental Mobil ${page.nama} Lepas Kunci & Dengan Sopir | ${site.name}`} {siblings} />

@@ -15,53 +15,82 @@ const toLinks = (base: string, list: { slug: string; nama: string }[]): Link[] =
   list.map((p) => ({ href: `/${base}/${p.slug}/`, label: p.nama }));
 
 const nav: Item[] = [
+  { label: 'Beranda', href: '/', match: ['/'] },
   { label: 'Armada', href: '/armada/', match: ['/armada/'] },
   { label: 'Layanan', match: ['/layanan/'], groups: [{ links: toLinks('layanan', layanan) }] },
   {
-    label: 'Area & rute',
+    label: 'Area & Rute',
     match: ['/kota/', '/rute/'],
     groups: [
       { title: 'Kota layanan', links: toLinks('kota', kota) },
       { title: 'Rute populer', links: toLinks('rute', rute) },
     ],
   },
-  { label: 'FAQ', href: '/#faq', match: [] },
+  { label: 'Promo', href: '/#promo', match: [] },
+  { label: 'FAQ', href: '/faq/', match: ['/faq/'] },
   { label: 'Kontak', href: '/kontak/', match: ['/kontak/'] },
 ];
 
 const path = Astro.url.pathname;
-const isActive = (item: Item) => item.match.some((m) => path.startsWith(m));
+const isActive = (item: Item) => {
+  if (item.href === '/') return path === '/';
+  return item.match.some((m) => path.startsWith(m));
+};
 ---
 
-<header class="header">
-  <div class="bar">
-    <a href="/" class="brand" aria-label="Beranda"><Logo /></a>
+<header class="header fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-border-subtle/50 transition-all">
+  <div class="h-20 max-w-[1280px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+    <a href="/" class="brand-link" aria-label="Beranda">
+      <Logo />
+    </a>
 
-    <nav class="nav" aria-label="Navigasi utama">
-      <ul class="nav-list">
-        {
-          nav.map((item, i) => (
-            <li class:list={['nav-item', { active: isActive(item) }]}>
+    <nav class="hidden lg:flex items-center gap-1" aria-label="Navigasi utama">
+      {
+        nav.map((item, i) => {
+          const active = isActive(item);
+          return (
+            <div class="relative group/nav">
               {item.groups ? (
                 <>
                   <button
                     type="button"
-                    class="nav-link"
+                    class:list={[
+                      'px-3.5 py-2 font-semibold text-sm transition-colors rounded-lg inline-flex items-center gap-1 cursor-pointer select-none',
+                      active
+                        ? 'bg-surface-container-high text-primary font-bold'
+                        : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container',
+                    ]}
                     aria-expanded="false"
                     aria-controls={`dd-${i}`}
                     data-dropdown-toggle
                   >
-                    {item.label}
-                    <IconChevron aria-hidden="true" class="chev" />
+                    <span>{item.label}</span>
+                    <IconChevron aria-hidden="true" class="w-4 h-4 transition-transform group-hover/nav:rotate-180 duration-200" />
                   </button>
-                  <div class:list={['dropdown', { wide: item.groups.length > 1 }]} id={`dd-${i}`} data-dropdown>
+                  <div
+                    class:list={[
+                      'dropdown absolute top-full left-0 mt-2 p-2 bg-surface-container-lowest border border-border-subtle rounded-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)] opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible transition-all duration-200 z-50 transform -translate-y-2 group-hover/nav:translate-y-0',
+                      item.groups.length > 1 ? 'min-w-[480px] grid grid-cols-2 gap-2 p-3' : 'min-w-[240px]',
+                    ]}
+                    id={`dd-${i}`}
+                    data-dropdown
+                  >
                     {item.groups.map((g) => (
                       <div class="dd-group">
-                        {g.title && <p class="dd-title">{g.title}</p>}
-                        <ul>
+                        {g.title && <p class="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-text-muted">{g.title}</p>}
+                        <ul class="flex flex-col gap-0.5">
                           {g.links.map((l) => (
                             <li>
-                              <a href={l.href} aria-current={l.href === path ? 'page' : undefined}>
+                              <a
+                                href={l.href}
+                                aria-current={l.href === path ? 'page' : undefined}
+                                class:list={[
+                                  'block px-3 py-2 rounded-xl text-sm font-medium transition-colors',
+                                  l.href === path
+                                    ? 'bg-primary-fixed text-on-primary-fixed font-bold'
+                                    : 'text-on-surface hover:bg-surface-container hover:text-primary',
+                                ]}
+                              >
                                 {l.label}
                               </a>
                             </li>
@@ -72,50 +101,83 @@ const isActive = (item: Item) => item.match.some((m) => path.startsWith(m));
                   </div>
                 </>
               ) : (
-                <a class="nav-link" href={item.href} aria-current={isActive(item) ? 'page' : undefined}>
+                <a
+                  class:list={[
+                    'px-3.5 py-2 font-semibold text-sm transition-colors rounded-lg inline-block',
+                    active
+                      ? 'bg-surface-container-high text-primary font-bold'
+                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container',
+                  ]}
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
+                >
                   {item.label}
                 </a>
               )}
-            </li>
-          ))
-        }
-      </ul>
+            </div>
+          );
+        })
+      }
     </nav>
 
-    <div class="actions">
-      <a class="btn btn-wa cta" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
-        <IconWa aria-hidden="true" />
-        <span>Chat admin</span>
+    <div class="flex items-center gap-3">
+      <a
+        class="hidden sm:inline-flex items-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-[0_2px_10px_rgba(16,185,129,0.25)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+        href={waLink(waGreeting)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <IconWa class="w-5 h-5" aria-hidden="true" />
+        Chat Admin
       </a>
 
-      <details class="menu" data-mobile-menu>
-        <summary aria-label="Menu">
-          <IconMenu aria-hidden="true" class="ic-open" />
-          <IconX aria-hidden="true" class="ic-close" />
+      <!-- Mobile Menu Toggle Button -->
+      <details class="menu lg:hidden relative" data-mobile-menu>
+        <summary
+          aria-label="Buka menu navigasi"
+          class="list-none w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors"
+        >
+          <IconMenu aria-hidden="true" class="w-5 h-5 ic-open" />
+          <IconX aria-hidden="true" class="w-5 h-5 ic-close hidden" />
         </summary>
-        <nav class="panel" aria-label="Navigasi seluler">
-          <ul class="m-list">
+        <div class="panel fixed left-3 right-3 top-[calc(var(--header-h)+8px)] max-h-[calc(100dvh-var(--header-h)-24px)] overflow-y-auto p-3 bg-surface-container-lowest border border-border-subtle rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-50">
+          <ul class="flex flex-col">
             {
-              // Link langsung dulu supaya tidak tenggelam di bawah daftar panjang.
               [...nav.filter((n) => !n.groups), ...nav.filter((n) => n.groups)].map((item) =>
                 item.groups ? (
                   item.groups.map((g) => (
-                    <li class="m-group">
-                      <p class="m-title">{g.title ?? item.label}</p>
-                      <ul class="m-chips">
+                    <li class="mt-2 pt-3 px-1 border-t border-border-subtle">
+                      <p class="px-2 text-xs font-bold uppercase tracking-wider text-text-muted mb-2">{g.title ?? item.label}</p>
+                      <div class="flex flex-wrap gap-1.5 px-1 pb-1">
                         {g.links.map((l) => (
-                          <li>
-                            <a href={l.href} aria-current={l.href === path ? 'page' : undefined}>
-                              {l.label}
-                            </a>
-                          </li>
+                          <a
+                            href={l.href}
+                            aria-current={l.href === path ? 'page' : undefined}
+                            class:list={[
+                              'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                              l.href === path
+                                ? 'bg-primary text-white'
+                                : 'bg-surface-container text-on-surface hover:bg-surface-container-high',
+                            ]}
+                          >
+                            {l.label}
+                          </a>
                         ))}
-                      </ul>
+                      </div>
                     </li>
                   ))
                 ) : (
                   <li>
-                    <a class="m-link" href={item.href} aria-current={isActive(item) ? 'page' : undefined}>
+                    <a
+                      href={item.href}
+                      aria-current={isActive(item) ? 'page' : undefined}
+                      class:list={[
+                        'flex items-center min-h-11 px-3 rounded-xl text-[15px] font-semibold transition-colors',
+                        isActive(item)
+                          ? 'bg-surface-container-high text-primary'
+                          : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container',
+                      ]}
+                    >
                       {item.label}
                     </a>
                   </li>
@@ -123,405 +185,63 @@ const isActive = (item: Item) => item.match.some((m) => path.startsWith(m));
               )
             }
           </ul>
-          <a class="btn btn-wa m-cta" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
-            <IconWa aria-hidden="true" />
-            Chat admin di WhatsApp
+          <a
+            class="mt-4 flex items-center justify-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white px-4 py-3 rounded-xl font-bold text-sm shadow-[0_2px_10px_rgba(16,185,129,0.25)] transition-all"
+            href={waLink(waGreeting)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconWa class="w-5 h-5" aria-hidden="true" />
+            Chat Admin WhatsApp
           </a>
-        </nav>
+        </div>
       </details>
     </div>
   </div>
 </header>
 
 <script>
-  // Dropdown desktop: klik/Enter membuka, Esc & klik di luar menutup. Hover ditangani CSS.
-  const toggles = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-dropdown-toggle]'));
+  // Mobile menu close on click outside or escape
+  const menu = document.querySelector<HTMLDetailsElement>('[data-mobile-menu]');
+  if (menu) {
+    const summary = menu.querySelector('summary');
+    const openIcon = menu.querySelector('.ic-open');
+    const closeIcon = menu.querySelector('.ic-close');
 
-  const closeAll = (except?: HTMLButtonElement) => {
-    for (const t of toggles) if (t !== except) t.setAttribute('aria-expanded', 'false');
-  };
+    menu.addEventListener('toggle', () => {
+      const isOpen = menu.open;
+      if (openIcon && closeIcon) {
+        openIcon.classList.toggle('hidden', isOpen);
+        closeIcon.classList.toggle('hidden', !isOpen);
+      }
+    });
 
-  for (const t of toggles) {
-    t.addEventListener('click', () => {
-      const open = t.getAttribute('aria-expanded') === 'true';
-      closeAll(t);
-      t.setAttribute('aria-expanded', String(!open));
+    document.addEventListener('click', (e) => {
+      if (menu.open && !menu.contains(e.target as Node)) {
+        menu.open = false;
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.open) {
+        menu.open = false;
+        summary?.focus();
+      }
     });
   }
 
-  document.addEventListener('click', (e) => {
-    if (!(e.target as HTMLElement).closest('.nav-item')) closeAll();
-  });
-
-  const mobile = document.querySelector<HTMLDetailsElement>('[data-mobile-menu]');
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    const openToggle = toggles.find((t) => t.getAttribute('aria-expanded') === 'true');
-    if (openToggle) {
-      closeAll();
-      openToggle.focus();
-    }
-    if (mobile?.open) {
-      mobile.open = false;
-      mobile.querySelector('summary')?.focus();
-    }
-  });
-
-  // Tutup menu seluler setelah link dipilih (penting untuk anchor di halaman yang sama, mis. /#faq).
-  mobile?.addEventListener('click', (e) => {
-    if ((e.target as HTMLElement).closest('a')) mobile.open = false;
+  // Keyboard navigation for dropdown
+  const toggles = document.querySelectorAll<HTMLButtonElement>('[data-dropdown-toggle]');
+  toggles.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+    });
   });
 </script>
 
 <style>
-  .header {
-    position: fixed;
-    inset: 16px 0 auto;
-    z-index: 50; /* lapisan: header 50, tombol WA 40 */
-    padding-inline: var(--gutter);
-    pointer-events: none;
-  }
-
-  .bar {
-    position: relative;
-    pointer-events: auto;
-    max-width: var(--container);
-    height: var(--header-h);
-    margin-inline: auto;
-    padding: 0 10px 0 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: rgb(255 255 255 / 0.88);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgb(226 232 240 / 0.85);
-    border-radius: var(--radius-pill);
-    box-shadow: var(--shadow-lg);
-  }
-
-  @media (prefers-reduced-transparency: reduce) {
-    .bar {
-      background: var(--surface);
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
-  }
-
-  .brand {
-    flex: none;
-    text-decoration: none;
-    color: var(--text);
-  }
-
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* ---------- Desktop ---------- */
-  .nav {
-    margin-left: clamp(16px, 4vw, 48px);
-  }
-
-  .nav-list {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .nav-item {
-    position: relative;
-  }
-
-  .nav-link {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 44px;
-    padding: 0 14px;
-    border: 0;
-    background: none;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    color: var(--text-2);
-    text-decoration: none;
-    cursor: pointer;
-    transition: color 0.2s var(--ease);
-  }
-
-  .nav-link:hover,
-  .nav-item:hover > .nav-link,
-  .nav-link[aria-expanded='true'] {
-    color: var(--text);
-  }
-
-  /* Penanda halaman aktif: garis aksen di bawah teks. */
-  .nav-link::after {
-    content: '';
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    bottom: 6px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transition: transform 0.25s var(--ease);
-  }
-
-  .nav-item.active > .nav-link {
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  .nav-item.active > .nav-link::after {
-    transform: scaleX(1);
-  }
-
-  .nav-item.active > button.nav-link::after {
-    right: 32px;
-  }
-
-  .nav-link :global(.chev) {
-    width: 16px;
-    height: 16px;
-    transition: transform 0.2s var(--ease);
-  }
-
-  .nav-link[aria-expanded='true'] :global(.chev),
-  .nav-item:hover > .nav-link :global(.chev) {
-    transform: rotate(180deg);
-  }
-
-  .dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    min-width: 230px;
-    padding: 8px;
-    margin-top: 10px;
-    display: flex;
-    gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    box-shadow: 0 24px 48px -20px rgb(14 16 20 / 0.4);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-4px);
-    transition:
-      opacity 0.18s var(--ease),
-      transform 0.18s var(--ease),
-      visibility 0s linear 0.18s;
-  }
-
-  /* Jembatan tak terlihat agar hover tidak putus di celah antara tombol dan panel. */
-  .dropdown::before {
-    content: '';
-    position: absolute;
-    inset: -12px 0 auto;
-    height: 12px;
-  }
-
-  .dropdown.wide {
-    min-width: 520px;
-  }
-
-  .dropdown.wide .dd-group {
-    flex: 1;
-  }
-
-  .dropdown.wide .dd-group + .dd-group {
-    padding-left: 8px;
-    border-left: 1px solid var(--line);
-  }
-
-  .nav-item:hover > .dropdown,
-  .nav-link[aria-expanded='true'] + .dropdown {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    transition:
-      opacity 0.18s var(--ease),
-      transform 0.18s var(--ease);
-  }
-
-  .dd-title {
-    padding: 8px 12px 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-2);
-  }
-
-  .dropdown a {
-    display: block;
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    color: var(--text);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .dropdown a:hover {
-    background: var(--bg-2);
-  }
-
-  .dropdown a[aria-current='page'] {
-    background: var(--accent-soft);
-    color: var(--accent);
-  }
-
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: auto;
-  }
-
-  /* ---------- Seluler ---------- */
-  .menu {
+  summary::-webkit-details-marker {
     display: none;
-  }
-
-  .menu summary {
-    list-style: none;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-pill);
-    background: var(--ink);
-    color: var(--on-ink);
-    cursor: pointer;
-  }
-
-  .menu summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .menu summary :global(svg) {
-    width: 22px;
-    height: 22px;
-  }
-
-  .menu :global(.ic-close),
-  .menu[open] :global(.ic-open) {
-    display: none;
-  }
-
-  .menu[open] :global(.ic-close) {
-    display: block;
-  }
-
-  /* Panel selebar bar (posisi relatif ke .bar). */
-  .panel {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(100% + 10px);
-    max-height: calc(100dvh - var(--header-h) - 48px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: 12px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    box-shadow: 0 24px 48px -20px rgb(14 16 20 / 0.45);
-  }
-
-  .m-list {
-    display: grid;
-  }
-
-  .m-list > li + li {
-    border-top: 1px solid var(--line);
-  }
-
-  .m-link {
-    display: flex;
-    align-items: center;
-    min-height: 52px;
-    padding: 0 12px;
-    font-size: 1.0625rem;
-    font-weight: 600;
-    color: var(--text);
-    text-decoration: none;
-  }
-
-  .m-link[aria-current='page'] {
-    color: var(--accent);
-  }
-
-  .m-group {
-    padding: 14px 12px;
-  }
-
-  .m-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-2);
-  }
-
-  .m-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  .m-chips a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 40px;
-    padding: 0 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text);
-    text-decoration: none;
-  }
-
-  .m-chips a[aria-current='page'] {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--on-ink);
-  }
-
-  .m-cta {
-    width: 100%;
-    margin-top: 8px;
-  }
-
-  @media (max-width: 920px) {
-    .nav {
-      display: none;
-    }
-    .menu {
-      display: block;
-    }
-    .bar {
-      padding-left: 20px;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .cta {
-      display: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .nav-link::after,
-    .dropdown,
-    .nav-link :global(.chev) {
-      transition: none;
-    }
   }
 </style>

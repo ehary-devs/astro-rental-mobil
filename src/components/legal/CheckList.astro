@@ -1,0 +1,25 @@
+---
+/** Daftar poin dengan ikon centang. `term` opsional ditebalkan di depan. */
+import IconCircleCheck from '@tabler/icons/outline/circle-check.svg';
+import IconAlert from '@tabler/icons/outline/alert-circle.svg';
+interface Props {
+  items: { term?: string; text: string }[];
+  variant?: 'check' | 'warn';
+}
+const { items, variant = 'check' } = Astro.props;
+const Mark = variant === 'warn' ? IconAlert : IconCircleCheck;
+---
+
+<ul class="flex flex-col gap-2.5 list-none p-0 m-0">
+  {
+    items.map((it) => (
+      <li class="flex items-start gap-2">
+        <Mark class:list={['w-[18px] h-[18px] mt-0.5 shrink-0', variant === 'warn' ? 'text-error' : 'text-primary']} aria-hidden="true" />
+        <span>
+          {it.term && <strong class="text-on-surface font-semibold">{it.term}: </strong>}
+          {it.text}
+        </span>
+      </li>
+    ))
+  }
+</ul>

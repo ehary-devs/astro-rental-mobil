@@ -7,177 +7,60 @@ import IconReceipt from '@tabler/icons/outline/receipt.svg';
 const perks = [
   {
     icon: IconWa,
+    iconBg: 'bg-emerald-conversion/20 text-emerald-conversion',
     title: 'Booking Praktis via WA',
     desc: 'Cukup chat admin WhatsApp tanpa perlu isi formulir ribet atau registrasi akun.',
   },
   {
     icon: IconWheel,
+    iconBg: 'bg-primary-container/30 text-primary-fixed',
     title: 'Sopir Ramah & Hafal Rute',
     desc: 'Pengemudi berlisensi, tepat waktu, dan menguasai rute wisata maupun jalur alternatif.',
   },
   {
     icon: IconRepeat,
+    iconBg: 'bg-primary-fixed/20 text-primary-fixed-dim',
     title: 'Jadwal Fleksibel',
     desc: 'Bebas ubah tanggal dan jam penjemputan tanpa penalti, maksimal konfirmasi H-1.',
   },
   {
     icon: IconReceipt,
+    iconBg: 'bg-emerald-deep/30 text-emerald-conversion',
     title: 'Harga Jujur & Pasti',
     desc: 'Biaya sewa transparan disepakati di awal tanpa biaya siluman saat perjalanan selesai.',
   },
 ];
 ---
 
-<section class="perks" id="keunggulan" aria-labelledby="keunggulan-title">
-  <div class="container">
-    <div class="head">
-      <span class="eyebrow">Keunggulan Layanan</span>
-      <h2 id="keunggulan-title">Kenapa rental di Lintas Rent?</h2>
-      <p class="desc">Prioritas kami adalah kenyamanan, keselamatan, dan kepastian perjalanan Anda.</p>
+<section class="w-full py-10 bg-inverse-surface text-surface-bright" id="keunggulan" aria-labelledby="keunggulan-title">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-6">
+    <div class="flex flex-col gap-1 max-w-xl">
+      <span class="text-xs font-bold uppercase tracking-wider text-primary-fixed-dim">KEUNGGULAN LAYANAN</span>
+      <h2 id="keunggulan-title" class="font-bold text-2xl leading-8 sm:text-[32px] sm:leading-10 text-white tracking-tight">
+        Kenapa rental di Lintas Rent?
+      </h2>
+      <p class="text-sm leading-[22px] text-outline-variant">
+        Prioritas kami adalah kenyamanan, keselamatan, dan kepastian perjalanan Anda.
+      </p>
     </div>
 
-    <ul class="grid">
+    <!-- 4 Pillars Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {
-        perks.map(({ icon: Icon, title, desc }) => (
-          <li class="perk-card">
-            <div class="icon-box" aria-hidden="true">
-              <Icon />
+        perks.map(({ icon: Icon, iconBg, title, desc }) => (
+          <div class="p-6 rounded-lg bg-surface-bright/5 hover:bg-surface-bright/10 transition-colors flex flex-col gap-2 backdrop-blur-sm">
+            <div class:list={['w-12 h-12 rounded-lg flex items-center justify-center shrink-0', iconBg]}>
+              <Icon class="w-6 h-6" aria-hidden="true" />
             </div>
-            <div class="copy">
-              <h3>{title}</h3>
-              <p>{desc}</p>
-            </div>
-          </li>
+            <h3 class="font-semibold text-lg leading-6 text-surface-bright">
+              {title}
+            </h3>
+            <p class="text-xs text-outline-variant leading-relaxed">
+              {desc}
+            </p>
+          </div>
         ))
       }
-    </ul>
+    </div>
   </div>
 </section>
-
-<style>
-  .perks {
-    padding-block: clamp(56px, 7vw, 88px);
-    background: var(--ink);
-    color: var(--on-ink);
-    border-top: 1px solid var(--line-dark);
-  }
-
-  .head {
-    max-width: 580px;
-    margin-bottom: clamp(28px, 4vw, 40px);
-  }
-
-  .eyebrow {
-    display: inline-block;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--on-ink-2);
-    margin-bottom: 6px;
-  }
-
-  h2 {
-    font-size: clamp(1.875rem, 3.5vw, 2.5rem);
-    letter-spacing: -0.025em;
-  }
-
-  .desc {
-    margin-top: 8px;
-    font-size: 0.9688rem;
-    color: var(--on-ink-2);
-  }
-
-  .grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-  }
-
-  .perk-card {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 24px 20px;
-    background: var(--ink-2);
-    border: 1px solid var(--line-dark);
-    border-radius: var(--radius-lg);
-    transition:
-      border-color 0.2s var(--ease),
-      background-color 0.2s var(--ease);
-  }
-
-  .perk-card:hover {
-    border-color: #3b4455;
-    background: var(--ink-3);
-  }
-
-  .icon-box {
-    display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: var(--radius-md);
-    background: rgb(255 255 255 / 0.06);
-    border: 1px solid rgb(255 255 255 / 0.08);
-    color: var(--on-ink);
-  }
-
-  .icon-box svg {
-    width: 24px;
-    height: 24px;
-    stroke-width: 1.6;
-  }
-
-  .copy {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  h3 {
-    font-size: 1.0625rem;
-    font-weight: 700;
-    font-stretch: 105%;
-    color: #fff;
-    letter-spacing: -0.015em;
-  }
-
-  .copy p {
-    font-size: 0.8438rem;
-    line-height: 1.55;
-    color: var(--on-ink-2);
-  }
-
-  @media (max-width: 1024px) {
-    .grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    .perk-card {
-      flex-direction: row;
-      align-items: flex-start;
-      padding: 18px 16px;
-      gap: 14px;
-    }
-    .icon-box {
-      flex-shrink: 0;
-      width: 40px;
-      height: 40px;
-    }
-    .icon-box svg {
-      width: 20px;
-      height: 20px;
-    }
-  }
-</style>

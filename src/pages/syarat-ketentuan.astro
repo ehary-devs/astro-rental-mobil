@@ -1,44 +1,327 @@
 ---
 import Base from '../layouts/Base.astro';
-import Prose from '../components/Prose.astro';
+import LegalPage from '../components/legal/LegalPage.astro';
+import Pasal from '../components/legal/Pasal.astro';
+import CheckList from '../components/legal/CheckList.astro';
+import SubCard from '../components/legal/SubCard.astro';
+import Callout from '../components/legal/Callout.astro';
+import IconGavel from '@tabler/icons/outline/gavel.svg';
+import IconCalendarTime from '@tabler/icons/outline/calendar-time.svg';
+import IconShield from '@tabler/icons/outline/shield-check.svg';
+import IconId from '@tabler/icons/outline/id.svg';
+import IconClock from '@tabler/icons/outline/clock-hour-4.svg';
+import IconRefund from '@tabler/icons/outline/receipt-refund.svg';
+import IconMapPin from '@tabler/icons/outline/map-pin.svg';
+import IconFile from '@tabler/icons/outline/file-description.svg';
+import IconUserCheck from '@tabler/icons/outline/user-check.svg';
+import IconSteering from '@tabler/icons/outline/steering-wheel.svg';
+import IconCreditCard from '@tabler/icons/outline/credit-card.svg';
+import IconRoute from '@tabler/icons/outline/route.svg';
+import IconScale from '@tabler/icons/outline/scale.svg';
+import IconBan from '@tabler/icons/outline/ban.svg';
+import IconAlert from '@tabler/icons/outline/alert-triangle.svg';
+import IconInfo from '@tabler/icons/outline/info-circle.svg';
+import IconCar from '@tabler/icons/outline/car.svg';
+import IconCertificate from '@tabler/icons/outline/certificate.svg';
+import IconCash from '@tabler/icons/outline/cash.svg';
 import { site } from '../config/site';
-// TODO (pemilik usaha): ini draf umum. Sesuaikan dengan kebijakan asli dan konsultasikan bila perlu.
+import { kota } from '../data/halaman';
+
+const berlaku = '1 Januari 2025';
+
+const toc = [
+  { id: 'pasal-1', label: 'Ketentuan Umum & Definisi' },
+  { id: 'pasal-2', label: 'Persyaratan Dokumen' },
+  { id: 'pasal-3', label: 'Layanan Dengan Sopir' },
+  { id: 'pasal-4', label: 'Pembayaran, DP & Pelunasan' },
+  { id: 'pasal-5', label: 'Deposit Jaminan' },
+  { id: 'pasal-6', label: 'Reschedule & Pembatalan' },
+  { id: 'pasal-7', label: 'Durasi, Toleransi & Overtime' },
+  { id: 'pasal-8', label: 'Area Operasional & Luar Kota' },
+  { id: 'pasal-9', label: 'Tanggung Jawab Penyewa' },
+  { id: 'pasal-10', label: 'Larangan Penggunaan' },
+];
+
+const highlights = [
+  {
+    step: '01. Verifikasi',
+    title: 'KTP & SIM A Asli',
+    desc: 'Wajib fisik aktif untuk pencocokan data identitas biometrik demi keamanan bersama.',
+    icon: IconId,
+    tone: 'primary' as const,
+  },
+  {
+    step: '02. Durasi Jelas',
+    title: '24 Jam Penuh',
+    desc: 'Sewa harian dihitung per 24 jam dengan waktu toleransi pengembalian hingga 60 menit.',
+    icon: IconClock,
+    tone: 'secondary' as const,
+  },
+  {
+    step: '03. Refundable',
+    title: 'Deposit Terjamin',
+    desc: 'Uang jaminan 100% dikembalikan maksimal 1x24 jam pasca inspeksi fisik kendaraan.',
+    icon: IconRefund,
+    tone: 'emerald' as const,
+  },
+  {
+    step: '04. Geo Fencing',
+    title: 'Area Operasional',
+    desc: 'Semua rute Jateng & DIY bebas roaming. Koordinasikan jika keluar dari koridor ini.',
+    icon: IconMapPin,
+    tone: 'tertiary' as const,
+  },
+];
+
+const jadwalRows = [
+  { kondisi: 'Reschedule tanggal / armada hingga H-1', ketentuan: 'Tanpa biaya penalti, menyesuaikan ketersediaan unit', tone: 'ok' },
+  { kondisi: 'Pembatalan H-1 atau lebih awal', ketentuan: 'DP dikembalikan 50%', tone: 'mid' },
+  { kondisi: 'Pembatalan di hari H', ketentuan: 'DP hangus sebagai kompensasi blokir unit', tone: 'bad' },
+];
+const toneBadge: Record<string, string> = {
+  ok: 'bg-emerald-conversion/10 text-emerald-deep',
+  mid: 'bg-primary-fixed text-on-primary-fixed',
+  bad: 'bg-error-container text-on-error-container',
+};
 ---
 
-<Base title={`Syarat & Ketentuan Sewa | ${site.name}`} description={`Syarat dokumen, pembayaran, overtime, dan pembatalan sewa mobil di ${site.name}.`} offsetHeader>
-  <Prose title="Syarat & ketentuan">
-    <p class="updated">Draf, terakhir diperbarui 10 November 2026.</p>
+<Base
+  title={`Syarat & Ketentuan Sewa | ${site.name}`}
+  description={`Syarat dokumen, pembayaran, overtime, dan pembatalan sewa mobil di ${site.name}.`}
+  offsetHeader
+>
+  <LegalPage
+    breadcrumb="Syarat & Ketentuan"
+    chips={[
+      { icon: IconCalendarTime, label: `Berlaku sejak ${berlaku}` },
+      { icon: IconShield, label: `Operasional ${site.city} & Jawa Tengah`, accent: true },
+    ]}
+    badge={{ icon: IconGavel, label: 'Perjanjian Sewa Resmi' }}
+    title={`Syarat & Ketentuan Sewa Mobil ${site.name}`}
+    intro="Aturan sewa lepas kunci maupun dengan sopir yang transparan, demi kenyamanan, keselamatan, dan kepastian kedua belah pihak. Dengan melakukan pemesanan, penyewa dianggap telah membaca dan menyetujui ketentuan di bawah ini."
+    highlights={highlights}
+    toc={toc}
+    tocTitle="Daftar Klausul"
+    tocCount={`${toc.length} Pasal`}
+    printCard={{ title: 'Perlu salinan?', desc: 'Cetak halaman ini atau simpan sebagai PDF untuk arsip Anda.' }}
+    help={{
+      eyebrow: 'Bantuan Klausul',
+      title: 'Ada poin yang kurang jelas?',
+      desc: 'Admin kami siap menjelaskan rincian ketentuan sewa sebelum Anda melakukan pemesanan.',
+      cta: 'Tanya Admin via WhatsApp',
+      message: 'saya ingin bertanya mengenai syarat dan ketentuan sewa.',
+    }}
+  >
+    <Pasal id="pasal-1" num={1} title="Ketentuan Umum & Definisi" icon={IconFile}>
+      <p>
+        Ketentuan ini berlaku antara <strong class="text-on-surface">{site.name}</strong> selaku penyedia jasa sewa
+        kendaraan dan pengguna jasa (selanjutnya disebut "Penyewa"). Istilah yang dipakai dalam dokumen ini:
+      </p>
+      <CheckList
+        items={[
+          { term: 'Unit / Armada', text: `Kendaraan roda empat milik ${site.name} yang disewakan kepada Penyewa.` },
+          { term: 'Lepas kunci (self-drive)', text: 'Penyewaan kendaraan tanpa sopir, di mana kendaraan dikemudikan sendiri oleh Penyewa.' },
+          { term: 'Dengan sopir', text: `Penyewaan kendaraan yang dikemudikan oleh sopir yang ditugaskan ${site.name}.` },
+          { term: 'Serah terima', text: 'Saat kunci dan kendaraan diserahkan kepada Penyewa di lokasi jemput yang disepakati. Durasi sewa dihitung sejak momen ini.' },
+        ]}
+      />
+    </Pasal>
 
-    <h2>Dokumen penyewa</h2>
-    <ul>
-      <li>Lepas kunci: KTP, SIM A aktif, dan satu dokumen pendukung (KK, NPWP, atau ID karyawan).</li>
-      <li>Dengan sopir: cukup KTP pemesan.</li>
-      <li>Dokumen asli diperlihatkan saat serah terima. Kami tidak menyimpan dokumen asli.</li>
-    </ul>
+    <Pasal id="pasal-2" num={2} title="Persyaratan Dokumen Penyewa" icon={IconUserCheck}>
+      <p>Untuk keamanan bersama, Penyewa wajib memenuhi persyaratan dokumen sesuai jenis layanan yang dipilih:</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SubCard title="Lepas kunci (self-drive)" icon={IconCar}>
+          <p>• KTP asli yang masih berlaku</p>
+          <p>• SIM A asli yang masih berlaku</p>
+          <p>• Satu dokumen penjamin: KK, NPWP, atau ID kerja karyawan</p>
+        </SubCard>
+        <SubCard title="Dengan sopir" icon={IconSteering}>
+          <p>• Konfirmasi KTP pemesan</p>
+          <p>• Alamat penjemputan yang jelas</p>
+        </SubCard>
+      </div>
+      <Callout title="Kami tidak menahan dokumen berharga Anda" icon={IconCertificate}>
+        Dokumen asli cukup diperlihatkan saat serah terima unit untuk verifikasi identitas, lalu langsung dikembalikan kepada
+        Penyewa.
+      </Callout>
+    </Pasal>
 
-    <h2>Pembayaran</h2>
-    <ul>
-      <li>DP 30% untuk mengunci jadwal, pelunasan saat serah terima.</li>
-      <li>Deposit lepas kunci dikembalikan penuh setelah mobil kembali tanpa kerusakan.</li>
-      <li>Pembayaran lewat transfer ke rekening atas nama usaha atau QRIS resmi.</li>
-    </ul>
+    <Pasal id="pasal-3" num={3} title="Layanan Dengan Sopir" icon={IconSteering}>
+      <p>
+        Pada layanan dengan sopir, kendaraan dikemudikan oleh sopir {site.name} dan Penyewa dijemput di alamat yang
+        disepakati.
+      </p>
+      <CheckList
+        items={[
+          { term: 'Durasi', text: 'Dihitung per 12 jam per hari operasional.' },
+          { term: 'Syarat', text: 'Cukup konfirmasi KTP pemesan dan alamat penjemputan.' },
+          { term: 'Di luar harga sewa', text: 'BBM, tol, parkir, makan sopir, dan overtime ditanggung Penyewa.' },
+        ]}
+      />
+    </Pasal>
 
-    <h2>Waktu sewa dan overtime</h2>
-    <ul>
-      <li>Lepas kunci dihitung per 24 jam, dengan sopir per 12 jam.</li>
-      <li>Toleransi keterlambatan 1 jam. Setelahnya overtime 10% dari harga harian per jam.</li>
-    </ul>
+    <Pasal id="pasal-4" num={4} title="Tata Cara Pembayaran & Uang Muka" icon={IconCreditCard}>
+      <p>Jadwal dan armada terkunci setelah uang muka diterima. Tahapan pembayaran:</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SubCard title="1. Down Payment (DP) 30%" icon={IconCash}>
+          <p>DP 30% dibayarkan saat reservasi untuk mengunci jadwal dan armada pilihan Anda.</p>
+        </SubCard>
+        <SubCard title="2. Pelunasan" icon={IconCreditCard}>
+          <p>Sisa pembayaran dilunasi saat serah terima kunci / kendaraan di lokasi jemput.</p>
+        </SubCard>
+      </div>
+      <Callout title="Hanya bayar ke kanal resmi" icon={IconAlert} tone="warn">
+        Pembayaran resmi hanya melalui transfer ke rekening atas nama operasional perusahaan atau QRIS resmi {site.name}.
+        Pastikan detail pembayaran Anda terima langsung dari admin resmi.
+      </Callout>
+    </Pasal>
 
-    <h2>Perubahan dan pembatalan</h2>
-    <ul>
-      <li>Ubah jadwal gratis sampai H-1, tergantung ketersediaan mobil.</li>
-      <li>Pembatalan H-1 atau lebih awal: DP dikembalikan 50%. Pembatalan di hari H: DP hangus.</li>
-    </ul>
+    <Pasal id="pasal-5" num={5} title="Deposit Jaminan (Lepas Kunci)" icon={IconRefund}>
+      <p>
+        Untuk layanan lepas kunci, Penyewa menyerahkan deposit jaminan. Deposit dikembalikan penuh setelah mobil kembali
+        dalam kondisi baik.
+      </p>
+      <div class="p-4 rounded-xl border border-border-subtle bg-surface-container-lowest">
+        <p class="text-sm font-semibold text-on-surface mb-3 flex items-center gap-2">
+          <IconShield class="w-5 h-5 text-emerald-deep" aria-hidden="true" />
+          Alur pengembalian deposit
+        </p>
+        <ol class="grid grid-cols-1 sm:grid-cols-3 gap-3 list-none p-0 m-0 text-xs leading-[18px]">
+          <li class="p-3 rounded-lg bg-surface-container-low">
+            <span class="block font-bold text-primary mb-0.5">Tahap 1. Pengembalian unit</span>
+            Kendaraan dikembalikan sesuai jadwal di lokasi yang disepakati.
+          </li>
+          <li class="p-3 rounded-lg bg-surface-container-low">
+            <span class="block font-bold text-primary mb-0.5">Tahap 2. Inspeksi fisik</span>
+            Admin memeriksa kondisi kendaraan bersama Penyewa.
+          </li>
+          <li class="p-3 rounded-lg bg-surface-container-low">
+            <span class="block font-bold text-primary mb-0.5">Tahap 3. Deposit kembali</span>
+            Deposit dikembalikan penuh maksimal 1x24 jam setelah inspeksi.
+          </li>
+        </ol>
+      </div>
+      <p class="text-xs text-text-muted">
+        Kerusakan atau pelanggaran yang menjadi tanggung jawab Penyewa diatur dalam Pasal 9.
+      </p>
+    </Pasal>
 
-    <h2>Tanggung jawab penyewa</h2>
-    <ul>
-      <li>Mobil tidak boleh disewakan ulang, dipakai balapan, atau mengangkut barang terlarang.</li>
-      <li>Kerusakan akibat kelalaian dan tilang selama masa sewa menjadi tanggung jawab penyewa.</li>
-    </ul>
-  </Prose>
+    <Pasal id="pasal-6" num={6} title="Kebijakan Perubahan Jadwal & Pembatalan" icon={IconCalendarTime}>
+      <p>Perubahan jadwal dan pembatalan dihitung dari tanggal keberangkatan / serah terima yang telah dipesan.</p>
+      <div class="overflow-x-auto rounded-xl border border-border-subtle">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <caption class="sr-only">Ketentuan reschedule dan pembatalan</caption>
+          <thead class="bg-surface-container-low text-on-surface">
+            <tr>
+              <th scope="col" class="px-4 py-3 font-semibold">Kondisi</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Ketentuan</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border-subtle">
+            {
+              jadwalRows.map((r) => (
+                <tr>
+                  <td class="px-4 py-3 font-medium text-on-surface align-top">{r.kondisi}</td>
+                  <td class="px-4 py-3 align-top">
+                    <span class:list={['inline-block px-2 py-0.5 rounded-md font-semibold', toneBadge[r.tone]]}>{r.ketentuan}</span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </Pasal>
+
+    <Pasal id="pasal-7" num={7} title="Perhitungan Durasi Sewa & Overtime" icon={IconClock}>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SubCard title="Durasi sewa" icon={IconClock}>
+          <p>• <strong class="text-on-surface">Lepas kunci:</strong> dihitung per 24 jam terhitung dari jam serah terima.</p>
+          <p>• <strong class="text-on-surface">Dengan sopir:</strong> dihitung per 12 jam per hari operasional.</p>
+        </SubCard>
+        <SubCard title="Toleransi & overtime" icon={IconCalendarTime}>
+          <p>• Toleransi keterlambatan maksimal 60 menit.</p>
+          <p>• Lewat batas toleransi dikenakan biaya overtime 10% dari tarif sewa harian per jam.</p>
+        </SubCard>
+      </div>
+      <Callout title="Kabari admin bila akan terlambat" icon={IconInfo}>
+        Hubungi admin sebelum batas waktu sewa berakhir bila Anda perlu memperpanjang atau akan terlambat mengembalikan
+        kendaraan, agar jadwal unit berikutnya bisa disesuaikan.
+      </Callout>
+    </Pasal>
+
+    <Pasal id="pasal-8" num={8} title="Area Operasional & Rute Luar Kota" icon={IconRoute}>
+      <p>
+        Layanan {site.name} berbasis di {site.city} dan melayani rute di wilayah Jawa Tengah & DIY. Beberapa kota yang kami
+        layani:
+      </p>
+      <ul class="flex flex-wrap gap-2 list-none p-0 m-0">
+        {
+          kota.map((k) => (
+            <li>
+              <a
+                href={`/kota/${k.slug}/`}
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container text-on-surface text-xs font-semibold hover:bg-surface-container-high hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                <IconMapPin class="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                {k.nama}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <CheckList
+        items={[
+          { term: 'Jawa Tengah & DIY', text: 'Semua rute di dalam wilayah ini dapat dilalui tanpa izin khusus.' },
+          { term: 'BBM, tol, dan parkir', text: 'Ditanggung Penyewa selama masa sewa.' },
+        ]}
+      />
+      <Callout title="Keluar dari Jawa Tengah & DIY" icon={IconAlert} tone="warn">
+        Perjalanan ke luar wilayah Jawa Tengah & DIY wajib dikoordinasikan dengan admin sebelum keberangkatan.
+      </Callout>
+    </Pasal>
+
+    <Pasal id="pasal-9" num={9} title="Tanggung Jawab Penyewa" icon={IconScale}>
+      <p>Selama masa sewa, Penyewa bertanggung jawab atas penggunaan kendaraan, termasuk:</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SubCard title="Pelanggaran lalu lintas" icon={IconAlert}>
+          <p>Segala bentuk pelanggaran lalu lintas, termasuk tilang elektronik (ETLE), menjadi tanggung jawab Penyewa.</p>
+        </SubCard>
+        <SubCard title="Kerusakan karena kelalaian" icon={IconCar}>
+          <p>Kerusakan akibat kelalaian operasional selama masa sewa menjadi tanggung jawab Penyewa.</p>
+        </SubCard>
+      </div>
+    </Pasal>
+
+    <Pasal id="pasal-10" num={10} title="Larangan & Batasan Penggunaan" icon={IconBan}>
+      <p>Penyewa dilarang keras menggunakan kendaraan untuk hal-hal berikut:</p>
+      <CheckList
+        variant="warn"
+        items={[
+          { text: 'Memindahtangankan kendaraan kepada pihak lain.' },
+          { text: 'Menyewakan kembali kendaraan kepada pihak ketiga.' },
+          { text: 'Balapan liar atau kegiatan yang membahayakan keselamatan.' },
+          { text: 'Membawa barang terlarang menurut hukum Republik Indonesia.' },
+        ]}
+      />
+    </Pasal>
+
+    <div class="p-6 rounded-xl bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <IconCertificate class="w-6 h-6 text-primary shrink-0" aria-hidden="true" />
+        <div>
+          <p class="text-sm font-bold text-on-surface">Klausul berlaku mengikat</p>
+          <p class="text-xs leading-[18px] text-on-surface-variant">
+            Dengan melakukan pemesanan, Penyewa dianggap telah membaca dan menyetujui seluruh ketentuan di atas.
+          </p>
+        </div>
+      </div>
+      <a
+        href="/armada/"
+        class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary print:hidden"
+      >
+        Lanjut Reservasi
+      </a>
+    </div>
+  </LegalPage>
 </Base>

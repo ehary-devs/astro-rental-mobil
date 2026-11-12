@@ -1,0 +1,208 @@
+---
+/**
+ * "Pilihan Skema Tarif": kartu paket berdasarkan harga asli di content armada.
+ * Lepas kunci & dengan sopir hanya muncul bila harganya ada. Kartu bandara (butuh sopir)
+ * dan sewa bulanan memakai ketentuan dari src/data/halaman.ts, harga dikonfirmasi admin.
+ */
+import type { CollectionEntry } from 'astro:content';
+import IconKey from '@tabler/icons/outline/key.svg';
+import IconSteering from '@tabler/icons/outline/steering-wheel.svg';
+import IconPlane from '@tabler/icons/outline/plane-arrival.svg';
+import IconCalendarRepeat from '@tabler/icons/outline/calendar-repeat.svg';
+import IconCheck from '@tabler/icons/outline/circle-check.svg';
+import IconInfo from '@tabler/icons/outline/info-circle.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import { formatHargaLengkap, site, WA_SOURCE_TAG, waLink } from '../../config/site';
+
+interface Props {
+  car: CollectionEntry<'armada'>;
+}
+
+const { car } = Astro.props;
+const { nama, harga } = car.data;
+
+interface Tier {
+  id: string;
+  tag: string;
+  icon: typeof IconKey;
+  title: string;
+  desc: string;
+  price: string;
+  unit?: string;
+  note: string;
+  items: string[];
+  info: string[];
+  cta: string;
+  wa: string;
+}
+
+const pesan = (svc: string) => waLink(`Halo Admin ${site.name}, saya mau sewa ${nama} (${svc}). Apakah tersedia? ${WA_SOURCE_TAG}`);
+
+const tiers: Tier[] = [];
+
+if (harga.lepasKunci) {
+  tiers.push({
+    id: 'lk',
+    tag: 'Setir sendiri',
+    icon: IconKey,
+    title: 'Sewa Lepas Kunci',
+    desc: 'Setir sendiri, bebas atur jadwal perjalanan Anda.',
+    price: formatHargaLengkap(harga.lepasKunci),
+    unit: '/ 24 jam',
+    note: 'Toleransi keterlambatan 1 jam',
+    items: [
+      'Dihitung per 24 jam sejak serah terima',
+      `Antar jemput mobil gratis di dalam Kota ${site.city}`,
+      'Syarat: KTP, SIM A aktif, dan satu dokumen pendukung',
+    ],
+    info: ['BBM, tol, dan parkir ditanggung penyewa. Deposit dikembalikan setelah mobil kembali.'],
+    cta: 'Pesan lepas kunci via WA',
+    wa: pesan('lepas kunci'),
+  });
+}
+
+if (harga.denganSopir) {
+  tiers.push({
+    id: 'ds',
+    tag: 'Sopir berpengalaman',
+    icon: IconSteering,
+    title: 'Dengan Sopir',
+    desc: 'Tinggal duduk, sopir kami yang menyetir.',
+    price: formatHargaLengkap(harga.denganSopir),
+    unit: '/ 12 jam',
+    note: 'Sudah termasuk jasa sopir selama 12 jam',
+    items: ['Sopir hafal rute Jawa Tengah - DIY', 'Dijemput di alamat, hotel, atau stasiun', 'Syarat cukup KTP pemesan'],
+    info: ['BBM, tol, parkir, makan sopir, dan overtime di luar harga sewa.'],
+    cta: 'Pesan dengan sopir via WA',
+    wa: pesan('dengan sopir'),
+  });
+
+  tiers.push({
+    id: 'bandara',
+    tag: 'Bandara',
+    icon: IconPlane,
+    title: 'Antar Jemput Bandara',
+    desc: 'Ahmad Yani Semarang, YIA Yogyakarta, atau Adi Soemarmo Solo.',
+    price: 'Sesuai jarak',
+    note: 'Harga sekali jalan atau pulang-pergi dikonfirmasi admin',
+    items: ['Sopir menunggu di pintu kedatangan', 'Jadwal disesuaikan bila pesawat delay', 'Muat bagasi keluarga sampai rombongan'],
+    info: ['Kirim nomor penerbangan saat memesan.'],
+    cta: 'Tanya harga bandara via WA',
+    wa: pesan('antar jemput bandara'),
+  });
+}
+
+if (tiers.length < 3) {
+  tiers.push({
+    id: 'bulanan',
+    tag: 'Jangka panjang',
+    icon: IconCalendarRepeat,
+    title: 'Sewa Bulanan',
+    desc: 'Untuk kebutuhan kantor, proyek, atau pribadi jangka panjang.',
+    price: 'Harga khusus',
+    note: 'Lebih hemat dibanding sewa harian',
+    items: ['Untuk sewa 1 bulan atau lebih', 'Servis berkala ditanggung kami', 'Mobil pengganti bila ada kendala'],
+    info: ['Harga per bulan dikonfirmasi admin.'],
+    cta: 'Tanya sewa bulanan via WA',
+    wa: pesan('sewa bulanan'),
+  });
+}
+
+const featured = harga.denganSopir ? 'ds' : 'lk';
+const featuredLabel = featured === 'ds' ? 'Tinggal duduk' : 'Pilihan utama';
+const cols = tiers.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 max-w-4xl mx-auto';
+---
+
+<section class="w-full bg-surface-container-low py-14 lg:py-20" aria-labelledby="tarif-title">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto mb-10">
+      <span class="text-xs font-bold uppercase tracking-wider text-primary">Harga jelas di depan</span>
+      <h2 id="tarif-title" class="font-bold text-2xl sm:text-3xl text-on-surface tracking-tight mt-1">
+        Pilihan Skema Tarif {nama}
+      </h2>
+      <p class="text-sm sm:text-base text-on-surface-variant mt-2 leading-relaxed">
+        Pilih paket sewa yang paling cocok dengan kebutuhan perjalanan Anda di {site.city} atau luar kota.
+      </p>
+    </div>
+
+    <div class:list={['grid grid-cols-1 gap-6 md:gap-5 lg:gap-6 items-stretch', cols]}>
+      {
+        tiers.map((t) => {
+          const isFeatured = t.id === featured;
+          return (
+            <article
+              class:list={[
+                'relative bg-surface-container-lowest rounded-2xl p-6 flex flex-col justify-between transition-shadow',
+                isFeatured ? 'ring-2 ring-primary shadow-md hover:shadow-lg mt-3 md:mt-0' : 'border border-border-subtle shadow-sm hover:shadow-md',
+              ]}
+            >
+              {isFeatured && (
+                <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-primary text-on-primary px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                  {featuredLabel}
+                </span>
+              )}
+              <div>
+                <div class="flex items-center justify-between mb-3 pt-1">
+                  <span
+                    class:list={[
+                      'px-2.5 py-1 rounded text-xs font-bold',
+                      isFeatured ? 'bg-primary-fixed text-on-primary-fixed' : 'bg-surface-container text-on-surface',
+                    ]}
+                  >
+                    {t.tag}
+                  </span>
+                  <t.icon class="w-6 h-6 text-primary" aria-hidden="true" />
+                </div>
+                <h3 class="font-bold text-xl text-on-surface">{t.title}</h3>
+                <p class="text-sm text-text-muted mt-1">{t.desc}</p>
+
+                <div class="my-5 pb-4 border-b border-surface-container">
+                  <p class="flex items-baseline flex-wrap gap-x-1.5">
+                    <span class="font-extrabold text-[28px] lg:text-[30px] leading-tight text-primary tracking-tight tabular-nums">{t.price}</span>
+                    {t.unit && <span class="text-sm text-text-muted">{t.unit}</span>}
+                  </p>
+                  <p class:list={['text-xs font-semibold mt-1', isFeatured ? 'text-primary' : 'text-emerald-deep']}>{t.note}</p>
+                </div>
+
+                <ul class="flex flex-col gap-2.5 text-sm text-on-surface-variant mb-6">
+                  {t.items.map((it) => (
+                    <li class="flex items-start gap-2">
+                      <IconCheck class="w-[18px] h-[18px] text-emerald-deep shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>{it}</span>
+                    </li>
+                  ))}
+                  {t.info.map((it) => (
+                    <li class="flex items-start gap-2 text-text-muted">
+                      <IconInfo class="w-[18px] h-[18px] text-outline-variant shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>{it}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <a
+                href={t.wa}
+                target="_blank"
+                rel="noopener noreferrer"
+                class:list={[
+                  'w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                  isFeatured
+                    ? 'bg-primary text-on-primary hover:bg-primary-container shadow-md'
+                    : 'bg-surface-container-low text-primary hover:bg-primary hover:text-on-primary',
+                ]}
+              >
+                <IconWa class="w-4 h-4" aria-hidden="true" />
+                {t.cta}
+              </a>
+            </article>
+          );
+        })
+      }
+    </div>
+
+    <p class="text-xs text-text-muted text-center mt-8 max-w-2xl mx-auto">
+      Harga dapat disesuaikan saat peak season (Lebaran, Natal &amp; Tahun Baru). Ketentuan lengkap ada di
+      <a href="/syarat-ketentuan/" class="text-primary font-semibold underline">syarat &amp; ketentuan</a>.
+    </p>
+  </div>
+</section>

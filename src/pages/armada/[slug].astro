@@ -2,18 +2,32 @@
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { Picture } from 'astro:assets';
+import IconHome from '@tabler/icons/outline/home.svg';
 import IconUsers from '@tabler/icons/outline/users.svg';
+import IconArmchair from '@tabler/icons/outline/armchair.svg';
 import IconGear from '@tabler/icons/outline/manual-gearbox.svg';
 import IconFuel from '@tabler/icons/outline/gas-station.svg';
+import IconLeaf from '@tabler/icons/outline/leaf.svg';
+import IconBolt from '@tabler/icons/outline/bolt.svg';
+import IconEngine from '@tabler/icons/outline/engine.svg';
 import IconCar from '@tabler/icons/outline/car.svg';
-import IconCheck from '@tabler/icons/outline/check.svg';
-import IconX from '@tabler/icons/outline/x.svg';
-import IconId from '@tabler/icons/outline/id.svg';
+import IconKey from '@tabler/icons/outline/key.svg';
+import IconSteering from '@tabler/icons/outline/steering-wheel.svg';
 import IconChevronRight from '@tabler/icons/outline/chevron-right.svg';
+import IconArrowRight from '@tabler/icons/outline/arrow-right.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconMapPin from '@tabler/icons/outline/map-pin.svg';
+import IconTruck from '@tabler/icons/outline/truck-delivery.svg';
+import IconReceipt from '@tabler/icons/outline/receipt.svg';
+import IconHeadset from '@tabler/icons/outline/headset.svg';
 import Base from '../../layouts/Base.astro';
 import BookingSidebar from '../../components/BookingSidebar.astro';
-import FleetCard from '../../components/FleetCard.astro';
-import { KATEGORI } from '../../content.config';
+import PricingTiers from '../../components/detail/PricingTiers.astro';
+import RouteCards from '../../components/detail/RouteCards.astro';
+import DetailFaq from '../../components/detail/DetailFaq.astro';
+import AltCard from '../../components/detail/AltCard.astro';
+import DetailCta from '../../components/detail/DetailCta.astro';
+import { KATEGORI, type Kategori } from '../../content.config';
 import { formatHargaLengkap, formatHargaSingkat, site } from '../../config/site';
 
 export const getStaticPaths = (async () => {
@@ -26,508 +40,357 @@ interface Props {
 }
 
 const { car } = Astro.props;
-const { nama, kategori, gambar, alt, kapasitas, transmisi, bbm, harga } = car.data;
+const { nama, kategori, gambar, alt, kapasitas, transmisi, bbm, harga, populer } = car.data;
 const { Content } = await render(car);
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const termurah = Math.min(harga.lepasKunci ?? Infinity, harga.denganSopir ?? Infinity);
+const termurahUnit = harga.lepasKunci && harga.lepasKunci === termurah ? '24 jam, lepas kunci' : '12 jam, dengan sopir';
+const lk = Boolean(harga.lepasKunci);
+const ds = Boolean(harga.denganSopir);
+const modeLabel = lk && ds ? 'Lepas kunci & dengan sopir' : ds ? 'Khusus dengan sopir' : 'Lepas kunci';
 
 // Mobil lain: kategori sama dulu, lalu sisanya.
-const related = (await getCollection('armada', ({ data, id }) => data.tersedia && id !== car.id))
+const allOthers = await getCollection('armada', ({ data, id }) => data.tersedia && id !== car.id);
+const related = allOthers
   .sort(
     (a, b) =>
       Number(b.data.kategori === kategori) - Number(a.data.kategori === kategori) || a.data.urutan - b.data.urutan,
   )
-  .slice(0, 3);
+  .slice(0, 4);
+const totalArmada = allOthers.length + 1;
 
-const specs = [
-  { icon: IconUsers, label: 'Kapasitas', value: `${kapasitas} kursi` },
-  { icon: IconGear, label: 'Transmisi', value: cap(transmisi) },
-  { icon: IconFuel, label: 'Bahan bakar', value: cap(bbm) },
-  { icon: IconCar, label: 'Kategori', value: KATEGORI[kategori] },
+const bbmInfo: Record<typeof bbm, { icon: typeof IconFuel; desc: string }> = {
+  bensin: { icon: IconFuel, desc: 'Isi di SPBU mana pun, perawatan mudah.' },
+  solar: { icon: IconEngine, desc: 'Mesin diesel bertenaga untuk rute jauh dan menanjak.' },
+  hybrid: { icon: IconLeaf, desc: 'Mesin hybrid yang irit untuk perjalanan jauh.' },
+  listrik: { icon: IconBolt, desc: 'Tanpa beli bensin, cukup isi daya di SPKLU.' },
+};
+
+const transmisiDesc: Record<typeof transmisi, string> = {
+  matic: 'Transmisi otomatis, nyaman di jalan padat dalam kota.',
+  manual: 'Transmisi manual, tenaga mudah diatur di tanjakan.',
+  'manual/matic': 'Tersedia unit manual dan matic, sebutkan saat memesan.',
+};
+
+const kategoriDesc: Record<Kategori, string> = {
+  'city-car': 'Ringkas dan lincah, mudah parkir di pusat kota.',
+  mpv: 'Kabin lega untuk keluarga dan perjalanan antar kota.',
+  suv: 'Ground clearance tinggi untuk jalan menanjak dan kurang mulus.',
+  minibus: 'Untuk rombongan kantor, wisata sekolah, atau keluarga besar.',
+  premium: 'Untuk tamu VIP, perjalanan bisnis, dan acara spesial.',
+  listrik: 'Kabin senyap tanpa emisi gas buang.',
+};
+
+const highlights = [
+  { icon: IconUsers, title: `${kapasitas} Penumpang`, desc: `${kapasitas} kursi, sesuaikan dengan rombongan dan bawaan.` },
+  { icon: IconGear, title: cap(transmisi), desc: transmisiDesc[transmisi] },
+  { icon: bbmInfo[bbm].icon, title: cap(bbm), desc: bbmInfo[bbm].desc },
+  {
+    icon: ds && !lk ? IconSteering : IconKey,
+    title: lk && ds ? 'Dua pilihan paket' : ds ? 'Dengan sopir' : 'Lepas kunci',
+    desc: lk && ds ? 'Setir sendiri atau pakai sopir kami.' : ds ? 'Sopir hafal rute Jawa Tengah - DIY.' : 'Setir sendiri, dihitung per 24 jam.',
+  },
 ];
 
-// Isi paket & syarat harus konsisten dengan FAQ dan Syarat & Ketentuan.
-const paket = [
-  harga.lepasKunci && {
-    nama: 'Lepas kunci',
-    termasuk: ['Mobil bersih dan siap jalan', 'Antar jemput mobil dalam kota', 'Bantuan darurat 24 jam'],
-    tidak: ['BBM, tol, dan parkir', 'Deposit, dikembalikan setelah sewa'],
-    syarat: ['KTP dan SIM A aktif', 'KK, NPWP, atau ID karyawan', 'Deposit sesuai jenis mobil'],
+const specs = [
+  { icon: IconArmchair, title: 'Kapasitas tempat duduk', value: `${kapasitas} kursi`, desc: 'Sebutkan jumlah penumpang dan bawaan saat memesan agar admin bisa memastikan mobil ini cocok.' },
+  { icon: IconGear, title: 'Transmisi', value: cap(transmisi), desc: transmisiDesc[transmisi] },
+  { icon: bbmInfo[bbm].icon, title: 'Bahan bakar', value: cap(bbm), desc: bbmInfo[bbm].desc },
+  { icon: IconCar, title: 'Kategori', value: KATEGORI[kategori], desc: kategoriDesc[kategori] },
+  {
+    icon: IconKey,
+    title: 'Sewa lepas kunci',
+    value: harga.lepasKunci ? `${formatHargaLengkap(harga.lepasKunci)} / 24 jam` : 'Tidak tersedia',
+    desc: harga.lepasKunci
+      ? 'Syarat KTP, SIM A aktif, dan satu dokumen pendukung. Toleransi keterlambatan 1 jam.'
+      : `${nama} hanya disewakan dengan sopir.`,
   },
-  harga.denganSopir && {
-    nama: 'Dengan sopir',
-    termasuk: ['Sopir berpengalaman, 12 jam', 'Penjemputan di alamat Anda', 'Bantuan darurat 24 jam'],
-    tidak: ['BBM, tol, dan parkir', 'Makan sopir dan overtime'],
-    syarat: ['KTP pemesan'],
+  {
+    icon: IconSteering,
+    title: 'Sewa dengan sopir',
+    value: harga.denganSopir ? `${formatHargaLengkap(harga.denganSopir)} / 12 jam` : 'Tidak tersedia',
+    desc: harga.denganSopir
+      ? 'Sudah termasuk jasa sopir 12 jam. BBM, tol, parkir, dan makan sopir terpisah.'
+      : `${nama} disewakan lepas kunci saja.`,
   },
-].filter((p): p is Exclude<typeof p, 0 | undefined | false> => Boolean(p));
+];
+
+const steps = [
+  { title: 'Isi form', desc: 'Pilih paket, tanggal, jam, dan lokasi jemput.' },
+  { title: 'Kirim ke WhatsApp', desc: 'Pesan terisi otomatis, belum perlu bayar apa pun.' },
+  { title: 'Konfirmasi admin', desc: 'Admin cek unit dan kirim harga final. DP 30% untuk mengunci jadwal.' },
+];
+
+const whyUs = [
+  {
+    icon: IconTruck,
+    title: 'Antar jemput gratis dalam kota',
+    desc: `Mobil diantar ke rumah, hotel, Stasiun Tawang, atau Bandara Ahmad Yani tanpa biaya antar di dalam Kota ${site.city}.`,
+  },
+  {
+    icon: ds ? IconSteering : IconKey,
+    title: lk && ds ? 'Setir sendiri atau pakai sopir' : ds ? 'Sopir yang hafal jalan' : 'Bebas atur jadwal',
+    desc:
+      lk && ds
+        ? 'Pilih lepas kunci untuk privasi, atau dengan sopir yang hafal rute Jawa Tengah - DIY.'
+        : ds
+          ? 'Sopir berpengalaman yang terbiasa membawa tamu dan rombongan antar kota.'
+          : 'Ambil di garasi atau diantar ke alamat Anda, dihitung per 24 jam.',
+  },
+  {
+    icon: IconReceipt,
+    title: 'Harga jelas sebelum bayar',
+    desc: 'Estimasi tampil di halaman ini, admin kirim harga final di WhatsApp. DP 30% untuk mengunci jadwal.',
+  },
+  {
+    icon: IconHeadset,
+    title: 'Admin aktif setiap hari',
+    desc: `Tanya jawab dan cek unit ${site.hours.replace('Setiap hari, ', '')}. Reschedule hingga H-1 tanpa biaya.`,
+  },
+];
 ---
 
 <Base
   title={`Sewa ${nama} ${site.city} Mulai ${formatHargaSingkat(termurah)}/Hari | ${site.name}`}
-  description={`Rental ${nama} di ${site.city}, ${kapasitas} kursi, ${transmisi}. ${paket.map((p) => p.nama.toLowerCase()).join(' atau ')} mulai ${formatHargaLengkap(termurah)}. Pesan cepat lewat WhatsApp.`}
+  description={`Rental ${nama} di ${site.city}, ${kapasitas} kursi, ${transmisi}. ${[lk && 'lepas kunci', ds && 'dengan sopir'].filter(Boolean).join(' atau ')} mulai ${formatHargaLengkap(termurah)}. Pesan cepat lewat WhatsApp.`}
   image={gambar}
   offsetHeader
 >
-  <div class="container">
-    <nav class="crumbs" aria-label="Breadcrumb">
-      <ol>
-        <li><a href="/">Beranda</a></li>
-        <li aria-hidden="true"><IconChevronRight /></li>
-        <li><a href="/armada/">Armada</a></li>
-        <li aria-hidden="true"><IconChevronRight /></li>
-        <li><span aria-current="page">{nama}</span></li>
-      </ol>
-    </nav>
+  <!-- Breadcrumb & status -->
+  <section class="w-full bg-surface-container-lowest shadow-[0_2px_12px_rgba(15,23,42,0.03)]">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <nav aria-label="Breadcrumb">
+        <ol class="flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant font-medium">
+          <li>
+            <a class="hover:text-primary transition-colors flex items-center gap-1" href="/">
+              <IconHome class="w-4 h-4" aria-hidden="true" />
+              Beranda
+            </a>
+          </li>
+          <li aria-hidden="true"><IconChevronRight class="w-3.5 h-3.5 text-outline-variant" /></li>
+          <li><a class="hover:text-primary transition-colors" href="/armada/">Armada</a></li>
+          <li aria-hidden="true"><IconChevronRight class="w-3.5 h-3.5 text-outline-variant" /></li>
+          <li class="hidden sm:block">{KATEGORI[kategori]}</li>
+          <li aria-hidden="true" class="hidden sm:block"><IconChevronRight class="w-3.5 h-3.5 text-outline-variant" /></li>
+          <li><span class="text-primary font-bold" aria-current="page">{nama}</span></li>
+        </ol>
+      </nav>
 
-    <div class="layout">
-      <div class="hero">
-        <p class="cat">{KATEGORI[kategori]}</p>
-        <h1>{nama}</h1>
-        <ul class="chips" aria-label="Ringkasan">
-          <li><IconUsers aria-hidden="true" />{kapasitas} kursi</li>
-          <li><IconGear aria-hidden="true" />{cap(transmisi)}</li>
-          <li><IconFuel aria-hidden="true" />{cap(bbm)}</li>
-        </ul>
-        <div class="media">
+      <ul class="flex flex-wrap items-center gap-2 text-xs" aria-label="Ringkasan unit">
+        <li class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-conversion/10 text-emerald-deep font-bold">
+          <span class="w-2 h-2 rounded-full bg-emerald-conversion" aria-hidden="true"></span>
+          Garasi di {site.city} Tengah
+        </li>
+        <li class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-medium">
+          <IconUsers class="w-4 h-4 text-primary" aria-hidden="true" />
+          {kapasitas} kursi
+        </li>
+        <li class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-medium">
+          <IconBolt class="w-4 h-4 text-primary" aria-hidden="true" />
+          {cap(transmisi)} &amp; {cap(bbm)}
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Judul -->
+  <section class="w-full bg-surface pt-8 pb-5">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <div class="max-w-3xl">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="px-2.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed text-xs font-bold uppercase tracking-wider">
+            {KATEGORI[kategori]}
+          </span>
+          {populer && <span class="px-2.5 py-0.5 rounded bg-primary text-on-primary text-xs font-bold uppercase tracking-wider">Populer</span>}
+          <span class="text-text-muted text-xs font-medium">{modeLabel}</span>
+        </div>
+        <h1 class="font-extrabold text-3xl sm:text-4xl lg:text-5xl text-on-surface tracking-tight">{nama}</h1>
+        <div class="lead text-base sm:text-lg text-on-surface-variant mt-3 leading-relaxed">
+          <Content />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 bg-surface-container-lowest p-4 rounded-2xl shadow-sm border border-border-subtle shrink-0">
+        <div class="flex flex-col">
+          <span class="text-xs text-text-muted">Mulai dari</span>
+          <span class="font-extrabold text-xl text-primary leading-tight tabular-nums">{formatHargaLengkap(termurah)}</span>
+          <span class="text-[11px] text-text-muted">per {termurahUnit}</span>
+        </div>
+        <div class="h-10 w-px bg-surface-container-highest hidden sm:block" aria-hidden="true"></div>
+        <div class="flex items-center gap-2 text-emerald-deep text-xs font-semibold">
+          <IconClock class="w-5 h-5" aria-hidden="true" />
+          <span>Admin aktif<br />{site.hours.replace('Setiap hari, ', 'setiap hari ')}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Foto + highlight | kartu pemesanan -->
+  <section class="w-full bg-surface pb-12 lg:pb-16">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div class="lg:col-span-7 flex flex-col gap-4">
+        <div class="relative w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md bg-surface-container group">
           <Picture
             src={gambar}
             alt={alt}
             formats={['avif', 'webp']}
             widths={[480, 720, 960, 1280]}
-            sizes="(max-width: 960px) 100vw, 760px"
+            sizes="(max-width: 1024px) 100vw, 760px"
             loading="eager"
             fetchpriority="high"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+          <div class="absolute top-4 left-4 flex flex-wrap gap-2">
+            <span class="px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-on-surface text-xs font-bold shadow-sm">
+              {KATEGORI[kategori]}
+            </span>
+            <span class="px-3 py-1 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm">{modeLabel}</span>
+          </div>
+          <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-2 text-white text-xs">
+            <span class="inline-flex items-center gap-1.5 font-medium">
+              <IconMapPin class="w-4 h-4" aria-hidden="true" />
+              Antar gratis dalam Kota {site.city}
+            </span>
+            <span class="px-2.5 py-1 rounded-md bg-black/40 backdrop-blur-sm font-semibold whitespace-nowrap">{kapasitas} kursi</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          {
+            highlights.map((h) => (
+              <div class="bg-surface-container-lowest p-4 rounded-2xl shadow-sm border border-border-subtle flex flex-col gap-1 items-start">
+                <div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+                  <h.icon class="w-6 h-6" aria-hidden="true" />
+                </div>
+                <span class="text-sm font-bold text-on-surface mt-1">{h.title}</span>
+                <p class="text-xs text-text-muted leading-snug">{h.desc}</p>
+              </div>
+            ))
+          }
+        </div>
+
+        <div class="hidden lg:block bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-border-subtle">
+          <h2 class="text-sm font-bold text-on-surface uppercase tracking-wider">Cara pesan</h2>
+          <ol class="mt-4 grid grid-cols-3 gap-4">
+            {
+              steps.map((s, i) => (
+                <li class="flex flex-col gap-1">
+                  <span class="w-7 h-7 rounded-full bg-primary-fixed text-primary text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                  <span class="text-sm font-bold text-on-surface mt-1">{s.title}</span>
+                  <span class="text-xs text-text-muted leading-snug">{s.desc}</span>
+                </li>
+              ))
+            }
+          </ol>
         </div>
       </div>
 
-      <aside class="aside" aria-label="Pemesanan">
+      <aside class="lg:col-span-5 lg:sticky lg:top-24" aria-label={`Pesan ${nama}`}>
         <BookingSidebar car={car} />
       </aside>
+    </div>
+  </section>
 
-      <div class="details">
-        <section aria-labelledby="h-tentang">
-          <h2 id="h-tentang">Tentang mobil ini</h2>
-          <div class="desc"><Content /></div>
-          <dl class="specs">
-            {
-              specs.map(({ icon: Icon, label, value }) => (
-                <div>
-                  <Icon aria-hidden="true" />
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))
-            }
-          </dl>
-        </section>
+  <PricingTiers car={car} />
 
-        <section aria-labelledby="h-paket">
-          <h2 id="h-paket">Yang didapat</h2>
-          <div class:list={['paket', { one: paket.length === 1 }]}>
-            {
-              paket.map((p) => (
-                <div class="paket-col">
-                  <h3>{p.nama}</h3>
-                  <ul class="list">
-                    {p.termasuk.map((t) => (
-                      <li class="yes">
-                        <IconCheck aria-hidden="true" />
-                        {t}
-                      </li>
-                    ))}
-                    {p.tidak.map((t) => (
-                      <li class="no">
-                        <IconX aria-hidden="true" />
-                        <span>
-                          <span class="visually-hidden">Tidak termasuk: </span>
-                          {t}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            }
-          </div>
-        </section>
-
-        <section aria-labelledby="h-syarat">
-          <h2 id="h-syarat">Yang perlu disiapkan</h2>
-          <div class:list={['paket', { one: paket.length === 1 }]}>
-            {
-              paket.map((p) => (
-                <div class="paket-col">
-                  <h3>{p.nama}</h3>
-                  <ul class="list">
-                    {p.syarat.map((t) => (
-                      <li class="doc">
-                        <IconId aria-hidden="true" />
-                        {t}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            }
-          </div>
-          <p class="note">
-            Harga bisa berbeda saat musim liburan. Detail lengkap di <a href="/syarat-ketentuan/">syarat &amp; ketentuan</a>.
-          </p>
-        </section>
+  <!-- Spesifikasi -->
+  <section class="w-full bg-surface py-14 lg:py-20" aria-labelledby="spek-title">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-primary">Detail unit</span>
+          <h2 id="spek-title" class="font-bold text-2xl sm:text-3xl text-on-surface tracking-tight mt-1">Spesifikasi &amp; Ketentuan Sewa</h2>
+        </div>
+        <p class="text-sm text-text-muted">Tahun dan warna unit bisa berbeda, tanyakan ke admin.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {
+          specs.map((s) => (
+            <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-border-subtle flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary shrink-0">
+                <s.icon class="w-6 h-6" aria-hidden="true" />
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-on-surface">{s.title}</h3>
+                <p class="text-base text-primary font-semibold mt-0.5">{s.value}</p>
+                <p class="text-sm text-text-muted mt-1 leading-snug">{s.desc}</p>
+              </div>
+            </div>
+          ))
+        }
       </div>
     </div>
+  </section>
 
-    {
-      related.length > 0 && (
-        <section class="related" aria-labelledby="related-title">
-          <div class="related-head">
-            <h2 id="related-title">Mobil lain</h2>
-            <a href="/armada/" class="see-all">
-              Lihat semua armada
+  <!-- Mengapa kami -->
+  <section class="w-full bg-surface-container-low py-14 lg:py-20" aria-labelledby="why-title">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-xs font-bold uppercase tracking-wider text-primary">Cara kami melayani</span>
+        <h2 id="why-title" class="font-bold text-2xl sm:text-3xl text-on-surface tracking-tight mt-1">
+          Mengapa Sewa {nama} di {site.name}?
+        </h2>
+        <p class="text-sm sm:text-base text-on-surface-variant mt-2">
+          Proses pesan yang ringkas lewat WhatsApp, dengan ketentuan yang jelas sejak awal.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {
+          whyUs.map((w) => (
+            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-border-subtle flex flex-col items-start">
+              <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary mb-3">
+                <w.icon class="w-7 h-7" aria-hidden="true" />
+              </div>
+              <h3 class="font-bold text-lg text-on-surface">{w.title}</h3>
+              <p class="text-sm text-on-surface-variant mt-2 leading-relaxed">{w.desc}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <RouteCards car={car} />
+
+  <DetailFaq car={car} />
+
+  <!-- Armada alternatif -->
+  {
+    related.length > 0 && (
+      <section class="w-full bg-surface py-14 lg:py-20" aria-labelledby="alt-title">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+          <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-primary">Pilihan kendaraan lain</span>
+              <h2 id="alt-title" class="font-bold text-2xl sm:text-3xl text-on-surface tracking-tight mt-1">
+                Armada Alternatif
+              </h2>
+            </div>
+            <a href="/armada/" class="inline-flex items-center gap-1 text-sm text-primary hover:underline font-bold">
+              Lihat semua {totalArmada} armada
+              <IconArrowRight class="w-4 h-4" aria-hidden="true" />
             </a>
           </div>
-          <ul class="related-grid">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {related.map((c) => (
-              <li>
-                <FleetCard car={c} />
-              </li>
+              <AltCard car={c} />
             ))}
-          </ul>
-        </section>
-      )
-    }
-  </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <DetailCta nama={nama} />
 </Base>
 
 <style>
-  /* Breadcrumb */
-  .crumbs ol {
-    list-style: none;
+  .lead :global(p) {
     margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8125rem;
-    color: var(--text-2);
   }
-
-  .crumbs a {
-    text-decoration: none;
-  }
-
-  .crumbs a:hover {
-    color: var(--text);
-    text-decoration: underline;
-  }
-
-  .crumbs li[aria-hidden] :global(svg) {
-    width: 14px;
-    height: 14px;
-  }
-
-  .crumbs [aria-current] {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  /* Layout: konten kiri, kartu pesan sticky kanan */
-  .layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 400px;
-    grid-template-areas:
-      'hero aside'
-      'details aside';
-    column-gap: clamp(32px, 4vw, 56px);
-    margin-top: 20px;
-  }
-
-  .hero {
-    grid-area: hero;
-  }
-
-  .aside {
-    grid-area: aside;
-    align-self: start;
-    position: sticky;
-    top: calc(var(--header-h) + 32px);
-  }
-
-  .details {
-    grid-area: details;
-  }
-
-  .cat {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--text-2);
-  }
-
-  h1 {
-    margin-top: 4px;
-    font-size: clamp(2rem, 4.2vw, 3.25rem);
-  }
-
-  .chips {
-    list-style: none;
-    margin: 16px 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .chips li {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px 6px 10px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: var(--surface);
-    font-size: 0.8125rem;
-    font-weight: 500;
-  }
-
-  .chips :global(svg) {
-    width: 16px;
-    height: 16px;
-    color: var(--text-2);
-  }
-
-  .media {
-    margin-top: 24px;
-    aspect-ratio: 16 / 10;
-    overflow: hidden;
-    border-radius: var(--radius-2xl);
-    box-shadow: var(--shadow-md);
-    background: var(--bg-2);
-  }
-
-  .media :global(picture) {
-    height: 100%;
-  }
-
-  .media :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Detail */
-  .details section {
-    padding-top: clamp(32px, 4vw, 44px);
-    margin-top: clamp(32px, 4vw, 44px);
-    border-top: 1px solid var(--line);
-  }
-
-  .details h2 {
-    font-size: clamp(1.375rem, 2.2vw, 1.75rem);
-  }
-
-  .desc {
-    margin-top: 14px;
-    max-width: 62ch;
-    color: var(--text-2);
-    font-size: 1.0625rem;
-  }
-
-  .specs {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin: 24px 0 0;
-  }
-
-  .specs > div {
-    display: grid;
-    gap: 4px;
-    padding: 18px;
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow-xs);
-  }
-
-  .specs :global(svg) {
-    width: 22px;
-    height: 22px;
-    margin-bottom: 10px;
-    color: var(--text);
-    stroke-width: 1.6;
-  }
-
-  .specs dt {
-    font-size: 0.75rem;
-    color: var(--text-2);
-  }
-
-  .specs dd {
-    margin: 0;
-    font-size: 0.9375rem;
-    font-weight: 600;
-  }
-
-  .paket {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin-top: 20px;
-  }
-
-  .paket.one {
-    grid-template-columns: 1fr;
-  }
-
-  .paket-col {
-    padding: 24px;
-    border-radius: var(--radius-xl);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow-xs);
-  }
-
-  .paket h3 {
-    font-size: 1rem;
-    font-weight: 700;
-    font-stretch: 105%;
-    letter-spacing: -0.01em;
-  }
-
-  .paket.one h3 {
-    display: none;
-  }
-
-  .list {
-    list-style: none;
-    margin: 12px 0 0;
-    padding: 0;
-    display: grid;
-    gap: 10px;
-  }
-
-  .paket.one .list {
-    grid-template-columns: repeat(2, 1fr);
-    margin-top: 0;
-  }
-
-  .list li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    font-size: 0.9375rem;
-  }
-
-  .list :global(svg) {
-    flex: none;
-    width: 18px;
-    height: 18px;
-    margin-top: 3px;
-  }
-
-  .yes :global(svg) {
-    color: var(--wa);
-  }
-
-  .no {
-    color: var(--text-2);
-  }
-
-  .no :global(svg) {
-    color: #9aa0aa;
-  }
-
-  .doc :global(svg) {
-    color: var(--text-2);
-  }
-
-  .note {
-    margin-top: 24px;
-    font-size: 0.8125rem;
-    color: var(--text-2);
-  }
-
-  .note a {
-    color: var(--accent);
-  }
-
-  /* Mobil lain */
-  .related {
-    margin-top: clamp(56px, 7vw, 88px);
-    padding-block: clamp(40px, 5vw, 56px) clamp(56px, 7vw, 88px);
-    border-top: 1px solid var(--line);
-  }
-
-  .related h2 {
-    font-size: clamp(1.5rem, 2.6vw, 2rem);
-  }
-
-  .related-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .see-all {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  .related-grid {
-    list-style: none;
-    margin: 24px 0 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  @media (max-width: 1100px) {
-    .layout {
-      grid-template-columns: minmax(0, 1fr) 360px;
-    }
-    .specs {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 960px) {
-    .layout {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        'hero'
-        'aside'
-        'details';
-    }
-    .aside {
-      position: static;
-      margin-top: 24px;
-    }
-    .related-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .related-grid > li:nth-child(3) {
-      display: none;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .paket,
-    .paket.one .list {
-      grid-template-columns: 1fr;
-    }
-    .related-grid {
-      grid-template-columns: 1fr;
-    }
-    .related-grid > li:nth-child(3) {
-      display: block;
-    }
+  .lead :global(p + p) {
+    margin-top: 0.75em;
   }
 </style>

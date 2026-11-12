@@ -1,32 +1,42 @@
 ---
+import IconHome from '@tabler/icons/outline/home.svg';
+import IconCar from '@tabler/icons/outline/car.svg';
 import Base from '../layouts/Base.astro';
 import { site } from '../config/site';
 ---
 
-<Base title={`Halaman tidak ditemukan | ${site.name}`} description="Halaman yang Anda cari tidak ada." offsetHeader noindex>
-  <div class="container nf">
-    <h1 class="section-title">Halaman ini tidak ada</h1>
-    <p>Mungkin link-nya sudah berubah. Coba mulai dari beranda atau lihat daftar armada.</p>
-    <div class="actions">
-      <a class="btn btn-accent" href="/">Ke beranda</a>
-      <a class="btn btn-outline" href="/armada/">Lihat armada</a>
+<Base title={`404 - Halaman Tidak Ditemukan | ${site.name}`} description="Halaman yang Anda cari tidak dapat ditemukan." offsetHeader noindex>
+  <div class="w-full bg-surface py-20 lg:py-32">
+    <div class="max-w-[640px] mx-auto px-4 text-center flex flex-col items-center gap-6">
+      <span class="font-extrabold text-7xl sm:text-8xl text-primary/20 tracking-tighter leading-none select-none">
+        404
+      </span>
+
+      <div class="flex flex-col gap-2 -mt-4">
+        <h1 class="font-extrabold text-2xl sm:text-3xl text-on-surface tracking-tight">
+          Halaman Tidak Ditemukan
+        </h1>
+        <p class="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+          Tautan yang Anda tuju mungkin sudah dipindahkan atau salah ketik. Silakan kembali ke beranda atau telusuri katalog unit armada kami.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 mt-2">
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-primary-container text-white font-bold text-sm shadow-md transition-all hover:scale-105 active:scale-95"
+        >
+          <IconHome class="w-4 h-4" aria-hidden="true" />
+          Ke Beranda
+        </a>
+        <a
+          href="/armada/"
+          class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-sm transition-colors"
+        >
+          <IconCar class="w-4 h-4" aria-hidden="true" />
+          <span>Lihat Katalog Armada</span>
+        </a>
+      </div>
     </div>
   </div>
 </Base>
-
-<style>
-  .nf {
-    display: grid;
-    justify-items: start;
-    gap: 20px;
-    padding-bottom: clamp(80px, 12vw, 160px);
-  }
-  .nf p {
-    color: var(--text-2);
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-</style>

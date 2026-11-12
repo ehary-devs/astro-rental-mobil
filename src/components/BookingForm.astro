@@ -12,7 +12,10 @@ import IconChevron from '@tabler/icons/outline/chevron-down.svg';
 import IconLeft from '@tabler/icons/outline/chevron-left.svg';
 import IconRight from '@tabler/icons/outline/chevron-right.svg';
 import IconInfo from '@tabler/icons/outline/info-circle.svg';
+import IconSearch from '@tabler/icons/outline/search.svg';
 import IconSparkle from '@tabler/icons/outline/sparkles.svg';
+import IconShield from '@tabler/icons/outline/shield-check.svg';
+import IconRepeat from '@tabler/icons/outline/calendar-repeat.svg';
 import { formatHargaSingkat, site, WA_SOURCE_TAG } from '../config/site';
 
 interface Props {
@@ -107,8 +110,20 @@ const DEFAULT_JAM = '08.00';
       <input type="hidden" name="mobil" value={selected} />
 
       <div class="panel panel-cars" id="pnl-mobil" data-panel hidden>
-        <ul role="listbox" aria-labelledby="lbl-mobil" tabindex="-1" data-listbox>
-          <li role="option" aria-selected={selected ? 'false' : 'true'} tabindex="-1" data-value="" data-label="Bantu pilihkan" data-lk="" data-ds="">
+        <div class="car-search">
+          <IconSearch aria-hidden="true" />
+          <input
+            type="search"
+            data-search
+            placeholder="Cari mobil, mis. Innova, 7 kursi, matic"
+            aria-label="Cari mobil"
+            aria-controls="lst-mobil"
+            autocomplete="off"
+            enterkeyhint="done"
+          />
+        </div>
+        <ul role="listbox" id="lst-mobil" aria-labelledby="lbl-mobil" tabindex="-1" data-listbox>
+          <li role="option" aria-selected={selected ? 'false' : 'true'} tabindex="-1" data-value="" data-label="Bantu pilihkan" data-lk="" data-ds="" data-always>
             <span class="car-thumb car-thumb-help" aria-hidden="true"><IconSparkle /></span>
             <span class="car-text">
               <span class="car-name">Bantu pilihkan</span>
@@ -128,6 +143,7 @@ const DEFAULT_JAM = '08.00';
                   data-label={nama}
                   data-lk={harga.lepasKunci ?? ''}
                   data-ds={harga.denganSopir ?? ''}
+                  data-search={`${nama} ${c.data.kategori} ${kapasitas} kursi ${transmisi}`}
                 >
                   <Image src={gambar} alt="" width={112} height={72} fit="cover" class="car-thumb" loading="lazy" />
                   <span class="car-text">
@@ -145,6 +161,7 @@ const DEFAULT_JAM = '08.00';
             })
           }
         </ul>
+        <p class="car-empty" data-empty hidden>Mobil tidak ditemukan. Pilih "Bantu pilihkan", admin carikan yang cocok.</p>
       </div>
     </div>
 
@@ -230,6 +247,17 @@ const DEFAULT_JAM = '08.00';
     </button>
   </div>
 
+  <div class="bottom-trust">
+    <div class="trust-item">
+      <IconShield aria-hidden="true" class="trust-ico text-emerald" />
+      <span>Tanpa biaya tersembunyi &bull; Konfirmasi instan via WhatsApp</span>
+    </div>
+    <div class="trust-item">
+      <IconRepeat aria-hidden="true" class="trust-ico text-blue" />
+      <span>Bebas reschedule H-1 tanpa biaya penalti</span>
+    </div>
+  </div>
+
   <p class="hint">
     <IconInfo aria-hidden="true" />
     <span data-hint>Belum bayar apa pun. Admin cek ketersediaan dan kirim harga final di WhatsApp.</span>
@@ -247,8 +275,10 @@ const DEFAULT_JAM = '08.00';
     position: relative;
     color: var(--text);
     background: var(--surface);
-    box-shadow: 0 20px 40px -15px rgb(0 0 0 / 0.4);
-    border: 1px solid var(--line);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1rem;
+    /* overflow: hidden dihapus — itu yang memotong panel dropdown & kalender */
   }
 
   /* Baris atas */
@@ -258,8 +288,10 @@ const DEFAULT_JAM = '08.00';
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
-    padding: 14px 20px 14px 14px;
-    border-bottom: 1px solid var(--line);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface);
+    border-radius: 1rem 1rem 0 0;
   }
 
   .tabs {
@@ -268,8 +300,8 @@ const DEFAULT_JAM = '08.00';
     margin: 0;
     padding: 4px;
     border: 0;
-    border-radius: var(--radius-pill);
-    background: var(--bg-2);
+    border-radius: 0.75rem;
+    background: #f3f2fe;
   }
 
   .tab {
@@ -286,23 +318,24 @@ const DEFAULT_JAM = '08.00';
 
   .tab span {
     display: block;
-    padding: 9px 18px;
-    border-radius: var(--radius-pill);
+    padding: 8px 16px;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-2);
+    font-weight: 600;
+    color: #434655;
     transition:
-      background-color 0.25s var(--ease),
-      color 0.25s var(--ease);
+      background-color 0.2s var(--ease),
+      color 0.2s var(--ease);
   }
 
   .tab:hover span {
-    color: var(--text);
+    color: #1a1b23;
   }
 
   .tab input:checked + span {
-    background: var(--ink);
-    color: var(--on-ink);
+    background: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .tab input:focus-visible + span {
@@ -312,20 +345,25 @@ const DEFAULT_JAM = '08.00';
 
   .estimate {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
     font-size: 0.875rem;
+    background: #f3f2fe;
+    padding: 6px 14px;
+    border-radius: 0.75rem;
+    border: 1px solid #e8e7f3;
   }
 
   .est-label {
-    color: var(--text-2);
+    color: #434655;
     font-size: 0.8125rem;
+    font-weight: 600;
   }
 
   .estimate strong {
-    font-size: 1.1875rem;
+    font-size: 1.125rem;
     font-weight: 700;
-    color: var(--text);
+    color: #0037b0;
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
   }
@@ -333,7 +371,11 @@ const DEFAULT_JAM = '08.00';
   /* Field */
   .fields {
     display: grid;
-    grid-template-columns: 1.45fr 1.35fr 1.1fr 0.85fr 1fr auto;
+    grid-template-columns:
+      minmax(0, 1.5fr) minmax(0, 1.3fr) minmax(0, 1.15fr) minmax(0, 0.85fr) minmax(170px, 1fr)
+      auto;
+    align-items: stretch;
+    background: var(--surface);
   }
 
   .field {
@@ -342,15 +384,15 @@ const DEFAULT_JAM = '08.00';
     align-content: center;
     gap: 2px;
     min-width: 0;
-    padding: 16px 20px 16px 52px;
-    border-right: 1px solid var(--line);
+    padding: 16px 16px 16px 48px;
+    border-right: 1px solid var(--border-subtle);
     transition: background-color 0.2s var(--ease);
   }
 
   .field:hover,
   .field:focus-within,
   .field:global(.is-open) {
-    background: var(--bg);
+    background: #faf8ff;
   }
 
   .field:focus-within,
@@ -364,7 +406,7 @@ const DEFAULT_JAM = '08.00';
 
   .ico {
     position: absolute;
-    left: 20px;
+    left: 16px;
     top: 50%;
     width: 22px;
     height: 22px;
@@ -491,10 +533,74 @@ const DEFAULT_JAM = '08.00';
 
   /* Daftar mobil */
   .panel-cars {
-    width: 380px;
-    max-height: 380px;
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    max-height: min(440px, 70vh);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .panel-cars[hidden] {
+    display: none;
+  }
+
+  .panel-cars [role='listbox'] {
+    flex: 1;
+    min-height: 0;
+    padding: 6px;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  .panel-cars [role='option'][hidden] {
+    display: none;
+  }
+
+  .car-search {
+    position: relative;
+    flex: none;
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .car-search :global(svg) {
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    translate: 0 -50%;
+    color: var(--text-2);
+    pointer-events: none;
+  }
+
+  .field .car-search input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px 0 38px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--bg-2);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    transition:
+      border-color 0.2s var(--ease),
+      background-color 0.2s var(--ease);
+  }
+
+  .field .car-search input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .car-empty {
+    padding: 16px 16px 18px;
+    font-size: 0.8125rem;
+    color: var(--text-2);
+    text-align: center;
   }
 
   .panel-cars [role='option'] {
@@ -756,7 +862,7 @@ const DEFAULT_JAM = '08.00';
 
   /* Durasi */
   .f-durasi {
-    padding-left: 20px;
+    padding-left: 16px;
   }
 
   .stepper {
@@ -824,7 +930,7 @@ const DEFAULT_JAM = '08.00';
   .err {
     display: none;
     position: absolute;
-    left: 52px;
+    left: 48px;
     right: 12px;
     bottom: 3px;
     font-size: 0.6875rem;
@@ -852,25 +958,34 @@ const DEFAULT_JAM = '08.00';
     align-items: center;
     justify-content: center;
     gap: 10px;
-    min-width: 170px;
-    padding: 0 24px;
+    align-self: center;
+    height: 48px;
+    padding: 0 20px;
     border: 0;
-    background: var(--accent);
-    color: var(--on-accent);
-    font-weight: 600;
-    font-size: 0.9375rem;
+    border-radius: 0.75rem;
+    margin: 0 16px 0 8px;
+    background: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9063rem;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.2s var(--ease);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);
+    transition: background-color 0.2s var(--ease), transform 0.15s var(--ease);
   }
 
   .submit:hover {
-    background: var(--accent-hover);
+    background: #059669;
+    transform: scale(1.02);
+  }
+
+  .submit:active {
+    transform: scale(0.98);
   }
 
   .submit svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     transition: transform 0.25s var(--ease);
   }
 
@@ -878,15 +993,49 @@ const DEFAULT_JAM = '08.00';
     transform: scale(1.06);
   }
 
+  .bottom-trust {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background: #faf8ff;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.8125rem;
+    color: #434655;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .trust-ico {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+
+  .text-emerald {
+    color: #059669;
+  }
+
+  .text-blue {
+    color: #1d4ed8;
+  }
+
   .hint {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
-    border-top: 1px solid var(--line);
-    background: var(--bg);
-    font-size: 0.8125rem;
-    color: var(--text-2);
+    padding: 10px 20px;
+    border-top: 1px solid var(--border-subtle);
+    background: #ffffff;
+    font-size: 0.75rem;
+    color: #747686;
+    border-radius: 0 0 1rem 1rem;
   }
 
   .hint svg {
@@ -920,9 +1069,14 @@ const DEFAULT_JAM = '08.00';
       left: 0;
       right: auto;
     }
+    .f-mobil .panel-cars {
+      left: auto;
+      right: 0;
+    }
     .submit {
       grid-column: 1 / -1;
-      min-height: 60px;
+      height: 48px;
+      margin: 12px;
     }
   }
 
@@ -944,7 +1098,16 @@ const DEFAULT_JAM = '08.00';
     .estimate {
       width: 100%;
       justify-content: space-between;
-      padding-inline: 4px;
+    }
+    .bottom-trust {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 12px 16px;
+    }
+    .hint {
+      align-items: flex-start;
+      padding: 10px 16px;
     }
     .fields {
       grid-template-columns: 1fr 1fr;
@@ -972,10 +1135,14 @@ const DEFAULT_JAM = '08.00';
       border-right: 0;
     }
     .panel-cars,
-    .panel-cal {
-      left: -1px;
-      right: -1px;
+    .panel-cal,
+    .f-mobil .panel-cars {
+      left: 8px;
+      right: 8px;
       width: auto;
+    }
+    .panel-cal {
+      max-width: 360px;
     }
     .panel-jam {
       width: calc(200% + 1px);

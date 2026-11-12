@@ -95,15 +95,28 @@ function setupListbox(
   const options = Array.from(listbox.querySelectorAll<HTMLElement>('[role="option"]'));
   const hidden = field.querySelector<HTMLInputElement>('input[type="hidden"]')!;
   const display = field.querySelector<HTMLElement>('[data-display]')!;
-  let active = -1;
+  const search = field.querySelector<HTMLInputElement>('[data-search]');
+  const empty = field.querySelector<HTMLElement>('[data-empty]');
+  let active = -1; // indeks di dalam visible()
 
   options.forEach((o, i) => (o.id ||= `${listbox.getAttribute('aria-labelledby')}-opt-${i}`));
 
+  const visible = () => options.filter((o) => !o.hidden);
+
   const setActive = (i: number) => {
-    active = Math.max(0, Math.min(options.length - 1, i));
-    options.forEach((o, j) => o.classList.toggle('is-active', j === active));
-    const el = options[active];
+    const list = visible();
+    options.forEach((o) => o.classList.remove('is-active'));
+    if (!list.length) {
+      active = -1;
+      listbox.removeAttribute('aria-activedescendant');
+      search?.removeAttribute('aria-activedescendant');
+      return;
+    }
+    active = Math.max(0, Math.min(list.length - 1, i));
+    const el = list[active];
+    el.classList.add('is-active');
     listbox.setAttribute('aria-activedescendant', el.id);
+    search?.setAttribute('aria-activedescendant', el.id);
     el.scrollIntoView({ block: 'nearest' });
   };
 
@@ -116,6 +129,20 @@ function setupListbox(
     onPick(opt);
   };
 
+  // Pencarian: cocokkan semua kata dengan nama + keterangan mobil.
+  const filter = (q: string) => {
+    const words = q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const o of options) {
+      const hay = (o.dataset.search ?? o.textContent ?? '').toLowerCase();
+      const match = o.dataset.always !== undefined || words.every((w) => hay.includes(w));
+      o.hidden = !match;
+      if (match && o.dataset.always === undefined) shown++;
+    }
+    if (empty) empty.hidden = shown > 0 || !words.length;
+    setActive(0);
+  };
+
   listbox.addEventListener('click', (e) => {
     const opt = (e.target as HTMLElement).closest<HTMLElement>('[role="option"]');
     if (!opt) return;
@@ -126,7 +153,7 @@ function setupListbox(
   listbox.addEventListener('pointermove', (e) => {
     const opt = (e.target as HTMLElement).closest<HTMLElement>('[role="option"]');
     if (opt) {
-      active = options.indexOf(opt);
+      active = visible().indexOf(opt);
       options.forEach((o) => o.classList.toggle('is-active', o === opt));
     }
   });
@@ -134,37 +161,52 @@ function setupListbox(
   // Grid jam: panah kiri/kanan pindah 1, atas/bawah pindah satu baris.
   const cols = () => (listbox.classList.contains('slot-grid') ? 4 : 1);
 
-  listbox.addEventListener('keydown', (e) => {
+  const onKey = (e: KeyboardEvent, fromSearch: boolean) => {
     const step: Record<string, number> = {
       ArrowDown: cols(),
       ArrowUp: -cols(),
-      ArrowRight: cols() > 1 ? 1 : 0,
-      ArrowLeft: cols() > 1 ? -1 : 0,
+      ArrowRight: !fromSearch && cols() > 1 ? 1 : 0,
+      ArrowLeft: !fromSearch && cols() > 1 ? -1 : 0,
     };
+    const list = visible();
     if (e.key in step && step[e.key] !== 0) {
       e.preventDefault();
       setActive(active + step[e.key]);
-    } else if (e.key === 'Home') {
+    } else if (!fromSearch && e.key === 'Home') {
       e.preventDefault();
       setActive(0);
-    } else if (e.key === 'End') {
+    } else if (!fromSearch && e.key === 'End') {
       e.preventDefault();
-      setActive(options.length - 1);
-    } else if (e.key === 'Enter' || e.key === ' ') {
+      setActive(list.length - 1);
+    } else if (e.key === 'Enter' || (!fromSearch && e.key === ' ')) {
       e.preventDefault();
-      if (options[active]) {
-        select(options[active]);
+      if (list[active]) {
+        select(list[active]);
         closePanel(true);
       }
     } else if (e.key === 'Tab') {
       closePanel(false);
     }
-  });
+  };
+
+  listbox.addEventListener('keydown', (e) => onKey(e, false));
+
+  if (search) {
+    search.addEventListener('input', () => filter(search.value));
+    search.addEventListener('keydown', (e) => onKey(e, true));
+  }
 
   const onOpen = () => {
+    if (search) {
+      search.value = '';
+      filter('');
+    }
     const sel = selected();
-    setActive(sel ? options.indexOf(sel) : 0);
-    listbox.focus({ preventScroll: true });
+    setActive(sel ? visible().indexOf(sel) : 0);
+    // Di layar sentuh jangan langsung fokus ke kolom cari, supaya keyboard HP tidak menutupi daftar.
+    const touch = window.matchMedia('(hover: none)').matches;
+    if (search && !touch) search.focus({ preventScroll: true });
+    else listbox.focus({ preventScroll: true });
   };
 
   return { onOpen, select, selected };

@@ -1,35 +1,276 @@
 ---
 import Base from '../layouts/Base.astro';
-import Prose from '../components/Prose.astro';
-import { site } from '../config/site';
+import LegalPage from '../components/legal/LegalPage.astro';
+import Pasal from '../components/legal/Pasal.astro';
+import CheckList from '../components/legal/CheckList.astro';
+import SubCard from '../components/legal/SubCard.astro';
+import Callout from '../components/legal/Callout.astro';
+import IconShieldLock from '@tabler/icons/outline/shield-lock.svg';
+import IconCalendarTime from '@tabler/icons/outline/calendar-time.svg';
+import IconShield from '@tabler/icons/outline/shield-check.svg';
+import IconDatabase from '@tabler/icons/outline/database.svg';
+import IconTrash from '@tabler/icons/outline/trash.svg';
+import IconCookie from '@tabler/icons/outline/cookie.svg';
+import IconFile from '@tabler/icons/outline/file-description.svg';
+import IconForm from '@tabler/icons/outline/list-details.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconId from '@tabler/icons/outline/id.svg';
+import IconEye from '@tabler/icons/outline/eye.svg';
+import IconTarget from '@tabler/icons/outline/circle-check.svg';
+import IconDevice from '@tabler/icons/outline/device-mobile.svg';
+import IconClock from '@tabler/icons/outline/clock.svg';
+import IconShare from '@tabler/icons/outline/share.svg';
+import IconMail from '@tabler/icons/outline/mail.svg';
+import IconBuilding from '@tabler/icons/outline/building.svg';
+import IconPrinter from '@tabler/icons/outline/printer.svg';
+import IconLock from '@tabler/icons/outline/lock.svg';
+import IconInfo from '@tabler/icons/outline/info-circle.svg';
+import { site, waLink, WA_SOURCE_TAG } from '../config/site';
+
+const diperbarui = '10 November 2026';
+
+const toc = [
+  { id: 'bagian-1', label: 'Informasi yang Kami Terima' },
+  { id: 'bagian-2', label: 'Tujuan Penggunaan Data' },
+  { id: 'bagian-3', label: 'Pemrosesan Form Pemesanan' },
+  { id: 'bagian-4', label: 'Dokumen Identitas & Retensi' },
+  { id: 'bagian-5', label: 'Cookie & Analitik' },
+  { id: 'bagian-6', label: 'Layanan Pihak Ketiga' },
+  { id: 'bagian-7', label: 'Kontak Data Pribadi' },
+];
+
+const highlights = [
+  {
+    step: 'Tanpa server',
+    title: 'Form Tidak Disimpan',
+    desc: 'Isi form pemesanan diolah di browser Anda dan langsung diteruskan ke WhatsApp, tidak dikirim ke server mana pun.',
+    icon: IconDatabase,
+    tone: 'primary' as const,
+  },
+  {
+    step: 'Setelah sewa',
+    title: 'Dokumen Dihapus',
+    desc: 'Foto KTP atau SIM hanya dipakai untuk verifikasi sewa dan dihapus setelah masa sewa selesai.',
+    icon: IconTrash,
+    tone: 'emerald' as const,
+  },
+  {
+    step: 'Tanpa pelacakan',
+    title: 'Tidak Memakai Cookie',
+    desc: 'Website ini tidak memakai cookie. Statistik kunjungan, bila diaktifkan, memakai analitik tanpa cookie.',
+    icon: IconCookie,
+    tone: 'secondary' as const,
+  },
+];
+
+const waTanya = waLink(`Halo Admin ${site.name}, saya ingin bertanya mengenai syarat sewa dan kebijakan privasi. ${WA_SOURCE_TAG}`);
 ---
 
 <Base title={`Kebijakan Privasi | ${site.name}`} description={`Cara ${site.name} memperlakukan data yang Anda isi di form pemesanan.`} offsetHeader>
-  <Prose title="Kebijakan privasi">
-    <p class="updated">Terakhir diperbarui 10 November 2026.</p>
+  <LegalPage
+    breadcrumb="Kebijakan Privasi"
+    chips={[
+      { icon: IconCalendarTime, label: `Terakhir diperbarui ${diperbarui}` },
+      { icon: IconShield, label: 'Data hanya untuk proses pemesanan', accent: true },
+    ]}
+    badge={{ icon: IconShieldLock, label: 'Kerahasiaan & Data Pengguna' }}
+    title="Kebijakan Privasi & Perlindungan Data Pengguna"
+    intro={`Penjelasan singkat tentang data apa saja yang diterima ${site.name}, untuk apa data itu dipakai, dan berapa lama disimpan saat Anda memesan mobil lewat website ini.`}
+    highlights={highlights}
+    toc={toc}
+    tocTitle="Daftar Isi Kebijakan"
+    tocCount={`${toc.length} Bagian`}
+    help={{
+      eyebrow: 'Pertanyaan Privasi',
+      title: 'Butuh klarifikasi soal data Anda?',
+      desc: `Kirim pertanyaan ke ${site.email} atau hubungi admin lewat WhatsApp.`,
+      cta: 'Tanya Admin via WhatsApp',
+      message: 'saya ingin bertanya mengenai kebijakan privasi.',
+    }}
+  >
+    <div slot="hero-aside" class="flex flex-col gap-3">
+      <div class="p-4 rounded-xl bg-surface-container-low border border-border-subtle/60 flex items-center gap-3">
+        <span class="w-10 h-10 rounded-full bg-emerald-conversion/10 text-emerald-deep flex items-center justify-center shrink-0">
+          <IconLock class="w-5 h-5" aria-hidden="true" />
+        </span>
+        <div>
+          <p class="text-sm font-bold text-on-surface">Form tidak tersimpan di server</p>
+          <p class="text-xs text-on-surface-variant">Pesanan langsung diteruskan ke WhatsApp</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        data-legal-print
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border-subtle bg-surface-container-lowest hover:bg-surface-container text-on-surface text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-primary print:hidden"
+      >
+        <IconPrinter class="w-[18px] h-[18px]" aria-hidden="true" />
+        Cetak / Simpan PDF
+      </button>
+    </div>
 
-    <h2>Data dari form pemesanan</h2>
-    <p>
-      Isi form pemesanan (lokasi jemput, mobil, jadwal, dan durasi) diolah di browser Anda dan langsung diteruskan ke
-      WhatsApp. Website ini tidak mengirim isi form ke server mana pun dan tidak menyimpannya.
-    </p>
+    <Pasal id="bagian-1" num={1} eyebrow="Bagian 01" title="Informasi yang Kami Terima" icon={IconFile}>
+      <p>Saat Anda memesan lewat website ini, {site.name} dapat menerima informasi berikut:</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SubCard title="Isi form pemesanan" icon={IconForm}>
+          <p>Lokasi jemput, mobil pilihan, jadwal, dan durasi sewa yang Anda isi di form.</p>
+        </SubCard>
+        <SubCard title="Percakapan WhatsApp" icon={IconWa}>
+          <p>Pesan yang Anda kirim ke admin lewat WhatsApp, termasuk nomor WhatsApp pengirim.</p>
+        </SubCard>
+        <SubCard title="Dokumen identitas" icon={IconId}>
+          <p>Foto KTP atau SIM yang Anda kirim lewat WhatsApp untuk keperluan verifikasi sewa.</p>
+        </SubCard>
+        <SubCard title="Statistik kunjungan" icon={IconEye}>
+          <p>Bila diaktifkan, statistik kunjungan dikumpulkan dengan analitik tanpa cookie.</p>
+        </SubCard>
+      </div>
+    </Pasal>
 
-    <h2>Percakapan WhatsApp</h2>
-    <p>
-      Setelah Anda menekan kirim di WhatsApp, pesan diterima admin {site.name} dan dipakai hanya untuk memproses
-      pemesanan. Penggunaan WhatsApp tunduk pada kebijakan privasi WhatsApp.
-    </p>
+    <Pasal id="bagian-2" num={2} eyebrow="Bagian 02" title="Tujuan Penggunaan Data" icon={IconTarget}>
+      <p>Data yang Anda kirim hanya dipakai untuk keperluan berikut:</p>
+      <CheckList
+        items={[
+          { term: 'Memproses pemesanan', text: 'Mengonfirmasi ketersediaan mobil, jadwal, dan lokasi jemput Anda.' },
+          { term: 'Verifikasi sewa', text: 'Mencocokkan identitas penyewa dengan dokumen KTP atau SIM.' },
+          { term: 'Menyelesaikan klaim', text: 'Bila terjadi klaim terkait masa sewa, data yang relevan dipakai untuk penyelesaiannya.' },
+        ]}
+      />
+    </Pasal>
 
-    <h2>Dokumen identitas</h2>
-    <p>
-      Foto KTP atau SIM yang Anda kirim lewat WhatsApp hanya dipakai untuk verifikasi sewa dan dihapus setelah masa
-      sewa selesai, kecuali diperlukan untuk menyelesaikan klaim.
-    </p>
+    <Pasal id="bagian-3" num={3} eyebrow="Bagian 03" title="Pemrosesan Form Pemesanan" icon={IconDevice}>
+      <p>
+        Isi form pemesanan (lokasi jemput, mobil, jadwal, dan durasi) diolah di browser Anda dan langsung diteruskan ke
+        WhatsApp.
+      </p>
+      <Callout title="Tidak dikirim ke server, tidak disimpan" icon={IconShield} tone="success">
+        Website ini tidak mengirim isi form ke server mana pun dan tidak menyimpannya. Pesanan baru diterima admin setelah
+        Anda sendiri menekan tombol kirim di WhatsApp.
+      </Callout>
+      <ol class="grid grid-cols-1 sm:grid-cols-3 gap-3 list-none p-0 m-0 text-xs leading-[18px]">
+        <li class="p-3 rounded-lg bg-surface-container-low">
+          <span class="block font-bold text-primary mb-0.5">1. Isi form</span>
+          Data diolah di perangkat Anda.
+        </li>
+        <li class="p-3 rounded-lg bg-surface-container-low">
+          <span class="block font-bold text-primary mb-0.5">2. Buka WhatsApp</span>
+          Pesan pemesanan terisi otomatis dan bisa Anda ubah.
+        </li>
+        <li class="p-3 rounded-lg bg-surface-container-low">
+          <span class="block font-bold text-primary mb-0.5">3. Tekan kirim</span>
+          Pesan diterima admin {site.name}.
+        </li>
+      </ol>
+    </Pasal>
 
-    <h2>Cookie dan analitik</h2>
-    <p>Website ini tidak memakai cookie. Statistik kunjungan, bila diaktifkan, memakai analitik tanpa cookie.</p>
+    <Pasal id="bagian-4" num={4} eyebrow="Bagian 04" title="Dokumen Identitas & Masa Simpan" icon={IconClock}>
+      <p>Kami tidak menyimpan dokumen pribadi Anda lebih lama dari yang dibutuhkan.</p>
+      <div class="flex flex-col gap-3">
+        <div class="p-4 rounded-xl border border-border-subtle flex items-start gap-3">
+          <IconId class="w-6 h-6 text-primary shrink-0" aria-hidden="true" />
+          <div>
+            <h3 class="text-sm font-semibold text-on-surface">Foto KTP / SIM</h3>
+            <p class="text-xs leading-[18px] mt-0.5">
+              Hanya dipakai untuk verifikasi sewa dan dihapus setelah masa sewa selesai, kecuali diperlukan untuk
+              menyelesaikan klaim.
+            </p>
+          </div>
+        </div>
+        <div class="p-4 rounded-xl border border-border-subtle flex items-start gap-3">
+          <IconWa class="w-6 h-6 text-primary shrink-0" aria-hidden="true" />
+          <div>
+            <h3 class="text-sm font-semibold text-on-surface">Percakapan pemesanan</h3>
+            <p class="text-xs leading-[18px] mt-0.5">
+              Pesan yang diterima admin dipakai hanya untuk memproses pemesanan Anda.
+            </p>
+          </div>
+        </div>
+      </div>
+    </Pasal>
 
-    <h2>Kontak</h2>
-    <p>Pertanyaan soal data pribadi bisa dikirim ke <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
-  </Prose>
+    <Pasal id="bagian-5" num={5} eyebrow="Bagian 05" title="Cookie & Analitik" icon={IconCookie}>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SubCard title="Tanpa cookie" icon={IconCookie}>
+          <p>Website ini tidak memakai cookie.</p>
+        </SubCard>
+        <SubCard title="Analitik tanpa cookie" icon={IconEye}>
+          <p>Statistik kunjungan, bila diaktifkan, memakai analitik tanpa cookie.</p>
+        </SubCard>
+      </div>
+    </Pasal>
+
+    <Pasal id="bagian-6" num={6} eyebrow="Bagian 06" title="Layanan Pihak Ketiga" icon={IconShare}>
+      <p>
+        Pemesanan diteruskan dan diproses lewat WhatsApp. Setelah Anda menekan kirim, pesan diterima admin {site.name} dan
+        dipakai hanya untuk memproses pemesanan.
+      </p>
+      <Callout title="Kebijakan WhatsApp" icon={IconInfo}>
+        Penggunaan WhatsApp tunduk pada kebijakan privasi WhatsApp.
+      </Callout>
+    </Pasal>
+
+    <article
+      id="bagian-7"
+      aria-labelledby="bagian-7-title"
+      class="scroll-mt-28 p-6 sm:p-10 rounded-xl bg-primary-fixed/40 border border-primary-fixed shadow-sm"
+    >
+      <span class="text-xs text-primary uppercase font-bold tracking-wider">Bagian 07</span>
+      <h2 id="bagian-7-title" class="text-lg sm:text-[22px] sm:leading-7 font-semibold text-on-surface mb-2">Kontak Pertanyaan Data Pribadi</h2>
+      <p class="text-sm leading-[22px] text-on-surface-variant mb-5">
+        Pertanyaan soal data pribadi bisa dikirim lewat kanal berikut:
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="p-4 rounded-xl bg-surface-container-lowest">
+          <IconMail class="w-5 h-5 text-primary mb-2" aria-hidden="true" />
+          <p class="text-xs font-semibold text-on-surface mb-0.5">Email</p>
+          <a href={`mailto:${site.email}`} class="text-xs font-semibold text-primary underline break-all">{site.email}</a>
+        </div>
+        <div class="p-4 rounded-xl bg-surface-container-lowest">
+          <IconBuilding class="w-5 h-5 text-primary mb-2" aria-hidden="true" />
+          <p class="text-xs font-semibold text-on-surface mb-0.5">Alamat</p>
+          <p class="text-xs leading-[18px] text-on-surface-variant">{site.address}</p>
+        </div>
+        <div class="p-4 rounded-xl bg-surface-container-lowest">
+          <IconClock class="w-5 h-5 text-primary mb-2" aria-hidden="true" />
+          <p class="text-xs font-semibold text-on-surface mb-0.5">Jam operasional</p>
+          <p class="text-xs leading-[18px] text-on-surface-variant">{site.hours}</p>
+        </div>
+      </div>
+    </article>
+
+    <section slot="after" class="w-full bg-surface-container-lowest border-t border-border-subtle/60 py-10 print:hidden">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="max-w-2xl">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-conversion/10 text-emerald-deep text-xs font-semibold mb-2">
+            <IconShield class="w-4 h-4" aria-hidden="true" />
+            Bantuan cepat
+          </span>
+          <h2 class="text-2xl sm:text-[32px] sm:leading-10 font-bold text-on-surface tracking-tight">
+            Masih ada pertanyaan mengenai syarat sewa & privasi?
+          </h2>
+          <p class="text-sm leading-[22px] text-on-surface-variant mt-1">
+            Admin kami siap menjelaskan mekanisme sewa lepas kunci, layanan dengan sopir, hingga pengelolaan data pemesanan
+            Anda.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 shrink-0">
+          <a
+            href={waTanya}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-on-primary text-sm font-semibold px-5 py-3 rounded-xl shadow-[0_2px_10px_rgba(16,185,129,0.25)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-deep"
+          >
+            <IconWa class="w-5 h-5" aria-hidden="true" />
+            Tanya Admin via WhatsApp
+          </a>
+          <a
+            href="/syarat-ketentuan/"
+            class="inline-flex items-center justify-center gap-2 border border-border-subtle bg-surface-container-lowest hover:bg-surface-container text-on-surface text-sm font-semibold px-5 py-3 rounded-xl transition-colors focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            <IconFile class="w-5 h-5 text-primary" aria-hidden="true" />
+            Syarat & Ketentuan Sewa
+          </a>
+        </div>
+      </div>
+    </section>
+  </LegalPage>
 </Base>

@@ -1,0 +1,46 @@
+---
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import IconPhone from '@tabler/icons/outline/phone.svg';
+import { site, WA_SOURCE_TAG, waLink } from '../../config/site';
+
+const pesan = `Halo Admin ${site.name}, saya mau konsultasi pilihan mobil yang cocok untuk kebutuhan saya. ${WA_SOURCE_TAG}`;
+---
+
+<section class="w-full py-12 lg:py-16 bg-surface-container-lowest">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary-container p-6 sm:p-10 text-white shadow-xl">
+      <div class="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-emerald-conversion/30 blur-2xl pointer-events-none" aria-hidden="true"></div>
+      <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div class="max-w-xl text-center lg:text-left">
+          <span class="inline-block px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold mb-3">
+            Konsultasi Rute &amp; Ketersediaan Unit Gratis
+          </span>
+          <h2 class="font-extrabold text-2xl sm:text-3xl text-white tracking-tight mb-2">
+            Bingung Pilih Armada yang Cocok untuk Agenda Anda?
+          </h2>
+          <p class="text-sm sm:text-base text-on-primary-container leading-relaxed">
+            Ceritakan jumlah penumpang, rute, dan durasi perjalanan. Tim {site.name} {site.city} bantu rekomendasikan tipe mobil dan layanan yang paling pas.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          <a
+            class="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-emerald-conversion hover:bg-emerald-deep text-white font-bold text-sm shadow-lg transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+            href={waLink(pesan)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconWa class="w-5 h-5" aria-hidden="true" />
+            Hubungi WhatsApp Sekarang
+          </a>
+          <a
+            class="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-white text-primary hover:bg-surface-container font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+            href={`tel:+${site.whatsapp}`}
+          >
+            <IconPhone class="w-5 h-5" aria-hidden="true" />
+            {site.phoneDisplay}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

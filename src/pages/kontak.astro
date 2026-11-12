@@ -1,278 +1,500 @@
 ---
+import IconHome from '@tabler/icons/outline/home.svg';
 import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
 import IconPin from '@tabler/icons/outline/map-pin.svg';
 import IconClock from '@tabler/icons/outline/clock.svg';
 import IconPhone from '@tabler/icons/outline/phone.svg';
 import IconMail from '@tabler/icons/outline/mail.svg';
-import IconArrow from '@tabler/icons/outline/arrow-up-right.svg';
+import IconShield from '@tabler/icons/outline/shield-check.svg';
+import IconCar from '@tabler/icons/outline/car.svg';
+import IconUser from '@tabler/icons/outline/user.svg';
+import IconRoute from '@tabler/icons/outline/route.svg';
+import IconCalendar from '@tabler/icons/outline/calendar.svg';
+import IconSend from '@tabler/icons/outline/send.svg';
+import IconChevronDown from '@tabler/icons/outline/chevron-down.svg';
+import IconStore from '@tabler/icons/outline/building-store.svg';
+import IconHeadset from '@tabler/icons/outline/headset.svg';
+import IconNavigation from '@tabler/icons/outline/navigation.svg';
+import IconCircleCheck from '@tabler/icons/outline/circle-check.svg';
+import IconArrowRight from '@tabler/icons/outline/arrow-right.svg';
+import IconAlert from '@tabler/icons/outline/alert-triangle.svg';
+import IconPlus from '@tabler/icons/outline/plus.svg';
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import { site, waGreeting, waLink } from '../config/site';
+import MapPlaceholder from '../components/kontak/MapPlaceholder.astro';
+import { site, waGreeting, waLink, WA_SOURCE_TAG } from '../config/site';
 import { kota } from '../data/halaman';
 
-const channels = [
+const armada = (await getCollection('armada', ({ data }) => data.tersedia)).sort(
+  (a, b) => a.data.urutan - b.data.urutan,
+);
+
+const inputBase =
+  'w-full pl-10 pr-4 py-2.5 bg-surface-container-low rounded-lg text-sm font-medium text-on-surface outline-none border-0 transition-all placeholder:text-outline focus:bg-surface-container-lowest focus:ring-2 focus:ring-blue-vibrant';
+
+const kontakFaq = [
   {
-    icon: IconWa,
-    label: 'WhatsApp',
-    value: site.phoneDisplay,
-    note: 'Paling cepat. Admin balas di jam operasional.',
-    href: waLink(waGreeting),
-    external: true,
+    q: 'Kapan admin Lintas Rent membalas chat WhatsApp?',
+    a: `Admin aktif ${site.hours.toLowerCase()}. Pesan yang masuk di luar jam tersebut dibalas begitu admin aktif kembali.`,
   },
   {
-    icon: IconPhone,
-    label: 'Telepon',
-    value: site.phoneDisplay,
-    note: 'Untuk hal mendesak saat perjalanan.',
-    href: `tel:+${site.whatsapp}`,
-    external: false,
+    q: 'Apakah bisa langsung datang ke garasi tanpa reservasi?',
+    a: 'Bisa, tetapi sebaiknya kabari admin lewat WhatsApp lebih dulu supaya mobil yang Anda inginkan dipastikan tersedia dan siap diserahterimakan.',
   },
   {
-    icon: IconMail,
-    label: 'Email',
-    value: site.email,
-    note: 'Untuk penawaran perusahaan dan sewa bulanan.',
-    href: `mailto:${site.email}`,
-    external: false,
+    q: 'Bagaimana cara membayar sewa?',
+    a: 'Transfer bank atau QRIS. DP 30% untuk mengunci jadwal, sisanya dilunasi saat serah terima mobil. Detail rekening hanya diberikan oleh admin resmi lewat WhatsApp.',
+  },
+  {
+    q: 'Dokumen apa yang perlu disiapkan?',
+    a: 'Untuk lepas kunci: KTP, SIM A aktif, dan satu dokumen pendukung (KK, NPWP, atau ID karyawan). Untuk sewa dengan sopir cukup KTP pemesan.',
   },
 ];
 ---
 
 <Base
-  title={`Kontak & Alamat | ${site.name}`}
-  description={`Hubungi ${site.name} lewat WhatsApp, telepon, atau email. Alamat garasi di ${site.city}, buka ${site.hours}.`}
+  title={`Kontak & Layanan Bantuan | ${site.name} ${site.city}`}
+  description={`Hubungi admin ${site.name} via WhatsApp, telepon, atau email. Melayani pemesanan rental mobil ${site.city} ${site.hours.toLowerCase()}.`}
   offsetHeader
 >
-  <div class="container page">
-    <header class="head">
-      <h1 class="section-title">Kontak</h1>
-      <p class="lead">
-        Tanya ketersediaan, harga, atau rute dulu, gratis. Paling cepat lewat WhatsApp.
-      </p>
-      <a class="btn btn-wa" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
-        <IconWa aria-hidden="true" />
-        Chat admin sekarang
-      </a>
-    </header>
+  <div class="w-full bg-surface">
+    <!-- Breadcrumb & status -->
+    <section class="w-full bg-surface-container-low py-3 border-b border-border-subtle/50">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
+          <a class="hover:text-primary transition-colors flex items-center gap-1" href="/">
+            <IconHome class="w-4 h-4" aria-hidden="true" />
+            <span>Beranda</span>
+          </a>
+          <span class="text-outline-variant" aria-hidden="true">/</span>
+          <span class="text-primary font-bold" aria-current="page">Kontak &amp; Bantuan</span>
+        </nav>
+        <div class="inline-flex items-center gap-2 bg-surface-container-lowest px-3.5 py-1.5 rounded-full shadow-sm text-xs font-semibold text-on-surface border border-border-subtle/60">
+          <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-conversion opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-conversion"></span>
+          </span>
+          <span>Admin Siap Melayani {site.hours}</span>
+        </div>
+      </div>
+    </section>
 
-    <ul class="channels">
-      {
-        channels.map(({ icon: Icon, label, value, note, href, external }) => (
-          <li>
+    <!-- Hero + 3 kartu kontak -->
+    <section class="relative w-full bg-surface py-12 lg:py-16 overflow-hidden">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-10">
+        <div class="max-w-3xl flex flex-col gap-3">
+          <div class="inline-flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+            <span class="w-6 h-[2px] bg-primary" aria-hidden="true"></span>
+            <span>Pusat Layanan Konsumen {site.name}</span>
+          </div>
+          <h1 class="font-extrabold text-3xl sm:text-4xl lg:text-5xl text-on-surface tracking-tight leading-tight">
+            Hubungi {site.name}: <span class="text-primary">Konsultasi Armada</span> &amp; Reservasi Cepat
+          </h1>
+          <p class="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+            Ada pertanyaan seputar ketersediaan mobil, konsultasi rute luar kota, atau kebutuhan sewa korporat? Tim {site.name} siap membantu Anda secara ramah, transparan, dan cepat tanggap.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- WhatsApp -->
+          <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_4px_24px_rgba(15,23,42,0.06)] hover:shadow-xl transition-shadow border border-border-subtle/60 flex flex-col justify-between gap-6">
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <div class="w-12 h-12 rounded-xl bg-emerald-conversion/10 text-emerald-deep flex items-center justify-center">
+                  <IconWa class="w-6 h-6" aria-hidden="true" />
+                </div>
+                <span class="bg-emerald-conversion/15 text-emerald-deep text-xs px-2.5 py-1 rounded-full font-bold">Paling Cepat</span>
+              </div>
+              <div>
+                <h2 class="font-bold text-lg text-on-surface">WhatsApp CS Utama</h2>
+                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Cek ketersediaan, tanya harga, dan booking langsung. Admin membalas di jam operasional.</p>
+              </div>
+              <div class="font-bold text-xl text-emerald-deep">{site.phoneDisplay}</div>
+            </div>
             <a
-              class="channel"
-              href={href}
-              target={external ? '_blank' : undefined}
-              rel={external ? 'noopener noreferrer' : undefined}
+              class="inline-flex items-center justify-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white py-3 px-4 rounded-xl font-bold text-sm shadow-[0_2px_8px_rgba(16,185,129,0.25)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-deep focus-visible:ring-offset-2"
+              href={waLink(waGreeting)}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <Icon aria-hidden="true" class="ch-icon" />
-              <span class="ch-label">{label}</span>
-              <span class="ch-value">{value}</span>
-              <span class="ch-note">{note}</span>
+              <IconWa class="w-4 h-4" aria-hidden="true" />
+              Chat WhatsApp Sekarang
             </a>
-          </li>
-        ))
-      }
-    </ul>
+          </div>
 
-    <div class="info">
-      <section aria-labelledby="h-alamat">
-        <h2 id="h-alamat">Garasi &amp; jam buka</h2>
-        <ul class="facts">
-          <li>
-            <IconPin aria-hidden="true" />
-            <span>{site.address}</span>
-          </li>
-          <li>
-            <IconClock aria-hidden="true" />
-            <span>{site.hours}</span>
-          </li>
-        </ul>
-        <a class="maps" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
-          Buka di Google Maps
-          <IconArrow aria-hidden="true" />
-        </a>
-      </section>
+          <!-- Telepon -->
+          <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_4px_24px_rgba(15,23,42,0.06)] hover:shadow-xl transition-shadow border border-border-subtle/60 flex flex-col justify-between gap-6">
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <div class="w-12 h-12 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
+                  <IconPhone class="w-6 h-6" aria-hidden="true" />
+                </div>
+                <span class="bg-surface-container-high text-on-surface-variant text-xs px-2.5 py-1 rounded-full font-semibold">Hotline Suara</span>
+              </div>
+              <div>
+                <h2 class="font-bold text-lg text-on-surface">Telepon Kantor &amp; Darurat</h2>
+                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Untuk hal mendesak saat perjalanan atau koordinasi jadwal jemput.</p>
+              </div>
+              <div class="font-bold text-xl text-primary">{site.phoneDisplay}</div>
+            </div>
+            <a
+              class="inline-flex items-center justify-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface py-3 px-4 rounded-xl font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              href={`tel:+${site.whatsapp}`}
+            >
+              <IconPhone class="w-4 h-4" aria-hidden="true" />
+              <span>Telepon Sekarang</span>
+            </a>
+          </div>
 
-      <section aria-labelledby="h-area">
-        <h2 id="h-area">Area layanan</h2>
-        <p class="muted">Mobil bisa diambil di garasi atau diantar ke alamat Anda di kota berikut.</p>
-        <ul class="areas">
+          <!-- Email -->
+          <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_4px_24px_rgba(15,23,42,0.06)] hover:shadow-xl transition-shadow border border-border-subtle/60 flex flex-col justify-between gap-6">
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <div class="w-12 h-12 rounded-xl bg-surface-container text-on-surface-variant flex items-center justify-center">
+                  <IconMail class="w-6 h-6" aria-hidden="true" />
+                </div>
+                <span class="bg-surface-container-high text-on-surface-variant text-xs px-2.5 py-1 rounded-full font-semibold">B2B &amp; Dokumen</span>
+              </div>
+              <div>
+                <h2 class="font-bold text-lg text-on-surface">Email Kerja Sama</h2>
+                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Penawaran sewa bulanan perusahaan, kerja sama, dan dokumen.</p>
+              </div>
+              <div class="font-bold text-base text-on-surface break-all">{site.email}</div>
+            </div>
+            <a
+              class="inline-flex items-center justify-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface py-3 px-4 rounded-xl font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              href={`mailto:${site.email}?subject=${encodeURIComponent(`Inquiry Sewa Mobil ${site.name}`)}`}
+            >
+              <IconMail class="w-4 h-4" aria-hidden="true" />
+              <span>Kirim Email</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form + info garasi -->
+    <section class="w-full bg-surface-subtle py-12 lg:py-16">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- Form -->
+          <div class="lg:col-span-7 bg-surface-container-lowest rounded-2xl p-6 sm:p-8 shadow-[0_4px_24px_rgba(15,23,42,0.06)] flex flex-col gap-6">
+            <div class="flex flex-col gap-1.5">
+              <span class="text-xs font-bold text-primary uppercase tracking-wider">Fast Booking Request</span>
+              <h2 class="font-bold text-xl sm:text-2xl text-on-surface">Kirim Pesan atau Request Penawaran</h2>
+              <p class="text-sm text-on-surface-variant leading-relaxed">
+                Isi form ringkas di bawah ini, data akan langsung dirangkai otomatis dan diarahkan ke tim customer service kami di WhatsApp.
+              </p>
+            </div>
+
+            <form class="flex flex-col gap-4" id="contactInquiryForm" data-wa={site.whatsapp} data-tag={WA_SOURCE_TAG}>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-sm font-semibold text-on-surface" for="fullName">Nama Lengkap <span class="text-error" aria-hidden="true">*</span></label>
+                  <div class="relative flex items-center">
+                    <IconUser class="absolute left-3 w-5 h-5 text-outline pointer-events-none" aria-hidden="true" />
+                    <input type="text" id="fullName" autocomplete="name" placeholder="Contoh: Hendra Wijaya" required class={inputBase} />
+                  </div>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-sm font-semibold text-on-surface" for="phoneNumber">Nomor WhatsApp / HP Aktif <span class="text-error" aria-hidden="true">*</span></label>
+                  <div class="relative flex items-center">
+                    <IconPhone class="absolute left-3 w-5 h-5 text-outline pointer-events-none" aria-hidden="true" />
+                    <input type="tel" id="phoneNumber" autocomplete="tel" inputmode="tel" placeholder="Contoh: 08123456789" required class={inputBase} />
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-sm font-semibold text-on-surface" for="serviceType">Pilihan Kebutuhan <span class="text-error" aria-hidden="true">*</span></label>
+                  <div class="relative flex items-center">
+                    <IconRoute class="absolute left-3 w-5 h-5 text-outline pointer-events-none" aria-hidden="true" />
+                    <select id="serviceType" class={`${inputBase} pr-9 appearance-none cursor-pointer`}>
+                      <option value="Sewa Lepas Kunci">Sewa Lepas Kunci (Self-Drive)</option>
+                      <option value="Sewa Dengan Sopir">Sewa Dengan Sopir</option>
+                      <option value="Antar Jemput Bandara/Stasiun">Antar Jemput Bandara / Stasiun</option>
+                      <option value="Sewa Bulanan Korporat">Sewa Bulanan / Korporat</option>
+                      <option value="Paket Wisata Jateng">Paket Wisata {site.city} &amp; Jateng</option>
+                      <option value="Pertanyaan Lainnya">Pertanyaan Lainnya</option>
+                    </select>
+                    <IconChevronDown class="absolute right-3 w-4 h-4 text-outline pointer-events-none" aria-hidden="true" />
+                  </div>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-sm font-semibold text-on-surface" for="carPreference">Pilihan Armada yang Diminati</label>
+                  <div class="relative flex items-center">
+                    <IconCar class="absolute left-3 w-5 h-5 text-outline pointer-events-none" aria-hidden="true" />
+                    <select id="carPreference" class={`${inputBase} pr-9 appearance-none cursor-pointer`}>
+                      <option value="">Belum tahu / minta rekomendasi admin</option>
+                      {armada.map((c) => <option value={c.data.nama}>{c.data.nama}</option>)}
+                    </select>
+                    <IconChevronDown class="absolute right-3 w-4 h-4 text-outline pointer-events-none" aria-hidden="true" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-semibold text-on-surface" for="tripDate">Rencana Tanggal Mulai &amp; Durasi Sewa</label>
+                <div class="relative flex items-center">
+                  <IconCalendar class="absolute left-3 w-5 h-5 text-outline pointer-events-none" aria-hidden="true" />
+                  <input type="text" id="tripDate" placeholder="Contoh: 15 Mei (3 hari, luar kota Solo)" class={inputBase} />
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-semibold text-on-surface" for="notes">Pesan / Catatan Tambahan</label>
+                <textarea
+                  id="notes"
+                  rows="3"
+                  placeholder="Tuliskan tujuan perjalanan, alamat penjemputan, atau permintaan khusus lainnya..."
+                  class="w-full p-3.5 bg-surface-container-low rounded-lg text-sm font-medium text-on-surface outline-none border-0 resize-none transition-all placeholder:text-outline focus:bg-surface-container-lowest focus:ring-2 focus:ring-blue-vibrant"
+                ></textarea>
+              </div>
+
+              <div class="pt-1 flex flex-col gap-3">
+                <button
+                  type="submit"
+                  class="w-full py-3.5 px-6 bg-emerald-conversion hover:bg-emerald-deep text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(16,185,129,0.3)] transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-deep focus-visible:ring-offset-2"
+                >
+                  <IconSend class="w-5 h-5" aria-hidden="true" />
+                  Kirim Pesan via WhatsApp
+                </button>
+                <p class="flex items-center justify-center gap-2 text-xs text-on-surface-variant text-center">
+                  <IconShield class="w-4 h-4 text-emerald-deep shrink-0" aria-hidden="true" />
+                  <span>Data Anda hanya dipakai untuk konfirmasi ketersediaan armada.</span>
+                </p>
+              </div>
+            </form>
+          </div>
+
+          <!-- Kolom kanan -->
+          <div class="lg:col-span-5 flex flex-col gap-6">
+            <!-- Garasi -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] flex flex-col gap-4">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="text-xs text-primary font-bold uppercase tracking-wider">Garasi Utama &amp; Kantor</span>
+                  <h3 class="font-bold text-lg text-on-surface mt-0.5">Pool {site.name} {site.city}</h3>
+                </div>
+                <span class="p-2 rounded-lg bg-primary-fixed text-primary" aria-hidden="true">
+                  <IconStore class="w-5 h-5" />
+                </span>
+              </div>
+              <MapPlaceholder class="h-48" />
+              <div class="flex flex-col gap-2.5 text-sm text-on-surface-variant">
+                <div class="flex items-start gap-2">
+                  <IconPin class="w-5 h-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                  <p><strong class="text-on-surface font-semibold">Alamat:</strong> {site.address}</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <IconNavigation class="w-5 h-5 text-emerald-deep shrink-0 mt-0.5" aria-hidden="true" />
+                  <p><strong class="text-on-surface font-semibold">Antar jemput:</strong> mobil bisa diantar ke rumah, hotel, Stasiun Tawang, Stasiun Poncol, dan Bandara Ahmad Yani.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Jam operasional -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] flex flex-col gap-3">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary" aria-hidden="true">
+                  <IconClock class="w-5 h-5" />
+                </span>
+                <h3 class="font-bold text-lg text-on-surface">Jam Operasional Layanan</h3>
+              </div>
+              <ul class="flex flex-col gap-2.5 text-sm">
+                <li class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-2.5 bg-surface-container-low rounded-lg">
+                  <span class="flex items-center gap-2 text-on-surface font-semibold">
+                    <IconHeadset class="w-[18px] h-[18px] text-emerald-deep" aria-hidden="true" />
+                    Customer Service &amp; WhatsApp
+                  </span>
+                  <span class="text-on-surface font-bold">06.00 &ndash; 22.00 WIB</span>
+                </li>
+                <li class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-2.5 bg-surface-container-low rounded-lg">
+                  <span class="flex items-center gap-2 text-on-surface font-semibold">
+                    <IconCar class="w-[18px] h-[18px] text-primary" aria-hidden="true" />
+                    Antar jemput dalam kota
+                  </span>
+                  <span class="text-primary font-bold">Gratis</span>
+                </li>
+                <li class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-2.5 bg-surface-container-low rounded-lg">
+                  <span class="flex items-center gap-2 text-on-surface font-semibold">
+                    <IconRoute class="w-[18px] h-[18px] text-on-surface-variant" aria-hidden="true" />
+                    Antar ke luar kota
+                  </span>
+                  <span class="text-on-surface-variant font-bold">Biaya sesuai jarak</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Keamanan pembayaran (tanpa nomor rekening) -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] flex flex-col gap-3">
+              <div class="flex items-center gap-2">
+                <IconShield class="w-6 h-6 text-primary" aria-hidden="true" />
+                <h3 class="font-bold text-lg text-on-surface">Keamanan Pembayaran</h3>
+              </div>
+              <p class="text-sm text-on-surface-variant leading-relaxed">
+                Pembayaran DP 30% dan pelunasan dilakukan lewat transfer ke rekening atas nama usaha atau QRIS resmi {site.name}. Detail pembayaran hanya dikirim oleh admin resmi melalui WhatsApp <strong class="text-on-surface">{site.phoneDisplay}</strong>.
+              </p>
+              <div class="flex items-start gap-2 bg-tertiary-fixed/50 p-3 rounded-lg">
+                <IconAlert class="w-5 h-5 text-tertiary-container shrink-0" aria-hidden="true" />
+                <p class="text-xs text-on-surface-variant leading-snug">
+                  <strong class="text-on-surface">Penting:</strong> jika ada yang meminta transfer mengatasnamakan {site.name} dari nomor lain, konfirmasi dulu ke nomor resmi di atas.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cakupan wilayah -->
+    <section class="w-full bg-surface py-12 lg:py-16">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div class="max-w-2xl flex flex-col gap-1.5">
+            <span class="text-xs text-primary font-bold uppercase tracking-wider">Cakupan Wilayah</span>
+            <h2 class="font-bold text-2xl sm:text-3xl text-on-surface tracking-tight">Jaringan Layanan &amp; Titik Antar Jemput Jawa Tengah &amp; DIY</h2>
+            <p class="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+              Selain garasi induk di Kota {site.city}, armada kami siap diantar dan dijemput di kota-kota berikut:
+            </p>
+          </div>
+          <a
+            class="inline-flex items-center gap-1.5 text-primary font-semibold text-sm hover:underline shrink-0"
+            href={waLink(`Halo Admin ${site.name}, apakah bisa antar mobil ke kota saya? ${WA_SOURCE_TAG}`)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Tanya kota lain</span>
+            <IconArrowRight class="w-4 h-4" aria-hidden="true" />
+          </a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {
-            kota.map((k) => (
-              <li>
-                <a href={`/kota/${k.slug}/`}>{k.nama}</a>
-              </li>
+            kota.map((k, i) => (
+              <a
+                href={`/kota/${k.slug}/`}
+                class="group bg-surface-container-lowest p-4 sm:p-5 rounded-xl shadow-sm hover:shadow-md border border-border-subtle/60 transition-shadow flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex items-center justify-between">
+                    <span class:list={['font-bold text-base group-hover:text-primary transition-colors', i === 0 ? 'text-primary' : 'text-on-surface']}>
+                      {i === 0 ? `Kota ${k.nama}` : k.nama}
+                    </span>
+                    <IconPin class:list={['w-5 h-5', i === 0 ? 'text-primary' : 'text-on-surface-variant']} aria-hidden="true" />
+                  </div>
+                  <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3">{k.ringkas}</p>
+                </div>
+                <span class:list={['inline-flex items-start gap-1 text-xs font-semibold', i === 0 ? 'text-emerald-deep' : 'text-primary']}>
+                  <IconCircleCheck class="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
+                  <span>{k.poin[0]}</span>
+                </span>
+              </a>
             ))
           }
-        </ul>
-        <p class="muted">
-          Pertanyaan umum soal syarat, pembayaran, dan overtime ada di <a href="/#faq">FAQ</a>.
-        </p>
-      </section>
-    </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ singkat -->
+    <section class="w-full bg-surface-subtle py-12 lg:py-16">
+      <div class="max-w-[880px] mx-auto px-4 sm:px-6 flex flex-col gap-6">
+        <div class="text-center flex flex-col items-center gap-1.5">
+          <span class="text-xs text-primary font-bold uppercase tracking-wider">Pusat Bantuan Cepat</span>
+          <h2 class="font-bold text-2xl sm:text-3xl text-on-surface tracking-tight">Pertanyaan Seputar Kontak &amp; Cara Reservasi</h2>
+          <p class="text-sm sm:text-base text-on-surface-variant max-w-xl">
+            Hal yang paling sering ditanyakan pelanggan saat menghubungi tim reservasi {site.name}.
+            <a href="/faq/" class="text-primary font-semibold hover:underline">Lihat semua FAQ</a>.
+          </p>
+        </div>
+        <div class="flex flex-col gap-3">
+          {
+            kontakFaq.map((f) => (
+              <details class="kfaq group bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+                <summary class="w-full p-4 sm:p-5 flex items-center justify-between gap-4 text-left font-semibold text-base text-on-surface hover:text-primary cursor-pointer list-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary rounded-xl">
+                  <span>{f.q}</span>
+                  <IconPlus class="w-5 h-5 text-outline shrink-0 transition-transform duration-200 group-open:rotate-45" aria-hidden="true" />
+                </summary>
+                <p class="px-4 sm:px-5 pb-5 text-sm text-on-surface-variant leading-relaxed">{f.a}</p>
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA biru -->
+    <section class="w-full bg-primary py-12 lg:py-16 text-white relative overflow-hidden">
+      <div class="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-white/10 to-transparent pointer-events-none" aria-hidden="true"></div>
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex flex-col gap-2 text-center md:text-left max-w-xl">
+          <div class="inline-flex items-center gap-2 justify-center md:justify-start">
+            <span class="w-3 h-3 rounded-full bg-emerald-conversion animate-pulse" aria-hidden="true"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-primary-fixed">Admin Aktif 06.00 &ndash; 22.00 WIB</span>
+          </div>
+          <h2 class="font-bold text-2xl sm:text-3xl tracking-tight">Butuh Respons Cepat Sekarang Juga?</h2>
+          <p class="text-sm sm:text-base text-primary-fixed leading-relaxed">
+            Chat admin kami untuk cek ketersediaan armada dan harga sesuai jadwal Anda.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <a
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            href={waLink(waGreeting)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconWa class="w-5 h-5" aria-hidden="true" />
+            <span>Chat WhatsApp {site.phoneDisplay}</span>
+          </a>
+          <a
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-bold text-sm backdrop-blur-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            href={`tel:+${site.whatsapp}`}
+          >
+            <IconPhone class="w-5 h-5" aria-hidden="true" />
+            <span>Telepon {site.phoneDisplay}</span>
+          </a>
+        </div>
+      </div>
+    </section>
   </div>
 </Base>
 
+<script>
+  const form = document.getElementById('contactInquiryForm') as HTMLFormElement | null;
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const waNumber = form.dataset.wa || '';
+      const tag = form.dataset.tag || '';
+      const val = (id: string) =>
+        (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null)?.value.trim() || '';
+
+      const name = val('fullName') || 'Tamu';
+      const phone = val('phoneNumber') || '-';
+      const service = val('serviceType') || 'Sewa Mobil';
+      const car = val('carPreference') || 'Rekomendasi Admin';
+      const date = val('tripDate') || 'Segera';
+      const notes = val('notes') || '-';
+
+      const msg =
+        `Halo Admin Lintas Rent, saya ingin request penawaran sewa mobil:\n\n` +
+        `• Nama: ${name}\n` +
+        `• No. WhatsApp: ${phone}\n` +
+        `• Layanan: ${service}\n` +
+        `• Pilihan Mobil: ${car}\n` +
+        `• Jadwal / Durasi: ${date}\n` +
+        `• Catatan / Lokasi Jemput: ${notes}\n\n` +
+        `Mohon info ketersediaan unit dan penawaran harganya. Terima kasih! ${tag}`;
+
+      const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    });
+  }
+</script>
+
 <style>
-  .page {
-    padding-bottom: clamp(64px, 9vw, 112px);
-  }
-
-  .head {
-    display: grid;
-    justify-items: start;
-    gap: 16px;
-  }
-
-  .lead {
-    max-width: 56ch;
-    color: var(--text-2);
-    font-size: 1.0625rem;
-  }
-
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .channels {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: clamp(32px, 4vw, 48px);
-  }
-
-  .channel {
-    display: grid;
-    gap: 4px;
-    height: 100%;
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-xl);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-    transition:
-      border-color 0.2s var(--ease),
-      box-shadow 0.2s var(--ease),
-      transform 0.2s var(--ease);
-  }
-
-  .channel:hover {
-    border-color: var(--accent-border);
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-3px);
-  }
-
-  .channel :global(.ch-icon) {
-    width: 26px;
-    height: 26px;
-    margin-bottom: 12px;
-    stroke-width: 1.6;
-  }
-
-  .ch-label {
-    font-size: 0.8125rem;
-    color: var(--text-2);
-  }
-
-  .ch-value {
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-
-  .ch-note {
-    margin-top: 6px;
-    font-size: 0.875rem;
-    color: var(--text-2);
-  }
-
-  .info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 40px;
-    margin-top: clamp(40px, 5vw, 56px);
-    padding-top: clamp(32px, 4vw, 44px);
-    border-top: 1px solid var(--line);
-  }
-
-  .info h2 {
-    font-size: clamp(1.375rem, 2.2vw, 1.75rem);
-  }
-
-  .facts {
-    display: grid;
-    gap: 12px;
-    margin-top: 20px;
-  }
-
-  .facts li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    max-width: 44ch;
-  }
-
-  .facts :global(svg) {
-    flex: none;
-    width: 20px;
-    height: 20px;
-    margin-top: 2px;
-  }
-
-  .maps {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 20px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  .maps :global(svg) {
-    width: 16px;
-    height: 16px;
-  }
-
-  .muted {
-    margin-top: 12px;
-    color: var(--text-2);
-  }
-
-  .muted a {
-    color: var(--accent);
-  }
-
-  .areas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 16px;
-  }
-
-  .areas a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 40px;
-    padding: 0 16px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: var(--surface);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .areas a:hover {
-    border-color: var(--text);
-  }
-
-  @media (max-width: 860px) {
-    .channels,
-    .info {
-      grid-template-columns: 1fr;
-    }
+  summary::-webkit-details-marker {
+    display: none;
   }
 </style>

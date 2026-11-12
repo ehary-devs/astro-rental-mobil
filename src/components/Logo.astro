@@ -1,25 +1,28 @@
 ---
+import IconCar from '@tabler/icons/outline/car.svg';
 import { site } from '../config/site';
 
 interface Props {
   class?: string;
+  showSubtitle?: boolean;
 }
-const { class: className } = Astro.props;
+const { class: className, showSubtitle = true } = Astro.props;
 ---
 
-<span class:list={['logo', className]} aria-label={site.name}>
-  <span aria-hidden="true">{site.logo.before}<span class="accent">{site.logo.accent}</span>{site.logo.after}</span>
-</span>
-
-<style>
-  .logo {
-    font-size: 1.625rem;
-    font-weight: 800;
-    font-stretch: 125%;
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-  .accent {
-    color: var(--accent);
-  }
-</style>
+<div class:list={['brand-logo flex items-center gap-2.5 select-none', className]}>
+  <div class="logo-icon w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm shrink-0">
+    <IconCar class="w-5 h-5 stroke-[2.2]" aria-hidden="true" />
+  </div>
+  <div class="flex flex-col">
+    <span class="font-bold text-xl leading-none text-primary tracking-tight font-sans">
+      Lintas<span class="text-on-surface"> Rent</span>
+    </span>
+    {
+      showSubtitle && (
+        <span class="text-[11px] font-semibold text-on-surface-variant hidden sm:inline-block leading-tight mt-0.5">
+          {site.city} &amp; Jawa Tengah
+        </span>
+      )
+    }
+  </div>
+</div>

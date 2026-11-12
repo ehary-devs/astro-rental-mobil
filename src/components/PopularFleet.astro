@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import IconArrow from '@tabler/icons/outline/arrow-right.svg';
+import IconInfo from '@tabler/icons/outline/info-circle.svg';
 import FleetCard from './FleetCard.astro';
 
 const cars = (await getCollection('armada', ({ data }) => data.populer && data.tersedia))
@@ -8,95 +9,42 @@ const cars = (await getCollection('armada', ({ data }) => data.populer && data.t
   .slice(0, 4);
 ---
 
-<section class="popular" id="armada" aria-labelledby="armada-title">
-  <div class="container">
-    <div class="head">
-      <div>
-        <span class="section-eyebrow">Armada Terpopuler</span>
-        <h2 id="armada-title" class="section-title">Paling sering disewa</h2>
-        <p class="sub">Mobil terlaris dengan ulasan terbaik, terawat rutin, dan siap menemani perjalanan Anda.</p>
+<section class="w-full py-10 bg-surface-subtle" id="armada" aria-labelledby="armada-title">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-6">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div class="flex flex-col gap-1 max-w-xl">
+        <span class="text-xs font-bold uppercase tracking-wider text-primary">ARMADA TERPOPULER</span>
+        <h2 id="armada-title" class="font-bold text-2xl leading-8 sm:text-[32px] sm:leading-10 text-on-surface tracking-tight">
+          Paling sering disewa
+        </h2>
+        <p class="text-sm leading-[22px] text-on-surface-variant">
+          Mobil terlaris dengan ulasan terbaik, terawat rutin, dan siap menemani perjalanan Anda.
+        </p>
       </div>
-      <a class="btn btn-outline all-link" href="/armada/">
+      <a
+        class="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary-container transition-colors group shrink-0"
+        href="/armada/"
+      >
         <span>Lihat semua armada</span>
-        <IconArrow aria-hidden="true" />
+        <IconArrow class="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
       </a>
     </div>
 
-    <ul class="track">
+    <!-- Fleet Grid Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {
         cars.map((car, i) => (
-          <li>
+          <div>
             <FleetCard car={car} highlight={i === 0} />
-          </li>
+          </div>
         ))
       }
-    </ul>
-    <p class="note">Harga mulai per 24 jam untuk lepas kunci atau per 12 jam dengan sopir. Belum termasuk BBM, tol, dan parkir.</p>
+    </div>
+
+    <!-- Pricing clarity banner note -->
+    <div class="flex items-center justify-center gap-2 p-4 rounded-lg bg-surface-container-low text-on-surface-variant text-xs leading-[18px] text-center">
+      <IconInfo class="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+      <span>Harga mulai per 24 jam untuk lepas kunci atau per 12 jam dengan sopir. Belum termasuk BBM, tol, dan parkir.</span>
+    </div>
   </div>
 </section>
-
-<style>
-  .popular {
-    padding-block: clamp(64px, 8vw, 100px);
-    background: var(--bg-2);
-  }
-
-  .head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .sub {
-    margin-top: 8px;
-    font-size: 1rem;
-    color: var(--text-2);
-    max-width: 540px;
-  }
-
-  .all-link {
-    flex-shrink: 0;
-  }
-
-  .track {
-    position: relative;
-    list-style: none;
-    margin: clamp(28px, 4vw, 44px) 0 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-  }
-
-  .note {
-    margin-top: 20px;
-    font-size: 0.8125rem;
-    color: var(--text-2);
-  }
-
-  @media (max-width: 1024px) {
-    .track {
-      grid-template-columns: none;
-      grid-auto-flow: column;
-      grid-auto-columns: minmax(270px, 44%);
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: thin;
-      padding-bottom: 12px;
-      margin-inline: calc(var(--gutter) * -1);
-      padding-inline: var(--gutter);
-      scroll-padding-inline: var(--gutter);
-    }
-    .track > li {
-      scroll-snap-align: start;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .track {
-      grid-auto-columns: 82%;
-    }
-  }
-</style>

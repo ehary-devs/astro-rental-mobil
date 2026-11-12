@@ -8,6 +8,11 @@ import type { CollectionEntry } from 'astro:content';
 
 type Car = CollectionEntry<'armada'>;
 
+export interface Tanya {
+  q: string;
+  a: string;
+}
+
 export interface InfoPage {
   slug: string;
   /** Label pendek untuk footer & breadcrumb. */
@@ -22,6 +27,8 @@ export interface InfoPage {
   pesan: string;
   /** Saring mobil yang cocok. Default: semua yang tersedia. */
   filterMobil?: (car: Car) => boolean;
+  /** Tanya jawab khusus halaman ini, tampil di atas FAQ umum. Opsional. */
+  faq?: Tanya[];
 }
 
 export interface RutePage extends InfoPage {
@@ -30,6 +37,8 @@ export interface RutePage extends InfoPage {
   /** Perkiraan, kondisi normal. */
   jarak: string;
   waktu: string;
+  /** Opsi skema perjalanan. Kosong = skema umum (sekali jalan, pulang-pergi, beberapa hari). */
+  skema?: { judul: string; desc: string }[];
 }
 
 const pakaiSopir = (c: Car) => Boolean(c.data.harga.denganSopir);
@@ -135,6 +144,20 @@ export const layanan: InfoPage[] = [
       'BBM, tol, dan parkir ditanggung penyewa',
     ],
     pesan: 'saya mau sewa mobil lepas kunci.',
+    faq: [
+      {
+        q: 'Dokumen apa saja yang perlu disiapkan?',
+        a: 'KTP dan SIM A yang masih berlaku, ditambah satu dokumen pendukung seperti KK, NPWP, atau ID karyawan. Foto dokumen cukup dikirim lewat WhatsApp untuk verifikasi.',
+      },
+      {
+        q: 'Bagaimana dengan deposit?',
+        a: 'Deposit dibayar saat serah terima dan dikembalikan penuh setelah mobil kembali tanpa kerusakan.',
+      },
+      {
+        q: 'Bagaimana kalau terlambat mengembalikan mobil?',
+        a: 'Ada toleransi 1 jam. Setelah itu dihitung overtime 10% dari harga harian per jam, dan lewat 5 jam dihitung satu hari penuh.',
+      },
+    ],
     filterMobil: lepasKunci,
   },
   {
@@ -149,6 +172,20 @@ export const layanan: InfoPage[] = [
       'BBM, tol, parkir, makan sopir, dan overtime di luar harga sewa',
     ],
     pesan: 'saya mau sewa mobil dengan sopir.',
+    faq: [
+      {
+        q: 'Berapa lama durasi sewa dengan sopir?',
+        a: 'Harga dengan sopir dihitung per 12 jam, termasuk mobil dan jasa sopir. Lewat dari itu dihitung overtime.',
+      },
+      {
+        q: 'Apa saja yang belum termasuk harga sewa?',
+        a: 'BBM, tol, parkir, makan sopir, dan overtime dibayar terpisah, kecuali Anda memilih paket all in. Detailnya dikonfirmasi admin sebelum pemesanan.',
+      },
+      {
+        q: 'Apa syaratnya?',
+        a: 'Cukup KTP pemesan. Sopir menjemput di alamat yang Anda tentukan.',
+      },
+    ],
     filterMobil: pakaiSopir,
   },
   {
@@ -164,6 +201,20 @@ export const layanan: InfoPage[] = [
       'Harga sekali jalan atau pulang-pergi, dikonfirmasi admin',
     ],
     pesan: 'saya mau pesan antar jemput bandara.',
+    faq: [
+      {
+        q: 'Bandara mana saja yang dilayani?',
+        a: 'Bandara Ahmad Yani Semarang, YIA Yogyakarta, dan Adi Soemarmo Solo.',
+      },
+      {
+        q: 'Bagaimana kalau pesawat saya delay?',
+        a: 'Kirim nomor penerbangan saat memesan. Kami pantau jadwalnya dan menyesuaikan waktu jemput.',
+      },
+      {
+        q: 'Bisa pesan sekali jalan saja?',
+        a: 'Bisa, sekali jalan atau pulang-pergi. Harga dikonfirmasi admin sesuai bandara dan alamat tujuan.',
+      },
+    ],
     filterMobil: pakaiSopir,
   },
   {
@@ -179,6 +230,20 @@ export const layanan: InfoPage[] = [
       'Bisa lepas kunci atau dengan sopir',
     ],
     pesan: 'saya mau tanya harga sewa mobil bulanan.',
+    faq: [
+      {
+        q: 'Berapa lama minimal sewa bulanan?',
+        a: 'Harga khusus berlaku untuk sewa 1 bulan atau lebih. Hubungi admin untuk penawaran sesuai unit dan durasi.',
+      },
+      {
+        q: 'Siapa yang menanggung servis berkala?',
+        a: 'Servis berkala ditanggung kami. Bila ada kendala pada mobil, kami siapkan mobil pengganti.',
+      },
+      {
+        q: 'Bisa sewa bulanan dengan sopir?',
+        a: 'Bisa, sewa bulanan tersedia lepas kunci atau dengan sopir.',
+      },
+    ],
   },
   {
     slug: 'mobil-pengantin',
@@ -192,6 +257,20 @@ export const layanan: InfoPage[] = [
       'Pesan jauh hari, terutama di musim nikah',
     ],
     pesan: 'saya mau sewa mobil pengantin.',
+    faq: [
+      {
+        q: 'Apakah mobil pengantin sudah termasuk dekorasi?',
+        a: 'Belum. Mobil bisa dihias, dengan dekorasi disediakan penyewa atau vendor dekorasi Anda.',
+      },
+      {
+        q: 'Kapan sebaiknya memesan?',
+        a: 'Sebaiknya jauh hari, terutama di musim nikah, supaya mobil pilihan Anda masih tersedia.',
+      },
+      {
+        q: 'Apakah sudah termasuk sopir?',
+        a: 'Ya, mobil pengantin disewakan dengan sopir berpakaian rapi dan tepat waktu.',
+      },
+    ],
     filterMobil: (c) => pakaiSopir(c) && ['premium', 'suv', 'listrik'].includes(c.data.kategori),
   },
 ];
@@ -213,6 +292,16 @@ export const rute: RutePage[] = [
       'BBM, tol, dan parkir di luar harga sewa',
     ],
     pesan: 'saya mau sewa mobil rute Semarang - Yogyakarta.',
+    faq: [
+      {
+        q: 'Bisa mampir ke Borobudur di perjalanan?',
+        a: 'Bisa. Rute lewat Ambarawa dan Magelang, jadi mampir Borobudur bisa diatur bersama sopir. Sampaikan rencana Anda saat memesan.',
+      },
+      {
+        q: 'Bisa diantar sampai Bandara YIA?',
+        a: 'Bisa, drop di hotel, stasiun, atau Bandara YIA.',
+      },
+    ],
     filterMobil: pakaiSopir,
   },
   {
@@ -231,6 +320,16 @@ export const rute: RutePage[] = [
       'BBM, tol, dan parkir di luar harga sewa',
     ],
     pesan: 'saya mau sewa mobil rute Semarang - Solo.',
+    faq: [
+      {
+        q: 'Bisa pulang-pergi di hari yang sama?',
+        a: 'Bisa. Lewat tol, perjalanan Semarang - Solo cukup singkat sehingga pulang-pergi sehari sangat memungkinkan.',
+      },
+      {
+        q: 'Rute ini bisa lepas kunci?',
+        a: 'Bisa, rute Semarang - Solo tersedia lepas kunci maupun dengan sopir.',
+      },
+    ],
   },
   {
     slug: 'semarang-dieng',
@@ -248,6 +347,16 @@ export const rute: RutePage[] = [
       'BBM, tol, parkir, dan tiket wisata di luar harga sewa',
     ],
     pesan: 'saya mau sewa mobil rute Semarang - Dieng.',
+    faq: [
+      {
+        q: 'Mobil apa yang cocok untuk ke Dieng?',
+        a: 'Kami sarankan SUV atau MPV bertenaga karena jalurnya menanjak dan berkelok, dan menggunakan sopir yang berpengalaman di jalur Wonosobo - Dieng.',
+      },
+      {
+        q: 'Bisa berangkat dini hari untuk sunrise Sikunir?',
+        a: 'Bisa. Sampaikan jadwal yang Anda inginkan, admin akan mengatur jam jemput bersama sopir.',
+      },
+    ],
     filterMobil: (c) => pakaiSopir(c) && c.data.kategori !== 'city-car',
   },
   {
@@ -266,6 +375,16 @@ export const rute: RutePage[] = [
       'BBM, parkir, dan tiket wisata di luar harga sewa',
     ],
     pesan: 'saya mau sewa mobil rute Yogyakarta - Borobudur.',
+    faq: [
+      {
+        q: 'Bisa dijemput di hotel Yogyakarta?',
+        a: 'Bisa, sopir menjemput di hotel Anda di Yogyakarta.',
+      },
+      {
+        q: 'Bisa lanjut ke tempat wisata lain?',
+        a: 'Bisa, misalnya ke Punthuk Setumbu atau Ketep. Sopir bisa menyarankan jadwal kunjungan.',
+      },
+    ],
     filterMobil: pakaiSopir,
   },
   {
@@ -285,6 +404,21 @@ export const rute: RutePage[] = [
       'BBM, tol, dan parkir di luar harga sewa',
     ],
     pesan: 'saya mau sewa mobil antar ke Pelabuhan Jepara (Karimunjawa).',
+    faq: [
+      {
+        q: 'Apakah mobil ikut menyeberang ke Karimunjawa?',
+        a: 'Tidak. Kami mengantar sampai Pelabuhan Kartini Jepara, lalu menjemput lagi sesuai jadwal kapal pulang Anda.',
+      },
+      {
+        q: 'Jam berapa sebaiknya berangkat dari Semarang?',
+        a: 'Sampaikan jadwal kapal Anda saat memesan. Admin akan mengatur jam jemput supaya Anda tiba di pelabuhan sebelum kapal berangkat.',
+      },
+    ],
+    skema: [
+      { judul: 'Antar ke pelabuhan', desc: 'Dijemput di alamat Anda di Semarang dan diantar sampai Pelabuhan Kartini Jepara.' },
+      { judul: 'Jemput dari pelabuhan', desc: 'Dijemput di Pelabuhan Kartini saat kapal pulang tiba, lalu diantar ke alamat tujuan.' },
+      { judul: 'Antar & jemput lagi', desc: 'Paket lengkap berangkat dan pulang, jadwal jemput menyesuaikan kapal kembali.' },
+    ],
     filterMobil: pakaiSopir,
   },
 ];

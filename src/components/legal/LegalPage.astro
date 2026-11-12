@@ -1,0 +1,254 @@
+---
+/**
+ * Kerangka halaman legal (Syarat & Ketentuan, Kebijakan Privasi):
+ * breadcrumb + chip meta, hero, kartu ringkasan, lalu dua kolom
+ * (daftar isi sticky + kartu bantuan di kiri, isi pasal di kanan).
+ */
+import IconHome from '@tabler/icons/outline/home.svg';
+import IconChevronRight from '@tabler/icons/outline/chevron-right.svg';
+import IconListDetails from '@tabler/icons/outline/list-details.svg';
+import IconPrinter from '@tabler/icons/outline/printer.svg';
+import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
+import { waLink, WA_SOURCE_TAG, site } from '../../config/site';
+
+type Tone = 'primary' | 'secondary' | 'emerald' | 'tertiary';
+type Icon = (props: Record<string, unknown>) => unknown;
+
+interface Props {
+  breadcrumb: string;
+  chips: { icon: Icon; label: string; accent?: boolean }[];
+  badge: { icon: Icon; label: string };
+  title: string;
+  intro: string;
+  highlights: { icon: Icon; step: string; title: string; desc: string; tone: Tone }[];
+  toc: { id: string; label: string }[];
+  tocTitle: string;
+  tocCount: string;
+  help: { eyebrow: string; title: string; desc: string; cta: string; message: string };
+  /** Tampilkan kartu "Cetak / Simpan PDF" di bawah daftar isi. */
+  printCard?: { title: string; desc: string };
+}
+
+const { breadcrumb, chips, badge, title, intro, highlights, toc, tocTitle, tocCount, help, printCard } = Astro.props;
+
+const toneIcon: Record<Tone, string> = {
+  primary: 'bg-primary text-on-primary',
+  secondary: 'bg-secondary text-on-secondary',
+  emerald: 'bg-emerald-conversion text-on-primary',
+  tertiary: 'bg-tertiary-container text-on-primary',
+};
+const toneText: Record<Tone, string> = {
+  primary: 'text-primary',
+  secondary: 'text-secondary',
+  emerald: 'text-emerald-deep',
+  tertiary: 'text-tertiary',
+};
+const hasHeroAside = Astro.slots.has('hero-aside');
+---
+
+<div class="legal-page w-full bg-surface">
+  <!-- Breadcrumb & status ribbon -->
+  <section class="w-full bg-surface-container-low py-4">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
+      <nav aria-label="Breadcrumb" class="flex items-center gap-1 text-xs font-semibold text-on-surface-variant">
+        <a class="hover:text-primary transition-colors flex items-center gap-1 rounded focus-visible:outline-2 focus-visible:outline-primary" href="/">
+          <IconHome class="w-4 h-4" aria-hidden="true" />
+          <span>Beranda</span>
+        </a>
+        <IconChevronRight class="w-3.5 h-3.5" aria-hidden="true" />
+        <span class="text-primary" aria-current="page">{breadcrumb}</span>
+      </nav>
+      <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+        {
+          chips.map((c) => (
+            <span
+              class:list={[
+                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
+                c.accent ? 'bg-primary-fixed text-on-primary-fixed' : 'bg-surface-container-highest text-on-surface-variant',
+              ]}
+            >
+              <c.icon class="w-4 h-4 text-primary" aria-hidden="true" />
+              {c.label}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Hero + ringkasan -->
+  <section class="w-full bg-surface-container-lowest py-10">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+      <div class:list={['mb-10', hasHeroAside ? 'grid grid-cols-1 lg:grid-cols-12 gap-8 items-end' : 'max-w-3xl']}>
+        <div class:list={[hasHeroAside && 'lg:col-span-8']}>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary text-xs font-semibold uppercase tracking-wider mb-3">
+            <badge.icon class="w-4 h-4" aria-hidden="true" />
+            {badge.label}
+          </div>
+          <h1 class="text-[32px] leading-10 sm:text-5xl sm:leading-[56px] font-extrabold text-on-surface tracking-tight mb-3">
+            {title}
+          </h1>
+          <p class="text-base leading-[26px] text-on-surface-variant max-w-3xl">{intro}</p>
+        </div>
+        {hasHeroAside && (
+          <div class="lg:col-span-4">
+            <slot name="hero-aside" />
+          </div>
+        )}
+      </div>
+
+      <h2 class="sr-only">Ringkasan poin utama</h2>
+      <div class:list={['grid grid-cols-1 sm:grid-cols-2 gap-4', highlights.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4']}>
+        {
+          highlights.map((h) => (
+            <div class="p-6 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+              <div class:list={['w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-sm', toneIcon[h.tone]]}>
+                <h.icon class="w-6 h-6" aria-hidden="true" />
+              </div>
+              <span class:list={['text-xs uppercase font-bold tracking-wider block mb-1', toneText[h.tone]]}>{h.step}</span>
+              <h3 class="text-lg leading-6 font-semibold text-on-surface mb-1">{h.title}</h3>
+              <p class="text-xs leading-[18px] text-on-surface-variant">{h.desc}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Isi: daftar isi sticky + pasal -->
+  <section class="w-full bg-surface py-10 pb-16">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+        <aside class="lg:col-span-4 lg:sticky lg:top-28 flex flex-col gap-4 legal-aside">
+          <div class="p-6 rounded-xl bg-surface-container-lowest shadow-sm border border-border-subtle/60">
+            <div class="flex items-center justify-between pb-2 mb-2">
+              <p class="text-sm font-semibold text-on-surface flex items-center gap-1.5" id="legal-toc-title">
+                <IconListDetails class="w-5 h-5 text-primary" aria-hidden="true" />
+                {tocTitle}
+              </p>
+              <span class="text-xs font-semibold text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">{tocCount}</span>
+            </div>
+            <nav aria-labelledby="legal-toc-title" class="flex flex-col gap-0.5 text-xs" data-legal-toc>
+              {
+                toc.map((t, i) => (
+                  <a
+                    href={`#${t.id}`}
+                    data-target={t.id}
+                    class="toc-link flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <span class="font-semibold text-primary tabular-nums">{String(i + 1).padStart(2, '0')}.</span>
+                    <span>{t.label}</span>
+                  </a>
+                ))
+              }
+            </nav>
+            {
+              printCard && (
+                <div class="mt-4 bg-surface-container-low p-4 rounded-xl print:hidden">
+                  <span class="text-xs font-bold text-on-surface block mb-1">{printCard.title}</span>
+                  <p class="text-xs leading-[18px] text-on-surface-variant mb-2">{printCard.desc}</p>
+                  <button
+                    type="button"
+                    data-legal-print
+                    class="w-full inline-flex items-center justify-center gap-1.5 bg-surface-container-highest hover:bg-surface-variant text-on-surface py-2 px-4 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <IconPrinter class="w-[18px] h-[18px]" aria-hidden="true" />
+                    <span>Cetak / Simpan PDF</span>
+                  </button>
+                </div>
+              )
+            }
+          </div>
+
+          <div class="hidden lg:block p-6 rounded-xl bg-primary text-on-primary shadow-md print:hidden">
+            <span class="text-xs uppercase tracking-widest text-primary-fixed font-semibold block mb-1">{help.eyebrow}</span>
+            <p class="text-lg leading-6 font-semibold mb-1">{help.title}</p>
+            <p class="text-xs leading-[18px] text-primary-fixed mb-4">{help.desc}</p>
+            <a
+              href={waLink(`Halo Admin ${site.name}, ${help.message} ${WA_SOURCE_TAG}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-on-primary text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors w-full justify-center shadow-sm focus-visible:outline-2 focus-visible:outline-white"
+            >
+              <IconWa class="w-[18px] h-[18px]" aria-hidden="true" />
+              <span>{help.cta}</span>
+            </a>
+          </div>
+        </aside>
+
+        <div class="lg:col-span-8 flex flex-col gap-8 min-w-0">
+          <slot />
+
+          <!-- Kartu bantuan versi mobile (di desktop tampil di sidebar) -->
+          <div class="lg:hidden p-6 rounded-xl bg-primary text-on-primary shadow-md print:hidden">
+            <span class="text-xs uppercase tracking-widest text-primary-fixed font-semibold block mb-1">{help.eyebrow}</span>
+            <p class="text-lg leading-6 font-semibold mb-1">{help.title}</p>
+            <p class="text-xs leading-[18px] text-primary-fixed mb-4">{help.desc}</p>
+            <a
+              href={waLink(`Halo Admin ${site.name}, ${help.message} ${WA_SOURCE_TAG}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-on-primary text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors w-full justify-center shadow-sm"
+            >
+              <IconWa class="w-[18px] h-[18px]" aria-hidden="true" />
+              <span>{help.cta}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <slot name="after" />
+</div>
+
+<style>
+  .toc-link[aria-current='true'] {
+    background: var(--color-surface-container-high);
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  @media print {
+    .legal-aside {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  function initLegal() {
+    document.querySelectorAll<HTMLButtonElement>('[data-legal-print]').forEach((b) => {
+      b.addEventListener('click', () => window.print());
+    });
+
+    const nav = document.querySelector<HTMLElement>('[data-legal-toc]');
+    if (!nav || !('IntersectionObserver' in window)) return;
+    const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a[data-target]'));
+    const sections = links
+      .map((l) => document.getElementById(l.dataset.target ?? ''))
+      .filter((s): s is HTMLElement => Boolean(s));
+
+    const setActive = (id: string) => {
+      links.forEach((l) => {
+        if (l.dataset.target === id) l.setAttribute('aria-current', 'true');
+        else l.removeAttribute('aria-current');
+      });
+    };
+
+    const visible = new Set<string>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        });
+        const first = sections.find((s) => visible.has(s.id));
+        if (first) setActive(first.id);
+      },
+      { rootMargin: '-120px 0px -55% 0px', threshold: 0 },
+    );
+    sections.forEach((s) => io.observe(s));
+  }
+  initLegal();
+</script>

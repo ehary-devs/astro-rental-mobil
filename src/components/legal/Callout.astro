@@ -1,0 +1,26 @@
+---
+/** Kotak catatan: info (biru) atau peringatan (merah lembut). */
+type Icon = (props: Record<string, unknown>) => unknown;
+interface Props {
+  title: string;
+  icon: Icon;
+  tone?: 'info' | 'warn' | 'success';
+}
+const { title, icon: CIcon, tone = 'info' } = Astro.props;
+const box = {
+  info: 'bg-surface-container-high text-on-surface',
+  warn: 'bg-error-container/60 text-on-surface',
+  success: 'bg-emerald-conversion/10 text-on-surface',
+}[tone];
+const ic = { info: 'text-primary', warn: 'text-error', success: 'text-emerald-deep' }[tone];
+---
+
+<div class:list={['p-4 rounded-xl flex items-start gap-3', box]}>
+  <CIcon class:list={['w-6 h-6 shrink-0', ic]} aria-hidden="true" />
+  <div>
+    <p class="text-sm font-bold">{title}</p>
+    <div class="text-xs leading-[18px] text-on-surface-variant mt-0.5">
+      <slot />
+    </div>
+  </div>
+</div>

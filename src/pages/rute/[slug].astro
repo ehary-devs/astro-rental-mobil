@@ -14,4 +14,4 @@ const { page } = Astro.props;
 const siblings = rute.filter((p) => p.slug !== page.slug).map((p) => ({ href: `/rute/${p.slug}/`, nama: p.nama }));
 ---
 
-<InfoPage {page} parent="Rute populer" title={`${page.judul} | ${site.name}`} {siblings} />
+<InfoPage type="rute" {page} parent="Rute populer" title={`${page.judul} | ${site.name}`} {siblings} />

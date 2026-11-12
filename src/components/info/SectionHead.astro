@@ -1,0 +1,26 @@
+---
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  desc?: string;
+  center?: boolean;
+}
+
+const { id, eyebrow, title, desc, center = false } = Astro.props;
+const hasAside = Astro.slots.has('default');
+---
+
+<div
+  class:list={[
+    'flex flex-col gap-3',
+    center ? 'items-center text-center' : hasAside && 'md:flex-row md:items-end md:justify-between',
+  ]}
+>
+  <div class:list={['flex flex-col gap-1.5', center ? 'max-w-2xl items-center' : 'max-w-2xl']}>
+    <span class="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
+    <h2 id={id} class="font-bold text-2xl sm:text-3xl text-on-surface tracking-tight leading-tight">{title}</h2>
+    {desc && <p class="text-sm sm:text-base text-on-surface-variant leading-relaxed">{desc}</p>}
+  </div>
+  {hasAside && <div class="shrink-0"><slot /></div>}
+</div>

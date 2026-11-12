@@ -1,321 +1,649 @@
 ---
+/**
+ * Template halaman info: /kota/[slug], /layanan/[slug], /rute/[slug].
+ * Satu komponen, varian section ditentukan oleh `type`. Semua copy berasal dari src/data/halaman.ts
+ * atau copy umum yang konsisten dengan halaman lain (FAQ, keunggulan, syarat).
+ */
 import { getCollection } from 'astro:content';
-import IconCheck from '@tabler/icons/outline/check.svg';
 import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
 import IconChevronRight from '@tabler/icons/outline/chevron-right.svg';
+import IconArrowRight from '@tabler/icons/outline/arrow-right.svg';
+import IconHome from '@tabler/icons/outline/home.svg';
+import IconCar from '@tabler/icons/outline/car.svg';
+import IconCheck from '@tabler/icons/outline/circle-check.svg';
+import IconShield from '@tabler/icons/outline/shield-check.svg';
+import IconMapPin from '@tabler/icons/outline/map-pin.svg';
 import IconRoute from '@tabler/icons/outline/route.svg';
 import IconClock from '@tabler/icons/outline/clock.svg';
+import IconSteering from '@tabler/icons/outline/steering-wheel.svg';
+import IconBriefcase from '@tabler/icons/outline/briefcase.svg';
+import IconMessage from '@tabler/icons/outline/message-circle.svg';
+import IconFile from '@tabler/icons/outline/file-text.svg';
+import IconReceipt from '@tabler/icons/outline/receipt.svg';
+import IconKey from '@tabler/icons/outline/key.svg';
+import IconPlane from '@tabler/icons/outline/plane-arrival.svg';
+import IconCalendar from '@tabler/icons/outline/calendar-month.svg';
+import IconRings from '@tabler/icons/outline/rings.svg';
+import IconRepeat from '@tabler/icons/outline/calendar-repeat.svg';
+import IconArrows from '@tabler/icons/outline/arrows-exchange.svg';
+import IconFlag from '@tabler/icons/outline/flag.svg';
+import IconSun from '@tabler/icons/outline/sun-high.svg';
+import IconWallet from '@tabler/icons/outline/wallet.svg';
+import IconClipboard from '@tabler/icons/outline/clipboard-check.svg';
+import IconCredit from '@tabler/icons/outline/credit-card.svg';
+import IconUserCheck from '@tabler/icons/outline/user-check.svg';
 import Base from '../layouts/Base.astro';
 import FleetCard from './FleetCard.astro';
+import HeroCard from './info/HeroCard.astro';
+import SectionHead from './info/SectionHead.astro';
+import InfoFaq from './info/InfoFaq.astro';
+import InfoCta from './info/InfoCta.astro';
 import { site, WA_SOURCE_TAG, waLink } from '../config/site';
-import type { InfoPage, RutePage } from '../data/halaman';
+import { kota, layanan, rute as semuaRute, type InfoPage, type RutePage, type Tanya } from '../data/halaman';
 
 interface Props {
+  type: 'kota' | 'layanan' | 'rute';
   page: InfoPage | RutePage;
-  /** Label & tautan induk untuk breadcrumb. */
+  /** Label induk untuk breadcrumb. */
   parent: string;
   title: string;
   /** Halaman saudara (kota lain, layanan lain, dst). */
   siblings: { href: string; nama: string }[];
 }
 
-const { page, parent, title, siblings } = Astro.props;
-const rute = 'jarak' in page ? page : null;
+const { type, page, parent, title, siblings } = Astro.props;
+const rute = 'jarak' in page ? (page as RutePage) : null;
+const isHome = page.slug === site.city.toLowerCase();
 
-const cars = (await getCollection('armada', (c) => c.data.tersedia && (page.filterMobil?.(c) ?? true)))
+const semua = await getCollection('armada', (c) => c.data.tersedia);
+const cars = semua
+  .filter((c) => page.filterMobil?.(c) ?? true)
   .sort((a, b) => Number(b.data.populer) - Number(a.data.populer) || a.data.urutan - b.data.urutan)
   .slice(0, 6);
+const heroCar = cars[0];
 
 const pesan = `Halo Admin ${site.name}, ${page.pesan} ${WA_SOURCE_TAG}`;
+
+// Judul H1: bagian setelah "mobil " diberi warna aksen.
+const idx = page.judul.toLowerCase().indexOf('mobil ');
+const h1 = idx >= 0 ? { a: page.judul.slice(0, idx + 6), b: page.judul.slice(idx + 6) } : { a: page.judul, b: '' };
+
+const badge = {
+  kota: isHome ? `Garasi utama ${site.city} · antar jemput gratis dalam kota` : `Kota layanan · diantar dari ${site.city}`,
+  layanan: `Layanan ${site.name} · ${site.city} & Jawa Tengah`,
+  rute: rute ? `Rute populer · ${rute.dari} ke ${rute.ke}` : 'Rute populer',
+}[type];
+
+// Ikon untuk 4 poin di hero (berurutan sesuai isi poin di data).
+const poinIcons = {
+  kota: [IconMapPin, IconSteering, IconBriefcase, IconClock],
+  layanan: [IconCheck, IconFile, IconShield, IconReceipt],
+  rute: [IconRoute, IconSteering, IconMapPin, IconReceipt],
+}[type];
+const iconTones = [
+  'bg-primary-fixed text-primary',
+  'bg-secondary-fixed text-secondary',
+  'bg-surface-container-high text-primary',
+  'bg-emerald-conversion/10 text-emerald-deep',
+];
+
+const layananIcons: Record<string, typeof IconKey> = {
+  'lepas-kunci': IconKey,
+  'dengan-sopir': IconSteering,
+  'antar-jemput-bandara': IconPlane,
+  'sewa-bulanan': IconCalendar,
+  'mobil-pengantin': IconRings,
+};
+
+// Rute terkait: yang menyebut kota/halaman ini diletakkan di depan.
+const related = (r: RutePage) => {
+  const n = page.nama.toLowerCase();
+  return r.dari.toLowerCase().includes(n) || r.ke.toLowerCase().includes(n) || r.nama.toLowerCase().includes(n);
+};
+const ruteList = semuaRute
+  .filter((r) => r.slug !== page.slug)
+  .sort((a, b) => Number(related(b)) - Number(related(a)));
+
+const whyUs = [
+  { icon: IconMessage, title: 'Pesan praktis via WhatsApp', desc: 'Cukup chat admin, tanpa formulir panjang atau registrasi akun.' },
+  { icon: IconUserCheck, title: 'Sopir ramah & hafal rute', desc: 'Pengemudi tepat waktu yang menguasai rute wisata maupun jalur alternatif.' },
+  { icon: IconRepeat, title: 'Jadwal fleksibel', desc: 'Ubah tanggal dan jam penjemputan tanpa penalti, konfirmasi paling lambat H-1.' },
+  { icon: IconReceipt, title: 'Harga jujur & pasti', desc: 'Biaya sewa disepakati di awal, tanpa biaya tersembunyi di akhir perjalanan.' },
+];
+
+const steps = [
+  { icon: IconCar, title: 'Pilih unit & jadwal', desc: 'Tentukan mobil, tanggal, durasi, dan titik jemput atau tujuan Anda.' },
+  { icon: IconMessage, title: 'Chat admin', desc: `Kirim detail lewat WhatsApp. Admin aktif ${site.hours.toLowerCase()}.` },
+  { icon: IconCredit, title: 'Konfirmasi & DP 30%', desc: 'Admin kirim rincian harga. DP 30% via transfer atau QRIS untuk mengunci jadwal.' },
+  { icon: IconClipboard, title: 'Serah terima', desc: 'Mobil diantar atau diambil di garasi. Sisa pembayaran dilunasi saat serah terima.' },
+];
+
+// Perbandingan skema, hanya untuk layanan yang memang bisa dua-duanya.
+const skemaLayanan = ['lepas-kunci', 'dengan-sopir', 'sewa-bulanan'].includes(page.slug)
+  ? layanan.filter((l) => l.slug === 'lepas-kunci' || l.slug === 'dengan-sopir')
+  : [];
+
+const skemaRute =
+  rute?.skema ??
+  (rute
+    ? [
+        { judul: 'Sekali jalan', desc: `Dijemput di ${rute.dari} dan diantar sampai ${rute.ke}. Cocok bila Anda menginap atau lanjut dengan kendaraan lain.` },
+        { judul: 'Pulang-pergi', desc: `Berangkat dan kembali ke ${rute.dari} bersama sopir yang sama, sesuai jadwal kegiatan Anda.` },
+        { judul: 'Beberapa hari', desc: `Mobil menemani selama di ${rute.ke}. Durasi dan rencana perjalanan dikonfirmasi bersama admin.` },
+      ]
+    : []);
+const skemaIcons = [IconFlag, IconArrows, IconCalendar];
+
+const tipsRute = [
+  { icon: IconSun, title: 'Berangkat lebih awal', desc: 'Beri waktu cadangan untuk istirahat dan kepadatan lalu lintas, terutama di akhir pekan dan musim libur.' },
+  { icon: IconWallet, title: 'Siapkan biaya perjalanan', desc: 'BBM, tol, dan parkir di luar harga sewa. Tanyakan perkiraannya ke admin saat memesan.' },
+  { icon: IconMapPin, title: 'Kirim titik jemput & rencana', desc: 'Bagikan lokasi jemput dan tempat yang ingin disinggahi supaya sopir bisa menyiapkan rute.' },
+];
+
+// FAQ: khusus halaman (bila ada) + umum per tipe. Semua jawaban konsisten dengan FAQ utama situs.
+const faqUmum: Tanya[] = [
+  ...(type === 'kota'
+    ? [
+        {
+          q: `Apakah mobil bisa diantar ke alamat saya di ${page.nama}?`,
+          a: isHome
+            ? `Bisa. Antar jemput mobil di dalam Kota ${site.city} gratis, termasuk ke hotel, stasiun, dan bandara.`
+            : `Bisa. Mobil diantar dari garasi kami di ${site.city}, biaya antar menyesuaikan jarak dan dikonfirmasi admin sebelum Anda memesan.`,
+        },
+        {
+          q: `Bisa sewa lepas kunci atau dengan sopir di ${page.nama}?`,
+          a: 'Keduanya bisa. Lepas kunci membutuhkan KTP, SIM A aktif, dan satu dokumen pendukung. Dengan sopir cukup KTP pemesan.',
+        },
+      ]
+    : []),
+  { q: 'Bagaimana cara memesan?', a: 'Chat admin lewat WhatsApp, sebutkan tanggal, durasi, dan tujuan. Admin akan mengecek ketersediaan dan mengirim rincian harga.' },
+  { q: 'Bagaimana cara bayar?', a: 'Transfer bank atau QRIS. DP 30% untuk mengunci jadwal, sisanya dilunasi saat serah terima mobil.' },
+  { q: 'Bisa mengubah jadwal setelah memesan?', a: 'Bisa. Tanggal dan jam penjemputan bisa diubah tanpa penalti, dengan konfirmasi paling lambat H-1.' },
+];
+const faqItems = [...(page.faq ?? []), ...faqUmum].slice(0, 6);
+
+const faqTitle = { kota: `Tanya jawab rental mobil ${page.nama}`, layanan: `Seputar layanan ${page.nama.toLowerCase()}`, rute: `Tanya jawab rute ${page.nama}` }[type];
+
+const cta = {
+  kota: { eyebrow: `Siap jalan di ${page.nama}`, title: `Butuh mobil di ${page.nama}?`, desc: 'Hubungi admin sekarang untuk cek ketersediaan unit, harga, dan jadwal antar.' },
+  layanan: { eyebrow: 'Konsultasi gratis', title: `Siap pesan ${page.nama.toLowerCase()}?`, desc: 'Ceritakan kebutuhan Anda, admin bantu pilihkan unit yang pas dan kirim rincian harganya.' },
+  rute: { eyebrow: 'Rencanakan perjalanan', title: `Rencanakan perjalanan ${page.nama}`, desc: 'Kirim tanggal, jumlah penumpang, dan titik jemput. Admin bantu atur jadwal dan unit yang sesuai.' },
+}[type];
+
+const armadaTitle = {
+  kota: `Pilihan armada favorit di ${page.nama}`,
+  layanan: `Armada untuk layanan ${page.nama.toLowerCase()}`,
+  rute: `Armada rekomendasi ${page.nama}`,
+}[type];
 ---
 
-<Base {title} description={page.ringkas} offsetHeader>
-  <div class="container page">
-    <nav class="crumbs" aria-label="Breadcrumb">
-      <ol>
-        <li><a href="/">Beranda</a></li>
-        <li aria-hidden="true"><IconChevronRight /></li>
-        <li><span>{parent}</span></li>
-        <li aria-hidden="true"><IconChevronRight /></li>
-        <li><span aria-current="page">{page.nama}</span></li>
-      </ol>
-    </nav>
-
-    <header class="head">
-      <h1 class="section-title">{page.judul}</h1>
-      <p class="lead">{page.ringkas}</p>
-      {
-        rute && (
-          <dl class="trip">
-            <div>
-              <IconRoute aria-hidden="true" />
-              <dt>Jarak</dt>
-              <dd>{rute.jarak}</dd>
-            </div>
-            <div>
-              <IconClock aria-hidden="true" />
-              <dt>Waktu tempuh</dt>
-              <dd>{rute.waktu}</dd>
-            </div>
-          </dl>
-        )
-      }
-      {rute && <p class="hint">Perkiraan kondisi lalu lintas normal.</p>}
-      <a class="btn btn-wa" href={waLink(pesan)} target="_blank" rel="noopener noreferrer">
-        <IconWa aria-hidden="true" />
-        Tanya admin
-      </a>
-    </header>
-
-    <section class="block" aria-labelledby="h-poin">
-      <h2 id="h-poin">Yang perlu diketahui</h2>
-      <ul class="poin">
-        {
-          page.poin.map((p) => (
-            <li>
-              <IconCheck aria-hidden="true" />
-              {p}
-            </li>
-          ))
-        }
-      </ul>
-      <p class="note">
-        Harga final dikonfirmasi admin lewat WhatsApp. Detail lengkap di <a href="/syarat-ketentuan/">syarat &amp; ketentuan</a>.
-      </p>
-    </section>
-
-    {
-      cars.length > 0 && (
-        <section class="block" aria-labelledby="h-mobil">
-          <div class="block-head">
-            <h2 id="h-mobil">Mobil yang cocok</h2>
-            <a href="/armada/" class="see-all">
-              Lihat semua armada
+<Base {title} description={page.ringkas} offsetHeader image={heroCar?.data.gambar}>
+  <!-- Breadcrumb -->
+  <section class="w-full bg-surface-container-low py-2.5">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+      <nav aria-label="Breadcrumb" class="overflow-x-auto whitespace-nowrap">
+        <ol class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium list-none p-0 m-0">
+          <li>
+            <a class="hover:text-primary transition-colors flex items-center gap-1" href="/">
+              <IconHome class="w-4 h-4" aria-hidden="true" />
+              <span>Beranda</span>
             </a>
+          </li>
+          <li aria-hidden="true"><IconChevronRight class="w-3.5 h-3.5 text-outline-variant" /></li>
+          <li>{parent}</li>
+          <li aria-hidden="true"><IconChevronRight class="w-3.5 h-3.5 text-outline-variant" /></li>
+          <li class="text-primary font-semibold" aria-current="page">{page.nama}</li>
+        </ol>
+      </nav>
+      <p class="hidden md:flex items-center gap-2 text-xs font-medium text-on-surface-variant shrink-0">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-conversion animate-pulse"></span>
+        Admin aktif {site.hours.toLowerCase()}
+      </p>
+    </div>
+  </section>
+
+  <!-- Hero -->
+  <section class="w-full relative overflow-hidden bg-surface py-10 lg:py-16">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+        <div class="lg:col-span-7 flex flex-col gap-5">
+          <span class="inline-flex items-center gap-1.5 bg-primary-fixed text-on-primary-fixed px-3.5 py-1.5 rounded-full w-fit text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+            <IconShield class="w-4 h-4 shrink-0" aria-hidden="true" />
+            {badge}
+          </span>
+          <h1 class="font-extrabold text-[2rem] sm:text-5xl lg:text-[3.25rem] text-on-surface tracking-tight leading-[1.1]">
+            {h1.a}{h1.b && <span class="text-primary">{h1.b}</span>}
+          </h1>
+          <p class="text-base sm:text-lg text-on-surface-variant leading-relaxed max-w-2xl">{page.ringkas}</p>
+          <div class="flex flex-wrap items-center gap-3 pt-1">
+            <a
+              class="inline-flex items-center gap-2 bg-emerald-conversion hover:bg-emerald-deep text-white px-6 py-3 rounded-xl font-bold text-sm shadow-[0_4px_16px_rgba(16,185,129,0.35)] transition-all hover:scale-[1.02] active:scale-95"
+              href={waLink(pesan)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <IconWa class="w-5 h-5" aria-hidden="true" />
+              Chat admin via WhatsApp
+            </a>
+            {
+              cars.length > 0 && (
+                <a
+                  class="inline-flex items-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-5 py-3 rounded-xl font-bold text-sm transition-colors"
+                  href="#armada-pilihan"
+                >
+                  <IconCar class="w-5 h-5" aria-hidden="true" />
+                  Lihat armada cocok
+                </a>
+              )
+            }
           </div>
-          <ul class="grid">
+          <ul class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 pt-2 list-none p-0 m-0">
+            {
+              page.poin.map((p, i) => {
+                const Icon = poinIcons[i % poinIcons.length];
+                return (
+                  <li class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-lowest border border-border-subtle/60 shadow-sm">
+                    <span class:list={['w-8 h-8 rounded-lg flex items-center justify-center shrink-0', iconTones[i % iconTones.length]]}>
+                      <Icon class="w-[18px] h-[18px]" aria-hidden="true" />
+                    </span>
+                    <span class="text-sm font-semibold text-on-surface leading-snug pt-1">{p}</span>
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </div>
+        <div class="lg:col-span-5">
+          <HeroCard {type} {page} car={heroCar} totalModel={semua.length} {pesan} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- KOTA: layanan yang tersedia ---------- */}
+  {
+    type === 'kota' && (
+      <section class="w-full bg-surface-subtle py-14 lg:py-20" aria-labelledby="h-layanan">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead
+            id="h-layanan"
+            eyebrow="Layanan tersedia"
+            title={`Pilihan layanan di ${page.nama}`}
+            desc={isHome ? 'Semua layanan kami berangkat dari garasi di Semarang Tengah. Pilih yang paling sesuai dengan kebutuhan Anda.' : `Mobil diantar dari ${site.city} atau berangkat bersama sopir kami. Pilih layanan yang paling sesuai.`}
+          >
+            <span class="inline-flex items-center gap-1.5 text-sm font-bold text-primary">
+              <IconCheck class="w-5 h-5" aria-hidden="true" />
+              {isHome ? 'Antar jemput gratis dalam kota' : 'Biaya antar sesuai jarak'}
+            </span>
+          </SectionHead>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {layanan.map((l) => {
+              const Icon = layananIcons[l.slug] ?? IconCar;
+              return (
+                <a
+                  href={`/layanan/${l.slug}/`}
+                  class="group bg-surface-container-lowest p-5 rounded-2xl border border-border-subtle/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col gap-2"
+                >
+                  <span class="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center mb-1">
+                    <Icon class="w-[22px] h-[22px]" aria-hidden="true" />
+                  </span>
+                  <span class="font-bold text-base text-on-surface group-hover:text-primary transition-colors">{l.nama}</span>
+                  <span class="text-xs text-on-surface-variant leading-relaxed line-clamp-4">{l.ringkas}</span>
+                  <span class="mt-auto pt-3 text-xs font-bold text-primary inline-flex items-center gap-1">
+                    Selengkapnya
+                    <IconArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* ---------- LAYANAN: langkah pesan + perbandingan skema ---------- */}
+  {
+    type === 'layanan' && (
+      <section class="w-full bg-surface-subtle py-14 lg:py-20" aria-labelledby="h-langkah">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead
+            id="h-langkah"
+            eyebrow="Proses cepat & praktis"
+            title={`4 langkah mudah pesan ${page.nama.toLowerCase()}`}
+            desc="Tanpa antre dan tanpa registrasi akun. Semua diatur lewat chat WhatsApp dengan admin kami."
+            center
+          />
+          <ol class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 list-none p-0 m-0">
+            {steps.map((s, i) => (
+              <li class="relative bg-surface-container-lowest p-5 rounded-2xl border border-border-subtle/60 shadow-sm flex flex-col gap-2">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="w-9 h-9 rounded-lg bg-primary text-on-primary font-bold text-sm flex items-center justify-center">{String(i + 1).padStart(2, '0')}</span>
+                  <s.icon class="w-6 h-6 text-outline" aria-hidden="true" />
+                </div>
+                <span class="font-bold text-base text-on-surface">{s.title}</span>
+                <span class="text-sm text-on-surface-variant leading-relaxed">{s.desc}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    skemaLayanan.length > 0 && (
+      <section class="w-full bg-surface py-14 lg:py-20" aria-labelledby="h-skema">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead
+            id="h-skema"
+            eyebrow="Pilih skema sewa"
+            title="Lepas kunci atau dengan sopir?"
+            desc="Dua cara sewa yang paling sering dipilih. Bandingkan ketentuannya, lalu pilih yang paling nyaman untuk Anda."
+            center
+          />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto w-full">
+            {skemaLayanan.map((l) => {
+              const aktif = l.slug === page.slug;
+              const Icon = layananIcons[l.slug] ?? IconCar;
+              return (
+                <div
+                  class:list={[
+                    'relative p-6 rounded-2xl flex flex-col gap-4',
+                    aktif ? 'bg-surface-container-lowest border-2 border-primary shadow-lg' : 'bg-surface-container-low border border-border-subtle',
+                  ]}
+                >
+                  {aktif && (
+                    <span class="absolute -top-3 left-6 bg-primary text-on-primary px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">Sedang Anda lihat</span>
+                  )}
+                  <div class="flex items-center gap-3">
+                    <span class="w-11 h-11 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
+                      <Icon class="w-6 h-6" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <p class="font-bold text-lg text-on-surface leading-tight">{l.nama}</p>
+                      <p class="text-xs text-on-surface-variant">{l.slug === 'lepas-kunci' ? 'Harga per 24 jam' : 'Harga per 12 jam'}</p>
+                    </div>
+                  </div>
+                  <p class="text-sm text-on-surface-variant leading-relaxed">{l.ringkas}</p>
+                  <ul class="flex flex-col gap-2 list-none p-0 m-0">
+                    {l.poin.map((p) => (
+                      <li class="flex items-start gap-2 text-sm text-on-surface">
+                        <IconCheck class="w-[18px] h-[18px] text-emerald-deep shrink-0 mt-0.5" aria-hidden="true" />
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {aktif ? (
+                    <a
+                      href={waLink(pesan)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-4 py-3 rounded-xl font-bold text-sm transition-colors"
+                    >
+                      <IconWa class="w-5 h-5" aria-hidden="true" />
+                      Pesan {l.nama.toLowerCase()} via WhatsApp
+                    </a>
+                  ) : (
+                    <a
+                      href={`/layanan/${l.slug}/`}
+                      class="mt-auto inline-flex items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container text-primary border border-border-subtle px-4 py-3 rounded-xl font-bold text-sm transition-colors"
+                    >
+                      Lihat layanan {l.nama.toLowerCase()}
+                      <IconArrowRight class="w-4 h-4" aria-hidden="true" />
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* ---------- RUTE: pilihan skema perjalanan ---------- */}
+  {
+    rute && (
+      <section class="w-full bg-surface-subtle py-14 lg:py-20" aria-labelledby="h-skema-rute">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead
+            id="h-skema-rute"
+            eyebrow="Fleksibel sesuai rencana"
+            title="Pilih skema perjalanan"
+            desc={`Atur perjalanan ${rute.dari} - ${rute.ke} sesuai kebutuhan. Harga final dikonfirmasi admin sesuai skema, unit, dan durasi.`}
+            center
+          />
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {skemaRute.map((s, i) => {
+              const Icon = skemaIcons[i % skemaIcons.length];
+              return (
+                <div
+                  class:list={[
+                    'relative bg-surface-container-lowest p-6 rounded-2xl flex flex-col gap-3',
+                    i === 0 ? 'border-2 border-primary shadow-lg' : 'border border-border-subtle/60 shadow-sm',
+                  ]}
+                >
+                  {i === 0 && (
+                    <span class="absolute -top-3 left-6 bg-primary text-on-primary px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">Paling sering dipilih</span>
+                  )}
+                  <span class="w-11 h-11 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
+                    <Icon class="w-6 h-6" aria-hidden="true" />
+                  </span>
+                  <p class="font-bold text-lg text-on-surface">{s.judul}</p>
+                  <p class="text-sm text-on-surface-variant leading-relaxed">{s.desc}</p>
+                  <a
+                    href={waLink(`Halo Admin ${site.name}, ${page.pesan} Skema: ${s.judul.toLowerCase()}. ${WA_SOURCE_TAG}`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class:list={[
+                      'mt-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors',
+                      i === 0 ? 'bg-primary hover:bg-primary-container text-on-primary' : 'bg-surface-container hover:bg-surface-container-high text-on-surface',
+                    ]}
+                  >
+                    Tanya harga skema ini
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* ---------- KEUNGGULAN (layanan, di atas armada) ---------- */}
+  {
+    type === 'layanan' && (
+      <section class="w-full bg-surface-container-low py-14 lg:py-20" aria-labelledby="h-why">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead id="h-why" eyebrow="Kenapa pelanggan kembali" title={`Kenapa pilih ${site.name}?`} desc="Pelayanan yang jelas dari awal pesan sampai mobil kembali." />
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {whyUs.map((w) => (
+              <div class="bg-surface-container-lowest p-5 rounded-2xl border border-border-subtle/60 shadow-sm flex flex-col gap-2">
+                <span class="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center mb-1">
+                  <w.icon class="w-[22px] h-[22px]" aria-hidden="true" />
+                </span>
+                <span class="font-bold text-base text-on-surface">{w.title}</span>
+                <span class="text-sm text-on-surface-variant leading-relaxed">{w.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* ---------- ARMADA ---------- */}
+  {
+    cars.length > 0 && (
+      <section class="w-full bg-surface py-14 lg:py-20 scroll-mt-24" id="armada-pilihan" aria-labelledby="h-mobil">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead id="h-mobil" eyebrow="Rekomendasi armada" title={armadaTitle} desc="Unit terawat dengan AC dingin dan kabin bersih. Ketersediaan dikonfirmasi admin saat Anda memesan.">
+            <a href="/armada/" class="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
+              Lihat semua armada
+              <IconArrowRight class="w-4 h-4" aria-hidden="true" />
+            </a>
+          </SectionHead>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {cars.map((car) => (
-              <li>
-                <FleetCard car={car} />
-              </li>
+              <FleetCard car={car} />
             ))}
-          </ul>
-        </section>
-      )
-    }
+          </div>
+        </div>
+      </section>
+    )
+  }
 
-    {
-      siblings.length > 0 && (
-        <nav class="block" aria-labelledby="h-lain">
-          <h2 id="h-lain">{parent} lainnya</h2>
-          <ul class="siblings">
-            {siblings.map((s) => (
-              <li>
-                <a href={s.href}>{s.nama}</a>
+  {/* ---------- RUTE: tips ---------- */}
+  {
+    rute && (
+      <section class="w-full bg-surface-container-low py-14 lg:py-20" aria-labelledby="h-tips">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead id="h-tips" eyebrow="Persiapan perjalanan" title={`Tips perjalanan ${rute.dari} - ${rute.ke}`} desc="Beberapa hal sederhana supaya perjalanan Anda lebih lancar." />
+          <ol class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0 m-0">
+            {tipsRute.map((t, i) => (
+              <li class="bg-surface-container-lowest p-6 rounded-2xl border border-border-subtle/60 shadow-sm flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                  <span class="w-9 h-9 rounded-lg bg-primary text-on-primary font-bold text-sm flex items-center justify-center">{i + 1}</span>
+                  <t.icon class="w-6 h-6 text-outline" aria-hidden="true" />
+                </div>
+                <span class="font-bold text-base text-on-surface">{t.title}</span>
+                <span class="text-sm text-on-surface-variant leading-relaxed">{t.desc}</span>
               </li>
             ))}
-          </ul>
-        </nav>
-      )
-    }
-  </div>
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  {/* ---------- RUTE POPULER (kota & layanan) ---------- */}
+  {
+    type !== 'rute' && ruteList.length > 0 && (
+      <section class:list={['w-full py-14 lg:py-20', type === 'kota' ? 'bg-surface-container-low' : 'bg-surface-subtle']} aria-labelledby="h-rute">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead
+            id="h-rute"
+            eyebrow="Inspirasi perjalanan"
+            title={type === 'kota' ? `Rute populer dari & ke ${page.nama}` : 'Rute populer pelanggan kami'}
+            desc="Perkiraan jarak dan waktu tempuh pada kondisi normal. Detail rute bisa diatur bersama admin."
+          />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {ruteList.slice(0, 2).map((r) => (
+              <a
+                href={`/rute/${r.slug}/`}
+                class="group bg-surface-container-lowest p-6 rounded-2xl border border-border-subtle/60 shadow-sm hover:shadow-md transition-all flex flex-col gap-3"
+              >
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="inline-flex items-center gap-1 bg-primary-fixed text-on-primary-fixed px-2.5 py-1 rounded-full text-xs font-bold">
+                    <IconRoute class="w-3.5 h-3.5" aria-hidden="true" />
+                    {r.jarak}
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-on-surface-variant">
+                    <IconClock class="w-3.5 h-3.5" aria-hidden="true" />
+                    {r.waktu}
+                  </span>
+                </div>
+                <span class="font-bold text-lg text-on-surface group-hover:text-primary transition-colors">{r.nama}</span>
+                <span class="text-sm text-on-surface-variant leading-relaxed">{r.ringkas}</span>
+                <ul class="flex flex-wrap gap-2 list-none p-0 m-0">
+                  {r.poin.slice(0, 3).map((p) => (
+                    <li class="bg-surface-container-low px-2.5 py-1 rounded-lg text-xs text-on-surface-variant">{p}</li>
+                  ))}
+                </ul>
+                <span class="mt-auto pt-2 text-sm font-bold text-primary inline-flex items-center gap-1 self-end">
+                  Lihat rute
+                  <IconArrowRight class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+                </span>
+              </a>
+            ))}
+          </div>
+          {ruteList.length > 2 && (
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {ruteList.slice(2).map((r) => (
+                <a
+                  href={`/rute/${r.slug}/`}
+                  class="group bg-surface-container-lowest p-4 rounded-2xl border border-border-subtle/60 shadow-sm hover:shadow-md transition-all flex flex-col gap-1.5"
+                >
+                  <span class="text-[11px] font-bold text-primary">{r.jarak} · {r.waktu}</span>
+                  <span class="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">{r.nama}</span>
+                  <span class="text-xs text-on-surface-variant line-clamp-2">{r.ringkas}</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  {/* ---------- KEUNGGULAN (kota) ---------- */}
+  {
+    type === 'kota' && (
+      <section class="w-full bg-surface py-14 lg:py-20" aria-labelledby="h-why">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+          <SectionHead
+            id="h-why"
+            eyebrow="Kepercayaan & kenyamanan"
+            title={`Kenapa pilih ${site.name} di ${page.nama}?`}
+            desc="Pelayanan yang jelas dari awal pesan sampai mobil kembali."
+            center
+          />
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {whyUs.map((w) => (
+              <div class="bg-surface-container-lowest p-5 rounded-2xl border border-border-subtle/60 shadow-sm flex flex-col gap-2">
+                <span class="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center mb-1">
+                  <w.icon class="w-[22px] h-[22px]" aria-hidden="true" />
+                </span>
+                <span class="font-bold text-base text-on-surface">{w.title}</span>
+                <span class="text-sm text-on-surface-variant leading-relaxed">{w.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* ---------- HALAMAN SAUDARA ---------- */}
+  <section class="w-full bg-surface-container-low py-14 lg:py-20" aria-labelledby="h-saudara">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+      <SectionHead
+        id="h-saudara"
+        eyebrow={{ kota: 'Jaringan Jawa Tengah & DIY', layanan: 'Layanan lainnya', rute: 'Rute lainnya' }[type]}
+        title={{ kota: 'Kota layanan lainnya', layanan: `Layanan ${site.name} lainnya`, rute: 'Rute populer lainnya' }[type]}
+        desc={{
+          kota: `Kami juga melayani sewa mobil di kota-kota berikut, diantar dari ${site.city}.`,
+          layanan: 'Pilih layanan lain yang mungkin lebih sesuai dengan kebutuhan Anda.',
+          rute: 'Perkiraan jarak dan waktu tempuh pada kondisi normal.',
+        }[type]}
+      />
+      <div class:list={['grid grid-cols-1 sm:grid-cols-2 gap-4', siblings.length >= 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4']}>
+        {
+          siblings.map((s) => {
+            const data =
+              type === 'kota' ? kota.find((k) => `/kota/${k.slug}/` === s.href) : type === 'layanan' ? layanan.find((l) => `/layanan/${l.slug}/` === s.href) : semuaRute.find((r) => `/rute/${r.slug}/` === s.href);
+            const r = data && 'jarak' in data ? (data as RutePage) : null;
+            const Icon = type === 'layanan' && data ? (layananIcons[data.slug] ?? IconCar) : type === 'rute' ? IconRoute : IconMapPin;
+            return (
+              <a href={s.href} class="group bg-surface-container-lowest p-4 rounded-2xl border border-border-subtle/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col gap-2">
+                <span class="flex items-center justify-between">
+                  <Icon class="w-6 h-6 text-primary" aria-hidden="true" />
+                  <IconChevronRight class="w-4 h-4 text-outline-variant group-hover:text-primary group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
+                </span>
+                <span class="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">{s.nama}</span>
+                {r ? <span class="text-[11px] font-semibold text-primary">{r.jarak} · {r.waktu}</span> : null}
+                {data && <span class="text-xs text-on-surface-variant line-clamp-2">{data.ringkas}</span>}
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <InfoFaq title={faqTitle} items={faqItems} />
+
+  <InfoCta eyebrow={cta.eyebrow} title={cta.title} desc={cta.desc} {pesan} />
 </Base>
-
-<style>
-  .page {
-    padding-bottom: clamp(64px, 9vw, 112px);
-  }
-
-  .crumbs ol {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8125rem;
-    color: var(--text-2);
-  }
-
-  .crumbs a {
-    text-decoration: none;
-  }
-
-  .crumbs a:hover {
-    color: var(--text);
-    text-decoration: underline;
-  }
-
-  .crumbs li[aria-hidden] :global(svg) {
-    width: 14px;
-    height: 14px;
-  }
-
-  .crumbs [aria-current] {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .head {
-    display: grid;
-    justify-items: start;
-    gap: 16px;
-    margin-top: 20px;
-  }
-
-  .lead {
-    max-width: 60ch;
-    color: var(--text-2);
-    font-size: 1.0625rem;
-  }
-
-  .trip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 4px 0 0;
-  }
-
-  .trip > div {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 12px;
-    align-items: center;
-    padding: 14px 20px;
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow-xs);
-  }
-
-  .trip :global(svg) {
-    grid-row: span 2;
-    width: 22px;
-    height: 22px;
-    stroke-width: 1.6;
-  }
-
-  .trip dt {
-    font-size: 0.75rem;
-    color: var(--text-2);
-  }
-
-  .trip dd {
-    margin: 0;
-    font-weight: 600;
-  }
-
-  .hint {
-    margin-top: -8px;
-    font-size: 0.8125rem;
-    color: var(--text-2);
-  }
-
-  .block {
-    margin-top: clamp(40px, 5vw, 56px);
-    padding-top: clamp(32px, 4vw, 44px);
-    border-top: 1px solid var(--line);
-  }
-
-  .block h2 {
-    font-size: clamp(1.375rem, 2.2vw, 1.75rem);
-  }
-
-  .block-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .see-all {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  .poin {
-    list-style: none;
-    margin: 20px 0 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px 40px;
-  }
-
-  .poin li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-
-  .poin :global(svg) {
-    flex: none;
-    width: 18px;
-    height: 18px;
-    margin-top: 3px;
-    color: var(--wa);
-  }
-
-  .note {
-    margin-top: 24px;
-    font-size: 0.8125rem;
-    color: var(--text-2);
-  }
-
-  .note a {
-    color: var(--accent);
-  }
-
-  .grid {
-    list-style: none;
-    margin: 24px 0 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  .siblings {
-    list-style: none;
-    margin: 20px 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .siblings a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 40px;
-    padding: 0 16px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: var(--surface);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: border-color 0.2s var(--ease);
-  }
-
-  .siblings a:hover {
-    border-color: var(--text);
-  }
-
-  @media (max-width: 960px) {
-    .grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .poin,
-    .grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

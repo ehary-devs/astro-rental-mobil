@@ -5,132 +5,42 @@ import BookingForm from './BookingForm.astro';
 import { site } from '../config/site';
 ---
 
-<section class="hero" aria-labelledby="hero-title">
-  <div class="media">
+<section class="relative z-10 w-full bg-on-background text-surface-bright" aria-labelledby="hero-title">
+  <!-- Visual background image bleed -->
+  <div class="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
     <Picture
       src={heroImg}
       formats={['avif', 'webp']}
       widths={[640, 960, 1280, 1920]}
       sizes="100vw"
-      alt="Toyota Alphard hitam terparkir, siap disewa dengan sopir"
+      alt="Toyota Alphard hitam terparkir rapi, siap disewa lepas kunci atau dengan sopir"
       loading="eager"
       fetchpriority="high"
+      class="w-full h-full object-cover object-[50%_60%] opacity-40 scale-105 transform motion-safe:transition-transform duration-1000"
     />
+    <div class="absolute inset-0 bg-gradient-to-t from-on-background via-on-background/70 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-on-background/90 via-on-background/50 to-transparent"></div>
   </div>
 
-  <div class="container content">
-    <div class="copy">
-      <h1 id="hero-title">Sewa mobil<br />tanpa ribet</h1>
-      <p>
-        Lepas kunci atau dengan sopir di {site.city} dan sekitarnya. Pilih mobil, isi jadwal, admin konfirmasi lewat
-        WhatsApp.
+  <!-- Hero Content Container -->
+  <div class="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 pt-28 pb-16 lg:pt-36 lg:pb-24 flex flex-col gap-8">
+    <div class="max-w-2xl flex flex-col gap-3">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-bright/10 backdrop-blur-md w-fit border border-white/10">
+        <span class="w-2 h-2 rounded-full bg-emerald-conversion animate-pulse"></span>
+        <span class="font-bold text-xs tracking-wider uppercase text-emerald-conversion">Ready 24/7 {site.city} &amp; Jawa Tengah</span>
+      </div>
+
+      <h1 id="hero-title" class="font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.05] text-white">
+        Sewa mobil <br class="hidden sm:block" />
+        <span class="text-primary-fixed">tanpa ribet</span>
+      </h1>
+
+      <p class="text-base sm:text-lg text-outline-variant max-w-xl leading-relaxed">
+        Lepas kunci atau dengan sopir di {site.city} dan sekitarnya. Pilih mobil, isi jadwal, admin konfirmasi cepat lewat WhatsApp.
       </p>
     </div>
+
+    <!-- Quick Interactive Booking Form Widget -->
     <BookingForm />
   </div>
 </section>
-
-<style>
-  .hero {
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    align-items: flex-end;
-    min-height: min(100dvh, 880px);
-    padding-top: calc(var(--header-h) + 40px);
-    background: var(--ink);
-    color: var(--on-ink);
-    z-index: 2; /* panel picker form boleh menjorok ke section berikutnya */
-  }
-
-  .media {
-    position: absolute;
-    inset: 0 0 18% 0;
-    z-index: -1;
-    overflow: hidden;
-  }
-
-  .media :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 62%;
-    filter: brightness(0.72) contrast(1.05) saturate(0.85);
-    -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
-  }
-
-  /* Scrim kiri bawah agar headline selalu terbaca di atas foto */
-  .media::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(to top, var(--ink) 4%, transparent 55%),
-      linear-gradient(100deg, rgb(14 16 20 / 0.7) 0%, transparent 55%);
-  }
-
-  .content {
-    display: grid;
-    gap: clamp(28px, 4vw, 48px);
-    width: 100%;
-  }
-
-  .copy {
-    display: grid;
-    grid-template-columns: 1fr minmax(0, 340px);
-    align-items: end;
-    gap: 24px 48px;
-  }
-
-  h1 {
-    font-size: clamp(2.75rem, 8vw, 5.75rem);
-    line-height: 0.95;
-    letter-spacing: -0.035em;
-    color: #ffffff;
-  }
-
-  .copy p {
-    color: var(--on-ink-2);
-    font-size: 0.9375rem;
-    max-width: 38ch;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .copy > * {
-      animation: hero-in 0.9s var(--ease) both;
-    }
-    .copy p {
-      animation-delay: 0.12s;
-    }
-    .media :global(img) {
-      animation: hero-zoom 1.6s var(--ease) both;
-    }
-  }
-
-  @keyframes hero-in {
-    from {
-      opacity: 0;
-      transform: translateY(24px);
-    }
-  }
-
-  @keyframes hero-zoom {
-    from {
-      transform: scale(1.06);
-    }
-  }
-
-  @media (max-width: 760px) {
-    .hero {
-      min-height: auto;
-      padding-top: calc(var(--header-h) + 140px);
-    }
-    .media {
-      inset: 0 0 45% 0;
-    }
-    .copy {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

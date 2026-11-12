@@ -10,131 +10,56 @@ const pesan = `Halo Admin ${site.name}, saya tertarik promo ${promo.car} (${prom
 
 {
   promo.active && (
-    <section class="promo-section container" aria-labelledby="promo-title">
-      <div class="promo-card">
-        <div class="copy">
-          <span class="tag">Promo Spesial</span>
-          <h2 id="promo-title">{promo.title}</h2>
-          <p class="detail">{promo.detail}. Nikmati sensasi berkendara mobil listrik modern dengan kabin senyap dan teknologi mutakhir.</p>
-          
-          <div class="offer-row">
-            <span class="discount-badge">Diskon {promo.value}</span>
-            <a class="btn btn-accent" href={waLink(pesan)} target="_blank" rel="noopener noreferrer">
-              <span>Pesan {promo.car}</span>
-              <IconArrow aria-hidden="true" />
-            </a>
-          </div>
-        </div>
+    <section class="w-full py-10 bg-surface" id="promo" aria-labelledby="promo-title">
+      <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+        <div class="relative w-full rounded-lg overflow-hidden bg-gradient-to-r from-on-background via-inverse-surface to-on-background shadow-2xl flex flex-col lg:flex-row items-center">
+          <!-- Content Side -->
+          <div class="p-6 lg:p-10 flex-1 flex flex-col gap-4 z-10">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-3.5 py-1 rounded-full bg-primary-container text-white text-xs uppercase font-bold tracking-wider">
+                PROMO SPESIAL
+              </span>
+              <span class="px-3.5 py-1 rounded-full bg-emerald-conversion text-white text-xs font-bold">
+                Diskon {promo.value}
+              </span>
+            </div>
 
-        <div class="media">
-          <Image
-            src={ioniq}
-            alt={`${promo.car} putih tampak depan samping`}
-            widths={[480, 720, 960]}
-            sizes="(max-width: 760px) 100vw, 50vw"
-            class="photo"
-          />
+            <h2 id="promo-title" class="font-extrabold text-[32px] leading-tight lg:text-5xl text-surface-bright tracking-tight">
+              Coba mobil listrik, <br />
+              <span class="text-primary-fixed">tanpa beli bensin</span>
+            </h2>
+
+            <p class="text-base leading-[26px] text-outline-variant max-w-lg">
+              {promo.detail}. Nikmati sensasi berkendara mobil listrik modern dengan kabin senyap dan teknologi mutakhir.
+            </p>
+
+            <div class="pt-2 flex flex-wrap items-center gap-4">
+              <a
+                class="px-6 py-3.5 bg-primary-container hover:bg-primary text-white font-bold text-sm rounded-xl shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                href={waLink(pesan)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Pesan {promo.car}
+                <IconArrow class="w-4 h-4" aria-hidden="true" />
+              </a>
+              <span class="text-xs font-medium text-surface-container-high">Unit terbatas &bull; Booking sekarang</span>
+            </div>
+          </div>
+
+          <!-- Electric Vehicle Image Showcase -->
+          <div class="w-full lg:w-1/2 h-80 lg:h-[420px] relative overflow-hidden">
+            <Image
+              src={ioniq}
+              alt={`${promo.car} putih tampak samping`}
+              widths={[480, 720, 960]}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              class="w-full h-full object-cover"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-on-background via-transparent to-transparent pointer-events-none" />
+          </div>
         </div>
       </div>
     </section>
   )
 }
-
-<style>
-  .promo-section {
-    padding-block: clamp(40px, 6vw, 64px);
-  }
-
-  .promo-card {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1.15fr 1fr;
-    align-items: center;
-    background: var(--ink);
-    border: 1px solid var(--line-dark);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    color: var(--on-ink);
-  }
-
-  .copy {
-    padding: clamp(28px, 4vw, 48px);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .tag {
-    display: inline-block;
-    padding: 4px 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-pill);
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--on-ink-2);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  h2 {
-    font-size: clamp(1.875rem, 3.2vw, 2.5rem);
-    letter-spacing: -0.025em;
-    line-height: 1.1;
-  }
-
-  .detail {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--on-ink-2);
-    max-width: 44ch;
-  }
-
-  .offer-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-  }
-
-  .discount-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 14px;
-    background: var(--accent);
-    color: #fff;
-    border-radius: var(--radius-pill);
-    font-size: 0.9375rem;
-    font-weight: 700;
-  }
-
-  .media {
-    position: relative;
-    height: 100%;
-    min-height: 280px;
-    overflow: hidden;
-    background: var(--ink-2);
-  }
-
-  .media :global(.photo) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  @media (max-width: 900px) {
-    .promo-card {
-      grid-template-columns: 1fr;
-    }
-    .media {
-      order: -1;
-      min-height: 220px;
-      max-height: 280px;
-    }
-    .copy {
-      padding: 28px 20px;
-    }
-  }
-</style>

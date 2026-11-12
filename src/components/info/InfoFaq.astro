@@ -1,0 +1,57 @@
+---
+import IconChevronDown from '@tabler/icons/outline/chevron-down.svg';
+import SectionHead from './SectionHead.astro';
+import type { Tanya } from '../../data/halaman';
+
+interface Props {
+  title: string;
+  items: Tanya[];
+}
+
+const { title, items } = Astro.props;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<section class="w-full bg-surface py-14 lg:py-20" aria-labelledby="h-faq">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
+    <SectionHead
+      id="h-faq"
+      eyebrow="Tanya jawab"
+      {title}
+      desc="Jawaban singkat untuk pertanyaan yang paling sering ditanyakan ke admin kami."
+      center
+    />
+    <div class="w-full max-w-3xl mx-auto flex flex-col gap-3">
+      {
+        items.map((f, i) => (
+          <details class="group bg-surface-container-lowest rounded-2xl border border-border-subtle shadow-sm overflow-hidden" open={i === 0}>
+            <summary class="w-full p-5 flex items-center justify-between gap-3 text-left font-bold text-sm sm:text-base text-on-surface hover:text-primary cursor-pointer list-none select-none transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:-outline-offset-2 rounded-2xl">
+              <span>{f.q}</span>
+              <IconChevronDown class="w-5 h-5 text-on-surface-variant group-open:rotate-180 transition-transform duration-200 shrink-0" aria-hidden="true" />
+            </summary>
+            <div class="px-5 pb-5 pt-3 text-sm text-on-surface-variant leading-relaxed border-t border-border-subtle/50">{f.a}</div>
+          </details>
+        ))
+      }
+      <a href="/faq/" class="self-center pt-2 inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-container transition-colors">
+        Lihat semua tanya jawab <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</section>
+
+<style>
+  summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

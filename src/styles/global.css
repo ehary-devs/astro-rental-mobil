@@ -1,123 +1,206 @@
-/*
- * Token desain Lintas Rent — Bersih, Terpadu, dan Konsisten.
- */
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0037b0;
+  --color-primary-container: #1d4ed8;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #cad3ff;
+  --color-primary-fixed: #dce1ff;
+  --color-primary-fixed-dim: #b7c4ff;
+  --color-on-primary-fixed: #001551;
+  --color-on-primary-fixed-variant: #0039b5;
+
+  --color-secondary: #565e74;
+  --color-secondary-container: #dae2fd;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #5c647a;
+  --color-secondary-fixed: #dae2fd;
+  --color-secondary-fixed-dim: #bec6e0;
+  --color-on-secondary-fixed: #131b2e;
+  --color-on-secondary-fixed-variant: #3f465c;
+
+  --color-tertiary: #7f2500;
+  --color-tertiary-container: #a73400;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #ffc9b7;
+  --color-tertiary-fixed: #ffdbcf;
+  --color-tertiary-fixed-dim: #ffb59c;
+  --color-on-tertiary-fixed: #390c00;
+  --color-on-tertiary-fixed-variant: #832700;
+
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  --color-surface: #faf8ff;
+  --color-surface-dim: #d9d9e5;
+  --color-surface-bright: #faf8ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f2fe;
+  --color-surface-container: #ededf9;
+  --color-surface-container-high: #e8e7f3;
+  --color-surface-container-highest: #e2e1ed;
+  --color-on-surface: #1a1b23;
+  --color-on-surface-variant: #434655;
+  --color-outline: #747686;
+  --color-outline-variant: #c4c5d7;
+  --color-inverse-surface: #2e3039;
+  --color-inverse-on-surface: #f0f0fb;
+  --color-inverse-primary: #b7c4ff;
+  --color-surface-variant: #e2e1ed;
+  --color-background: #faf8ff;
+  --color-on-background: #1a1b23;
+  --color-surface-tint: #2151da;
+  --color-emerald-conversion: #10b981;
+  --color-emerald-deep: #059669;
+  --color-blue-vibrant: #2563eb;
+  --color-surface-subtle: #f8fafc;
+  --color-border-subtle: #e2e8f0;
+  --color-text-muted: #64748b;
+
+  --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display-hero: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-headline-lg: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-headline-md: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-headline-sm: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body-lg: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body-md: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body-sm: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-label-lg: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-label-md: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-price-badge: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --spacing-gutter: 1.25rem;
+  --spacing-gutter-desktop: 1.5rem;
+  --spacing-margin: 1rem;
+  --spacing-margin-tablet: 2rem;
+  --spacing-margin-desktop: 3rem;
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2.5rem;
+}
+
 :root {
-  --font: 'Archivo Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
   /* Latar gelap: hero, keunggulan, footer */
-  --ink: #0e1014;
-  --ink-2: #161920;
-  --ink-3: #222630;
-  --on-ink: #f8fafc;
-  --on-ink-2: #9da4b2;
-  --line-dark: #232732;
+  --ink: #1a1b23;
+  --ink-2: #2e3039;
+  --ink-3: #434655;
+  --on-ink: #faf8ff;
+  --on-ink-2: #c4c5d7;
+  --line-dark: #2e3039;
 
   /* Halaman terang */
-  --bg: #fbfbfc;
-  --bg-2: #f3f4f6;
+  --bg: #faf8ff;
+  --bg-2: #f3f2fe;
   --surface: #ffffff;
-  --line: #e5e7eb;
-  --text: #111318;
-  --text-2: #4b5563;
+  --line: #e2e8f0;
+  --text: #1a1b23;
+  --text-2: #434655;
 
-  /* Warna aksen tunggal (Royal Blue) */
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
+  /* Warna aksen tunggal (Cobalt / Primary) */
+  --accent: #1d4ed8;
+  --accent-hover: #0037b0;
   --on-accent: #ffffff;
-  --accent-soft: #eff6ff;
-  --accent-border: #bfdbfe;
+  --accent-soft: #dce1ff;
+  --accent-border: #b7c4ff;
 
-  /* WhatsApp Green (hanya untuk kontak WhatsApp langsung) */
-  --wa: #16a34a;
-  --wa-hover: #15803d;
+  /* WhatsApp Green */
+  --wa: #10b981;
+  --wa-hover: #059669;
 
-  --focus: #2563eb;
+  --focus: #1d4ed8;
 
-  /* Radius sudut yang terpadu dan proporsional */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 18px;
-  --radius-pill: 999px;
+  --radius-pill: 9999px;
 
-  /* Bayangan natural dan halus, tanpa warna neon */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -1px rgb(0 0 0 / 0.04);
   --shadow-lg: 0 10px 24px -4px rgb(0 0 0 / 0.1), 0 4px 8px -2px rgb(0 0 0 / 0.05);
 
-  --container: 1200px;
-  --gutter: clamp(16px, 4vw, 32px);
-  --header-h: 64px;
+  --container: 1280px;
+  --gutter: clamp(16px, 4vw, 24px);
+  --header-h: 80px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   color-scheme: light;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-  scroll-padding-top: calc(var(--header-h) + 24px);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
+/* Reset di layer base supaya utility Tailwind (text-sm, hidden, dst.) tetap menang. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
-}
 
-body {
-  margin: 0;
-  font-family: var(--font);
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-h) + 24px);
+  }
 
-img,
-svg,
-picture {
-  display: block;
-  max-width: 100%;
-}
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
 
-img {
-  height: auto;
-}
+  body {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 
-h1,
-h2,
-h3 {
-  margin: 0;
-  line-height: 1.1;
-  font-weight: 700;
-  font-stretch: 115%;
-  letter-spacing: -0.025em;
-  text-wrap: balance;
-}
+  img,
+  svg,
+  picture {
+    display: block;
+    max-width: 100%;
+  }
 
-p {
-  margin: 0;
-}
+  img {
+    height: auto;
+  }
 
-a {
-  color: inherit;
-}
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 }
 
 :focus-visible {
@@ -127,24 +210,9 @@ textarea {
 
 .container {
   width: 100%;
-  max-width: calc(var(--container) + var(--gutter) * 2);
+  max-width: 1280px;
   margin-inline: auto;
   padding-inline: var(--gutter);
-}
-
-.section-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  letter-spacing: -0.025em;
-}
-
-.section-eyebrow {
-  display: inline-block;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-  margin-bottom: 6px;
 }
 
 .visually-hidden {
@@ -174,74 +242,4 @@ textarea {
 
 .skip-link:focus {
   top: 16px;
-}
-
-/* Tombol */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 20px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1;
-  white-space: nowrap;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background-color 0.2s var(--ease),
-    border-color 0.2s var(--ease),
-    color 0.2s var(--ease),
-    transform 0.15s var(--ease);
-}
-
-.btn:active {
-  transform: translateY(1px) scale(0.98);
-}
-
-.btn svg {
-  width: 18px;
-  height: 18px;
-  flex: none;
-}
-
-.btn-accent {
-  background: var(--accent);
-  color: var(--on-accent);
-}
-
-.btn-accent:hover {
-  background: var(--accent-hover);
-}
-
-.btn-wa {
-  background: var(--wa);
-  color: #fff;
-}
-
-.btn-wa:hover {
-  background: var(--wa-hover);
-}
-
-.btn-ink {
-  background: var(--ink);
-  color: var(--on-ink);
-}
-
-.btn-ink:hover {
-  background: #252a34;
-}
-
-.btn-outline {
-  border-color: var(--line);
-  background: var(--surface);
-  color: var(--text);
-}
-
-.btn-outline:hover {
-  border-color: var(--text);
 }

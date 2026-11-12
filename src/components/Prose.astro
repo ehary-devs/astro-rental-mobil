@@ -1,43 +1,93 @@
 ---
+import IconHome from '@tabler/icons/outline/home.svg';
+
 interface Props {
   title: string;
+  hideBreadcrumb?: boolean;
 }
-const { title } = Astro.props;
+const { title, hideBreadcrumb = false } = Astro.props;
 ---
 
-<article class="container prose">
-  <h1 class="section-title">{title}</h1>
-  <slot />
-</article>
+<div class="w-full bg-surface pb-16">
+  {
+    !hideBreadcrumb && (
+      <section class="w-full bg-surface-container-lowest border-b border-border-subtle/50 py-3.5 mb-6">
+        <div class="max-w-[1000px] mx-auto px-4 sm:px-6">
+          <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
+            <a class="hover:text-primary transition-colors flex items-center gap-1" href="/">
+              <IconHome class="w-4 h-4" aria-hidden="true" />
+              <span>Beranda</span>
+            </a>
+            <span class="text-outline-variant">/</span>
+            <span class="text-primary font-bold">{title}</span>
+          </nav>
+        </div>
+      </section>
+    )
+  }
+
+  <div class="max-w-[1000px] mx-auto px-4 sm:px-6">
+    <article class="bg-surface-container-lowest rounded-2xl p-6 sm:p-10 border border-border-subtle shadow-sm flex flex-col gap-6">
+      <header class="border-b border-border-subtle/60 pb-6">
+        <h1 class="font-extrabold text-2xl sm:text-3xl lg:text-4xl text-on-surface tracking-tight">
+          {title}
+        </h1>
+      </header>
+
+      <div class="prose-content text-on-surface-variant text-sm sm:text-base leading-relaxed flex flex-col gap-4">
+        <slot />
+      </div>
+    </article>
+  </div>
+</div>
 
 <style>
-  .prose {
-    max-width: calc(760px + var(--gutter) * 2);
-    padding-bottom: clamp(64px, 9vw, 112px);
+  .prose-content :global(h2) {
+    margin-top: 1.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1b23;
+    letter-spacing: -0.015em;
   }
 
-  .prose :global(h2) {
-    margin-top: 40px;
-    font-size: 1.375rem;
-    font-stretch: 110%;
+  .prose-content :global(h3) {
+    margin-top: 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1b23;
   }
 
-  .prose :global(p),
-  .prose :global(ul),
-  .prose :global(ol) {
-    margin-top: 16px;
-    color: var(--text-2);
+  .prose-content :global(p) {
+    margin: 0;
+    color: #434655;
+    line-height: 1.7;
   }
 
-  .prose :global(li + li) {
-    margin-top: 6px;
+  .prose-content :global(ul) {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  .prose :global(a) {
-    color: var(--accent);
+  .prose-content :global(li) {
+    color: #434655;
   }
 
-  .prose :global(.updated) {
-    font-size: 0.875rem;
+  .prose-content :global(a) {
+    color: #0037b0;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .prose-content :global(.updated) {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #747686;
+    background: #f3f2fe;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    width: fit-content;
   }
 </style>

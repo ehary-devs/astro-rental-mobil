@@ -1,5 +1,4 @@
 ---
-import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
 import IconPin from '@tabler/icons/outline/map-pin.svg';
 import IconClock from '@tabler/icons/outline/clock.svg';
 import IconPhone from '@tabler/icons/outline/phone.svg';
@@ -9,7 +8,7 @@ import IconFacebook from '@tabler/icons/outline/brand-facebook.svg';
 import IconTiktok from '@tabler/icons/outline/brand-tiktok.svg';
 import IconYoutube from '@tabler/icons/outline/brand-youtube.svg';
 import Logo from './Logo.astro';
-import { site, waGreeting, waLink } from '../config/site';
+import { site } from '../config/site';
 import { kota, layanan, rute } from '../data/halaman';
 
 const socialIcons = { instagram: IconInstagram, facebook: IconFacebook, tiktok: IconTiktok, youtube: IconYoutube };
@@ -19,244 +18,100 @@ const toLinks = (base: string, list: { slug: string; nama: string }[]) =>
   list.map((p) => ({ href: `/${base}/${p.slug}/`, label: p.nama }));
 
 const columns = [
-  { title: 'Kota layanan', items: toLinks('kota', kota) },
-  { title: 'Layanan', items: toLinks('layanan', layanan) },
-  { title: 'Rute populer', items: toLinks('rute', rute) },
-  {
-    title: 'Lainnya',
-    items: [
-      { href: '/armada/', label: 'Semua armada' },
-      { href: '/kontak/', label: 'Kontak' },
-      { href: '/#faq', label: 'FAQ' },
-      { href: '/syarat-ketentuan/', label: 'Syarat & ketentuan' },
-      { href: '/kebijakan-privasi/', label: 'Kebijakan privasi' },
-    ],
-  },
+  { title: 'Layanan Rental', items: toLinks('layanan', layanan) },
+  { title: 'Kota Layanan', items: toLinks('kota', kota) },
+  { title: 'Rute Populer', items: toLinks('rute', rute) },
 ];
 ---
 
-<footer class="footer" id="kontak">
-  <div class="container top">
-    <div class="brand">
-      <Logo />
-      <p>Belum yakin mobil mana yang pas? Tanya admin dulu, gratis.</p>
-      <a class="btn btn-wa" href={waLink(waGreeting)} target="_blank" rel="noopener noreferrer">
-        <IconWa aria-hidden="true" />
-        Chat admin
-      </a>
-      <ul class="contact">
-        <li>
-          <IconPin aria-hidden="true" />
-          <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer">{site.address}</a>
-        </li>
-        <li>
-          <IconClock aria-hidden="true" />
-          <span>{site.hours}</span>
-        </li>
-        <li>
-          <IconPhone aria-hidden="true" />
-          <a href={`tel:+${site.whatsapp}`}>{site.phoneDisplay}</a>
-        </li>
-        <li>
-          <IconMail aria-hidden="true" />
-          <a href={`mailto:${site.email}`}>{site.email}</a>
-        </li>
-      </ul>
-    </div>
+<footer class="w-full bg-surface-container-low text-on-surface pt-16 pb-12 border-t border-border-subtle shadow-[0_-1px_12px_rgba(0,0,0,0.02)]" id="kontak">
+  <div class="max-w-[1280px] mx-auto px-4 sm:px-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10 pb-12 border-b border-surface-container-highest">
+      <!-- Brand & Info Column (2 cols) -->
+      <div class="lg:col-span-2 flex flex-col gap-4 pr-0 lg:pr-6">
+        <a href="/" aria-label="Beranda">
+          <Logo />
+        </a>
+        <p class="text-sm text-on-surface-variant max-w-sm leading-relaxed">
+          Penyedia solusi rental mobil terpercaya di {site.city} dan sekitarnya. Melayani lepas kunci, sewa dengan pengemudi profesional, perjalanan dinas korporat, hingga pariwisata Jawa Tengah.
+        </p>
 
-    {
-      columns.map((col) => (
-        <nav class="col" aria-label={col.title}>
-          <h2>{col.title}</h2>
-          <ul>
-            {col.items.map((item) => (
-              <li>
-                <a href={item.href}>{item.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ))
-    }
-  </div>
+        <div class="flex flex-col gap-2.5 text-xs text-on-surface-variant mt-1">
+          <div class="flex items-start gap-2">
+            <IconPin class="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+            <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">
+              {site.address}
+            </a>
+          </div>
+          <div class="flex items-center gap-2">
+            <IconClock class="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+            <span>Jam Operasional: {site.hours}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <IconPhone class="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+            <a href={`tel:+${site.whatsapp}`} class="hover:text-primary transition-colors">
+              {site.phoneDisplay}
+            </a>
+          </div>
+          <div class="flex items-center gap-2">
+            <IconMail class="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+            <a href={`mailto:${site.email}`} class="hover:text-primary transition-colors">
+              {site.email}
+            </a>
+          </div>
+        </div>
 
-  <div class="bottom">
-    <div class="container bottom-inner">
-      <p>&copy; {year} {site.name}</p>
-      <ul class="legal">
-        <li><a href="/kredit-foto/">Kredit foto</a></li>
-      </ul>
+        {
+          site.social.length > 0 && (
+            <div class="flex items-center gap-2 mt-2">
+              {site.social.map((s) => {
+                const Icon = socialIcons[s.icon];
+                return (
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    class="w-8 h-8 rounded-lg bg-surface-container hover:bg-primary hover:text-white text-on-surface-variant flex items-center justify-center transition-colors"
+                  >
+                    <Icon class="w-4 h-4" aria-hidden="true" />
+                  </a>
+                );
+              })}
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Nav Columns (3 cols) -->
       {
-        site.social.length > 0 && (
-          <ul class="social">
-            {site.social.map((s) => {
-              const Icon = socialIcons[s.icon];
-              return (
+        columns.map((col) => (
+          <div class="flex flex-col gap-3">
+            <h4 class="font-bold text-sm text-on-surface">{col.title}</h4>
+            <ul class="flex flex-col gap-2 text-xs text-on-surface-variant">
+              {col.items.map((item) => (
                 <li>
-                  <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}>
-                    <Icon aria-hidden="true" />
+                  <a href={item.href} class="hover:text-primary transition-colors block py-0.5">
+                    {item.label}
                   </a>
                 </li>
-              );
-            })}
-          </ul>
-        )
+              ))}
+            </ul>
+          </div>
+        ))
       }
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
+      <p>&copy; {year} PT Lintas Mobilitas Nusantara ({site.name}). Seluruh hak cipta dilindungi undang-undang.</p>
+      <div class="flex items-center gap-5 flex-wrap">
+        <a href="/armada/" class="hover:text-primary transition-colors">Katalog Armada</a>
+        <a href="/syarat-ketentuan/" class="hover:text-primary transition-colors">Syarat &amp; Ketentuan</a>
+        <a href="/kebijakan-privasi/" class="hover:text-primary transition-colors">Kebijakan Privasi</a>
+        <a href="/faq/" class="hover:text-primary transition-colors">Pusat Bantuan &amp; FAQ</a>
+        <a href="/kredit-foto/" class="hover:text-primary transition-colors">Kredit Foto</a>
+      </div>
     </div>
   </div>
 </footer>
-
-<style>
-  .footer {
-    background: var(--bg);
-    border-top: 1px solid var(--line);
-    font-size: 0.875rem;
-  }
-
-  .top {
-    display: grid;
-    grid-template-columns: minmax(260px, 1.4fr) repeat(4, minmax(0, 1fr));
-    gap: 40px 32px;
-    padding-block: 64px 48px;
-  }
-
-  .brand {
-    display: grid;
-    justify-items: start;
-    align-content: start;
-    gap: 18px;
-  }
-
-  .brand p {
-    color: var(--text-2);
-    max-width: 32ch;
-  }
-
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .contact {
-    display: grid;
-    gap: 10px;
-    margin-top: 8px;
-    color: var(--text-2);
-  }
-
-  .contact li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    max-width: 40ch;
-  }
-
-  .contact svg {
-    flex: none;
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-  }
-
-  .contact a {
-    text-decoration: none;
-  }
-
-  .contact a:hover {
-    color: var(--text);
-    text-decoration: underline;
-  }
-
-  .col h2 {
-    margin-bottom: 18px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    font-stretch: 100%;
-    letter-spacing: 0;
-  }
-
-  .col ul {
-    display: grid;
-    gap: 10px;
-    color: var(--text-2);
-  }
-
-  .col a {
-    text-decoration: none;
-  }
-
-  .col a:hover {
-    color: var(--text);
-    text-decoration: underline;
-  }
-
-  .bottom {
-    color: var(--text-2);
-    font-size: 0.8125rem;
-  }
-
-  .bottom-inner {
-    display: flex;
-    align-items: center;
-    gap: 12px 32px;
-    flex-wrap: wrap;
-    padding-block: 20px;
-    border-top: 1px solid var(--line);
-    padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 20px));
-  }
-
-  .legal,
-  .social {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-  }
-
-  .legal {
-    margin-left: auto;
-  }
-
-  .social {
-    gap: 16px;
-  }
-
-  .bottom a {
-    text-decoration: none;
-  }
-
-  .bottom a:hover {
-    color: var(--text);
-    text-decoration: underline;
-  }
-
-  .social svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  @media (max-width: 1024px) {
-    .top {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-    .brand {
-      grid-column: 1 / -1;
-    }
-  }
-
-  @media (max-width: 720px) {
-    .top {
-      grid-template-columns: 1fr 1fr;
-      padding-block: 48px 40px;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .legal {
-      margin-left: 0;
-    }
-    .bottom-inner {
-      padding-right: 88px; /* ruang untuk tombol WA mengambang */
-    }
-  }
-</style>

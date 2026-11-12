@@ -1,7 +1,7 @@
 ---
-import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/plus-jakarta-sans';
 import '../styles/global.css';
-import fontLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+import fontLatin from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url';
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import ogSource from '../assets/cars/hero-alphard.jpg';
@@ -66,6 +66,6 @@ const ogUrl = new URL(og.src, Astro.site);
 
 <style>
   .offset-header {
-    padding-top: calc(var(--header-h) + clamp(56px, 7vw, 80px));
+    padding-top: var(--header-h);
   }
 </style>

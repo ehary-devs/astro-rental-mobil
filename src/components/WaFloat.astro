@@ -3,79 +3,41 @@ import IconWa from '@tabler/icons/outline/brand-whatsapp.svg';
 import { waGreeting, waLink } from '../config/site';
 ---
 
-<a
-  class="wa-float"
-  href={waLink(waGreeting)}
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label="Chat admin lewat WhatsApp"
-  data-wa-float
->
-  <IconWa aria-hidden="true" />
-</a>
+<!-- Hanya di HP: di layar sm+ sudah ada tombol "Chat Admin" di header. -->
+<aside class="fixed bottom-4 right-4 z-40 sm:hidden" data-wa-float>
+  <a
+    class="flex items-center justify-center w-14 h-14 bg-emerald-conversion hover:bg-emerald-deep text-white rounded-full shadow-[0_8px_24px_rgba(16,185,129,0.35)] transition-transform active:scale-95 select-none"
+    href={waLink(waGreeting)}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Chat admin lewat WhatsApp"
+  >
+    <IconWa class="w-7 h-7" aria-hidden="true" />
+  </a>
+</aside>
 
 <script>
-  // Di layar kecil, sembunyikan sementara tombol jika form booking sedang aktif terlihat
-  const btn = document.querySelector<HTMLElement>('[data-wa-float]');
+  // Sembunyikan saat form booking (yang punya tombol WA sendiri) sedang terlihat.
+  const container = document.querySelector<HTMLElement>('[data-wa-float]');
   const heroForm = document.querySelector('#pesan');
 
-  if (btn && heroForm && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const isFormVisible = entries[0]?.isIntersecting;
-        if (window.innerWidth <= 640) {
-          btn.classList.toggle('is-hidden', Boolean(isFormVisible));
-        } else {
-          btn.classList.remove('is-hidden');
-        }
+  if (container && heroForm && 'IntersectionObserver' in window) {
+    new IntersectionObserver(
+      ([entry]) => {
+        const hide = Boolean(entry?.isIntersecting);
+        container.classList.toggle('opacity-0', hide);
+        container.classList.toggle('pointer-events-none', hide);
+        container.classList.toggle('translate-y-4', hide);
       },
       { threshold: 0.15 }
-    );
-    observer.observe(heroForm);
-
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 640) btn.classList.remove('is-hidden');
-    });
+    ).observe(heroForm);
   }
 </script>
 
 <style>
-  .wa-float {
-    position: fixed;
-    right: max(20px, env(safe-area-inset-right));
-    bottom: max(20px, env(safe-area-inset-bottom));
-    z-index: 40;
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-pill);
-    background: var(--wa);
-    color: #fff;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+  [data-wa-float] {
     transition:
-      transform 0.2s var(--ease),
-      opacity 0.2s var(--ease),
-      background-color 0.2s var(--ease);
-  }
-
-  .wa-float.is-hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(12px) scale(0.9);
-  }
-
-  .wa-float:hover {
-    background: var(--wa-hover);
-    transform: translateY(-2px);
-  }
-
-  .wa-float:active {
-    transform: scale(0.95);
-  }
-
-  .wa-float :global(svg) {
-    width: 26px;
-    height: 26px;
+      opacity 0.25s var(--ease),
+      transform 0.25s var(--ease);
   }
 </style>
